@@ -319,9 +319,9 @@ do
 	wget $LINK 2>/dev/null >/dev/null && break
 done ||
 { echo "live-boot failed to download. You'll have to download and install it manually... Try: http://packages.debian.org/sid/all/live-boot/download OR packages.ubuntu.com/hu/raring/all/live-boot/download" | fmt -w `tput cols`; exit 1; }
-dpkg -i live-boot_3.0~b*.deb 2>/dev/null >/dev/null ||
-{ echo "live-boot failed to install. You'll have to download and install it manually... Try: http://packages.debian.org/sid/all/live-boot/download OR packages.ubuntu.com/hu/raring/all/live-boot/download" | fmt -w `tput cols`; rm /tmp/live-boot_3.0~b*.deb 2>/dev/null >/dev/null; exit 1; }
-rm /tmp/live-boot_3.0~b*.deb 2>/dev/null >/dev/null
+dpkg -i live-boot_*.deb 2>/dev/null >/dev/null ||
+{ echo "live-boot failed to install. You'll have to download and install it manually... Try: http://packages.debian.org/sid/all/live-boot/download OR packages.ubuntu.com/hu/raring/all/live-boot/download" | fmt -w `tput cols`; rm /tmp/live-boot_*.deb 2>/dev/null >/dev/null; exit 1; }
+rm /tmp/live-boot_*.deb 2>/dev/null >/dev/null
 #echo "Installing live-boot..."
 #sudo apt-get -y --force-yes install live-boot 2>/dev/null >/dev/null || { echo "live-boot failed to install. You'll have to download and install it manually... Try: http://packages.ubuntu.com/precise/all/live-boot/download" | fmt -w `tput cols`; exit 1; }
 
