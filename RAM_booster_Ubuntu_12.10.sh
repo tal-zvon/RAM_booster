@@ -506,6 +506,7 @@ cat << '06_RAMSESS'
 #!/bin/sh -e
 
 KER_NAME=$(ls /boot/ | grep vmlinuz | sort -n | tail -1 | sed 's/vmlinuz-//')
+GRUB_CMDLINE_LINUX_DEFAULT=$([ -e /etc/default/grub ] && cat /etc/default/grub | grep GRUB_CMDLINE_LINUX_DEFAULT | grep -o '["].*["]' | tr -d '"')
 
 if [ -z "$KER_NAME" ]
 then
@@ -527,7 +528,7 @@ menuentry "Ubuntu, Linux $KER_NAME to RAM" {
      set grub_boot=\$grub_boot/boot
   fi
 
-  linux \$grub_boot/vmlinuz-$KER_NAME boot=live toram=filesystem.squashfs apparmor=0 security="" root=/dev/disk/by-uuid/\$uuid_os_root ro
+  linux \$grub_boot/vmlinuz-$KER_NAME boot=live toram=filesystem.squashfs apparmor=0 security="" root=/dev/disk/by-uuid/\$uuid_os_root ro $GRUB_CMDLINE_LINUX_DEFAULT
   initrd \$grub_boot/initrd.img-$KER_NAME
 }
 EOF
