@@ -1281,6 +1281,10 @@ GrubEntry
 echo
 CopyFileSystem
 
+#Fix Mint Hardlink bug
+sudo bash -c 'echo "# Stop Login Crash" >> /var/sysctl/etc/fstab'
+sudo bash -c 'echo "kernel.yama.protected_nonaccess_hardlinks = 0" >> /var/sysctl/etc/fstab'
+
 #Add update job to crontab if necessary
 if [[ "$ADDCRON" == "true" ]]
 then
