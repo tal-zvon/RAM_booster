@@ -125,7 +125,7 @@ OS_Check=`cat /etc/issue | grep -o 'Mint 14'`
 
 if [[ "$OS_Check" != "Mint 14" ]]
 then
-	echo "This script was written to work with Ubuntu 12.10. You are running `cat /etc/issue | sed -e 's/[\]n//g' -e 's/[\]l//g' -e 's/[ ]*$//g' | grep -o '^[a-Z ]*[0-9.]*'`. This means the script has NOT been tested for your OS. Run this at your own risk."  | fmt -w `tput cols`
+	echo "This script was written to work with Mint 14. You are running `cat /etc/issue | sed -e 's/[\]n//g' -e 's/[\]l//g' -e 's/[ ]*$//g' | grep -o '^[a-Z ]*[0-9.]*'`. This means the script has NOT been tested for your OS. Run this at your own risk."  | fmt -w `tput cols`
 	echo
 	echo "Press enter to continue or Ctrl+C to exit"
 	read key
