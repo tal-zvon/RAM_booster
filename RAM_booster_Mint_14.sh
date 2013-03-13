@@ -2,8 +2,8 @@
 
 #Written On: Oct 2010
 #Written By: Tal
-#Written For: Ubuntu Forums Community
-#Description: Creates a squashfs image of an Ubuntu OS, and adds a grub entry to copy the image to RAM before booting from it. This allows to run an entire OS out of RAM, provided the user has enough RAM.
+#Written For: Ubuntu Forums Community. Modified for Mint
+#Description: Creates a squashfs image of a Mint OS, and adds a grub entry to copy the image to RAM before booting from it. This allows to run an entire OS out of RAM, provided the user has enough RAM.
 
 #Make sure user didn't force script to run in sh
 ps ax | grep $$ | grep bash > /dev/null || { echo "You are forcing the script to run in sh when it was written for bash. Please run it in bash instead."; exit 1; }
@@ -118,7 +118,7 @@ GetDevice()
 		sudo mkfs.ext4 -L home $DEVICE
 }
 
-#Make sure the OS this is being run on is supported (Ubuntu 12.04)
+#Make sure the OS this is being run on is supported (Mint 14)
 Check_OS()
 {
 OS_Check=`cat /etc/issue | grep -o 'Mint 14'`
@@ -135,7 +135,7 @@ fi
 #Asks user what to do with /home
 FindPlaceForHome()
 {
-echo -e "This script will create a copy of your Ubuntu OS in /var/squashfs/ and then use that copy to create a squashfs image of it located at /live. After this seporation, your old OS and your new OS (the RAM Session) will be two completely separate entities. Updates of one OS will not affect the update of the other (unless done so using the update script - in which case two separate updates take place one after the other), and the setup of packages on one will not transfer to the other. Depending on what you chose however, your /home may be shared between the two systems.\n" | fmt -w `tput cols`
+echo -e "This script will create a copy of your Mint OS in /var/squashfs/ and then use that copy to create a squashfs image of it located at /live. After this seporation, your old OS and your new OS (the RAM Session) will be two completely separate entities. Updates of one OS will not affect the update of the other (unless done so using the update script - in which case two separate updates take place one after the other), and the setup of packages on one will not transfer to the other. Depending on what you chose however, your /home may be shared between the two systems.\n" | fmt -w `tput cols`
 
 #Check /etc/fstab for existing /home partition being mounted
 #Ignore commented out lines
@@ -515,7 +515,7 @@ fi
 
 cat << EOF
 
-menuentry "Ubuntu, Linux $KER_NAME to RAM" {
+menuentry "Mint, Linux $KER_NAME to RAM" {
   set uuid_grub_boot=BOOT_UUID
   set uuid_os_root=ROOT_UUID
 
@@ -764,7 +764,7 @@ cat << 'rupdate'
 
 #Written On: Oct 2010
 #Written By: Tal
-#Written For: Ubuntu Forums Community
+#Written For: Ubuntu Forums Community. Modified for Mint
 #Description: Chroots into /var/squashfs and checks for updates. If updates are found, it downloads and performs them. 
 #Once this is done, the .deb packages downloaded from the updates are copied to the Original OS so that if the same updates
 #are to be performed on the Original OS, it would not be forced to download the packages again. Then, depending on the arguments
@@ -1058,7 +1058,7 @@ cat << 'rchroot'
 
 #Written On: Oct 2010
 #Written By: Tal
-#Written For: Ubuntu Forums Community
+#Written For: Ubuntu Forums Community. Modified for Mint
 #Description: Automates the process of chrooting into either the Original OS or the RAM Session's /var/squashfs to allow for editing of either.
 
 #Only run if user is root
