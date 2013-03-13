@@ -118,7 +118,7 @@ GetDevice()
 		sudo mkfs.ext4 -L home $DEVICE
 }
 
-#Make sure the OS this is being run on is supported (Ubuntu 12.04)
+#Make sure the OS this is being run on is supported (Ubuntu 12.10)
 Check_OS()
 {
 OS_Check=`cat /etc/issue | grep -o '[0-9][0-9]*\.[0-9][0-9]*'`
