@@ -507,6 +507,7 @@ cat << '06_RAMSESS'
 
 KER_NAME=$(ls /boot/ | grep vmlinuz | sort -n | tail -1 | sed 's/vmlinuz-//')
 GRUB_CMDLINE_LINUX_DEFAULT=$([ -e /etc/default/grub ] && cat /etc/default/grub | grep GRUB_CMDLINE_LINUX_DEFAULT | grep -o '["].*["]' | tr -d '"')
+ARCH=$(uname -m | sed -e 's/i686/32-bit/' -e 's/x86_64/64-bit/')
 
 if [ -z "$KER_NAME" ]
 then
@@ -515,7 +516,7 @@ fi
 
 cat << EOF
 
-menuentry "Linux Mint 14 MATE, Linux $KER_NAME to RAM" {
+menuentry "Linux Mint 14 MATE $ARCH, $KER_NAME to RAM" {
   set uuid_grub_boot=BOOT_UUID
   set uuid_os_root=ROOT_UUID
 
