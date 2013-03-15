@@ -515,7 +515,7 @@ fi
 
 cat << EOF
 
-menuentry "Mint, Linux $KER_NAME to RAM" {
+menuentry "Linux Mint 14 MATE, Linux $KER_NAME to RAM" {
   set uuid_grub_boot=BOOT_UUID
   set uuid_os_root=ROOT_UUID
 
