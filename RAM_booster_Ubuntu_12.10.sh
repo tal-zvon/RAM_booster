@@ -961,7 +961,13 @@ sudo cp /etc/resolv.conf $Orig_OS/etc/resolv.conf
 #This is so the same packages that were just updated will not have to be redownloaded if the user
 #wishes to update the Original OS
 echo "Copying $Orig_OS/$SquashFS/var/cache/apt/archives to $Orig_OS/var/cache/apt/archives..."
-sudo rsync -a $Orig_OS/$SquashFS/var/cache/apt/archives/*.deb $Orig_OS/var/cache/apt/archives/
+FILE_COUNT=$(ls -1 $Orig_OS/$SquashFS/var/cache/apt/archives/*.deb 2>/dev/null | wc -l)
+if [[ "$FILE_COUNT" -gt 0 ]]
+then
+	sudo rsync -a $Orig_OS/$SquashFS/var/cache/apt/archives/*.deb $Orig_OS/var/cache/apt/archives/
+else
+	echo "No deb files found in $Orig_OS/$SquashFS/var/cache/apt/archives/"
+fi
 
 #Check if we should update the Original OS
 if [[ "$BOTH" == "true" ]]
