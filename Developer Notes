@@ -1,0 +1,16 @@
+rsync stdout can be hidden at boot by doing the following:
+
+	Edit script
+	After live boot installs (Just before 'echo -e "Packages installed successfully\n"' line), add:
+		echo "Press Enter"
+		read key
+	Save and run script
+	When script pauses, open different terminal and cd to /lib/live/boot
+	Edit 9990-toram-todisk.sh 
+	Comment out the 'echo " * Copying $MODULETORAMFILE to RAM" 1>/dev/console' line
+	Change both 'rsync -a' lines to 'rsync -aq'
+	Save file and continue script
+
+	Note: 
+	"expr: syntax error" and "sh: bad number" will likely still appear at boot. Still working on
+	fixing those.
