@@ -325,6 +325,9 @@ rm /tmp/live-boot_*.deb 2>/dev/null >/dev/null
 #echo "Installing live-boot..."
 #sudo apt-get -y --force-yes install live-boot 2>/dev/null >/dev/null || { echo "live-boot failed to install. You'll have to download and install it manually... Try: http://packages.ubuntu.com/precise/all/live-boot/download" | fmt -w `tput cols`; exit 1; }
 
+#Hide expr error on boot
+sudo sed -i 's/\(size=$( expr $(ls -la ${MODULETORAMFILE} | awk '\''{print $5}'\'') \/ 1024 + 5000\)/\1 2>\/dev\/null/' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
+
 echo -e "Packages installed successfully\n"
 
 #Update the kernel module dependencies
