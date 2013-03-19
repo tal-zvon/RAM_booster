@@ -459,17 +459,6 @@ echo -e "\nCleaning old log files..."
 echo "Cleaning package cache:"
 [ -n "$DEST" ] && sudo rm -v ${DEST}/var/cache/apt/archives/*.deb
 
-#Fix gvfs crashing
-echo -e "\nRemoving gvfs-metadata folder:"
-if [[ "$NewHome" == "true" ]]
-then
-	#Delete metadata	
-	sudo rm -rfv /mnt/home/*/.local/share/gvfs-metadata
-else
-	#Delete metadata
-	sudo rm -rfv ${DEST}/home/*/.local/share/gvfs-metadata
-fi
-
 }
 
 #Create the squashfs image
