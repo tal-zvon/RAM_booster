@@ -428,11 +428,14 @@ CopyHome()
 		echo
 	fi
 
+	#Figure out what the UUID of $DEVICE (/home) is
+	HOME_UUID=$(sudo blkid -o value -s UUID $DEVICE)
+
 	#Modify RAM session's fstab to mount /home partition
-	sudo bash -c 'echo "'$DEVICE'	/home	ext4	auto	0 0" >> '$DEST'/etc/fstab'
+	sudo bash -c 'echo "UUID='$HOME_UUID'	/home	ext4	auto	0 0" >> '$DEST'/etc/fstab'
 
 	#Modify regular system to mount /home partition as well
-	sudo bash -c 'echo "'$DEVICE'	/home	ext4	auto	0 0" >> /etc/fstab'
+	sudo bash -c 'echo "UUID='$HOME_UUID'	/home	ext4	auto	0 0" >> /etc/fstab'
 
 }
 
