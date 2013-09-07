@@ -388,6 +388,24 @@ sudo rm /tmp/fs_sync
 
 }
 
+# Fix potential missing eth0 when MAC addresses change. 
+# Forces OS to detect "new" ethernet adapter and auto write new rule.
+UpdateNetRules()
+{
+	rules_file="${DEST}/etc/udev/rules.d/70-persistent-net.rules"
+
+	if [ ! -f ${rules_file} ]
+	then
+		return 1
+	fi
+
+	echo "Updating network rules in ${rules_file}"
+
+	sed -i 's/^SUBSYSTEM/#SUBSYSTEM/g' ${rules_file}
+
+	return 0
+}
+
 #Copy /home to new partition
 CopyHome()
 {
@@ -1263,6 +1281,9 @@ GrubEntry
 #Copy the OS to /var/squashfs
 echo
 CopyFileSystem
+
+# Fix Missing eth adapter(s)
+UpdateNetRules
 
 #Add update job to crontab if necessary
 if [[ "$ADDCRON" == "true" ]]
