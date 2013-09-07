@@ -410,6 +410,24 @@ sudo rm /tmp/fs_sync
 
 }
 
+# Fix potential missing eth0 when MAC addresses change. 
+# Forces OS to detect "new" ethernet adapter and auto write new rule.
+UpdateNetRules()
+{
+	rules_file="${DEST}/etc/udev/rules.d/70-persistent-net.rules"
+
+	if [ ! -f ${rules_file} ]
+	then
+		return 1
+	fi
+
+	echo "Updating network rules in ${rules_file}"
+
+	sed -i 's/^SUBSYSTEM/#SUBSYSTEM/g' ${rules_file}
+
+	return 0
+}
+
 #Copy /home to new partition
 CopyHome()
 {
@@ -1299,6 +1317,9 @@ CopyFileSystem
 #Fix Hardlink bug
 sudo bash -c 'echo "# Stop Login Crash" >> '${DEST}'/etc/sysctl.conf'
 sudo bash -c 'echo "kernel.yama.protected_nonaccess_hardlinks = 0" >> '${DEST}'/etc/sysctl.conf'
+
+# Fix Missing eth adapter(s)
+UpdateNetRules
 
 #Add update job to crontab if necessary
 if [[ "$ADDCRON" == "true" ]]
