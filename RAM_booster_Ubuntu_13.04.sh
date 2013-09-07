@@ -118,14 +118,14 @@ GetDevice()
 		sudo mkfs.ext4 -L home $DEVICE
 }
 
-#Make sure the OS this is being run on is supported (Ubuntu 12.10)
+#Make sure the OS this is being run on is supported (Ubuntu 13.04)
 Check_OS()
 {
 OS_Check=`cat /etc/issue | grep -o '[0-9][0-9]*\.[0-9][0-9]*'`
 
-if [[ "$OS_Check" != "12.10" ]]
+if [[ "$OS_Check" != "13.04" ]]
 then
-	echo "This script was written to work with Ubuntu 12.10. You are running `cat /etc/issue | egrep -o '[a-Z]+[ ][0-9]+\.[0-9]+\.*[0-9]*'`. This means the script has NOT been tested for your OS. Run this at your own risk."  | fmt -w `tput cols`
+	echo "This script was written to work with Ubuntu 13.04. You are running `cat /etc/issue | egrep -o '[a-Z]+[ ][0-9]+\.[0-9]+\.*[0-9]*'`. This means the script has NOT been tested for your OS. Run this at your own risk."  | fmt -w `tput cols`
 	echo
 	echo "Press enter to continue or Ctrl+C to exit"
 	read key
