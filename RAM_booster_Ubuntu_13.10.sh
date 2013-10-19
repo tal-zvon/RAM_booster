@@ -331,6 +331,33 @@ sudo sed -i 's/\(size=$( expr $(ls -la ${MODULETORAMFILE} | awk '\''{print $5}'\
 #Hide 'sh:bad number' error on boot
 sudo sed -i 's#\(if \[ "\${freespace}" -lt "\${size}" ]\)#\1 2>/dev/null#' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
+#Fix the "hwdb.bin: No such file or directory" bug (on boot)
+(
+cat << 'HWDB'
+#!/bin/sh
+PREREQ=""
+prereqs()
+{
+	echo "$PREREQ"
+}
+
+case $1 in
+prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+. /usr/share/initramfs-tools/hook-functions             #provides copy_exec
+rm -f ${DESTDIR}/lib/udev/hwdb.bin                      #copy_exec won't overwrite an existing file
+copy_exec /lib/udev/hwdb.bin /lib/udev/hwdb.bin         #Takes location in filesystem and location in initramfs as arguments
+HWDB
+) | sudo tee /usr/share/initramfs-tools/hooks/hwdb.bin >/dev/null
+
+#Fix permissions
+sudo chmod 755 /usr/share/initramfs-tools/hooks/hwdb.bin
+sudo chown root:root /usr/share/initramfs-tools/hooks/hwdb.bin
+
 echo -e "Packages installed successfully\n"
 
 #Update the kernel module dependencies
