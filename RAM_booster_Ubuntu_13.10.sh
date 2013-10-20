@@ -573,7 +573,7 @@ fi
 
 cat << EOF
 
-menuentry "Ubuntu, Linux $KER_NAME to RAM" {
+menuentry "Ubuntu to RAM" {
   set uuid_grub_boot=BOOT_UUID
   set uuid_os_root=ROOT_UUID
 
