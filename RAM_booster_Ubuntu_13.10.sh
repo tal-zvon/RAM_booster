@@ -335,6 +335,7 @@ sudo sed -i 's#\(if \[ "\${freespace}" -lt "\${size}" ]\)#\1 2>/dev/null#' /lib/
 sudo sed -i 's#if ${PATH_ID} "${sysfs_path}"#if ${PATH_ID} "${sysfs_path}" 2>/dev/null#g' /lib/live/boot/9990-misc-helpers.sh 2>/dev/null
 
 #Fix the "hwdb.bin: No such file or directory" bug (on boot)
+[ -e /lib/udev/hwdb.bin ] &&
 (
 cat << 'HWDB'
 #!/bin/sh
