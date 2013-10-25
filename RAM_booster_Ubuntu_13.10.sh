@@ -680,6 +680,11 @@ RevertChanges()
 	echo -e "\nUpdating grub:"
 	sudo update-grub2
 
+	#Purge live-boot. This makes sure that the modifications done to /lib/live/boot/ scripts will be erased,
+	#so that next time this script runs, they will not be applied twice
+	echo -e "\nPurging live-boot..."
+	sudo apt-get -y purge live-boot >/dev/null
+
 	#Tell user /home may not have been removed
 	echo -e "\nIf you gave a partition during install to setup /home to, this will NOT be undone. fstab will still mount that partition to /home. If you want this reversed, you must do this manually." | fmt -w `tput cols`
 	echo
