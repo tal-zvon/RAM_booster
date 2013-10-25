@@ -344,7 +344,7 @@ sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/console\)#\1
 				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
 #Hide umount /live/overlay error
-sudo sed -i 's#\(umount /live/overlay\)#\1 2>/dev/null#g' /lib/live/boot/9990-overlay.sh
+sudo sed -i 's#\(umount /live/overlay\)#\1 2>/dev/null#g' /lib/live/boot/9990-overlay.sh 2>/dev/null
 
 #Fix the "hwdb.bin: No such file or directory" bug (on boot)
 [ -e /lib/udev/hwdb.bin ] &&
