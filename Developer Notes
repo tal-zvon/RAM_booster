@@ -11,6 +11,18 @@ rsync stdout can be hidden at boot by doing the following:
 	Change both 'rsync -a' lines to 'rsync -aq'
 	Save file and continue script
 
-	Note: 
-	"expr: syntax error" and "sh: bad number" will likely still appear at boot. Still working on
-	fixing those.
+Speed up rsync filesystem copy to /var/squashfs during testing:
+	If you are testing this script in a VM over and over again, you can decrease the time
+	it takes for the rsync command to copy the entire OS to /var/squashfs. In testing, the time
+	needed to copy the FS decreased from about 7m to about 3m.
+
+	Basically:
+		1. Setup an NFS server somewhere, and create a share
+		2. Create the directory /var/squashfs
+		3. Mount the NFS share to /var/squashfs
+		4. Make sure the RevertChanges function in the RAM_booster script does not delete /var/squashfs when running.
+		5. When you revert to a VM snapshot, just follow steps 2, 3 and 4
+
+	The first time, it will obivously take just as long to copy the FS. Every other time, rsync will see
+	the similar files already on the NFS share and skip them. rsync runs with --delete, so it will take care of
+	anything that should no longer be on the share.
