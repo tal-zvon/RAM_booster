@@ -33,16 +33,16 @@ GetDevice()
 		#Check if device exists
 		if [[ ! -b "$DEVICE" ]]
 		then
-			echo "$DEVICE is not a valid device."
+			echo "$DEVICE is not a valid device. Please rerun the script and specify the device name of a partition or logical volume." | fmt -w `tput cols`
+			echo "Exiting..."
 			exit 1
 		fi
 
-		#Make sure the device is a partition and not an entire physical drive
-		Partition_Check=`echo $DEVICE | grep -o '[0-9]$'`
-		if [[ -z "$Partition_Check" ]]
+		#Make sure the device is a partition (not an entire physical drive) or a logical volume
+		if ! (echo $DEVICE | grep -q '/dev/sd[a-z][0-9]') && ! (sudo lvdisplay $DEVICE &>/dev/null)
 		then
-			echo "$DEVICE is not a partition but an entire drive. Please rerun the script and specify the device name of a partition instead. Partition devices end in a number such as /dev/hda2" | fmt -w `tput cols`
-			echo -e "\nExiting..."
+			echo "$DEVICE is neither a partition, nor a logical volume. Please rerun the script and specify the device name of a partition or logical volume." | fmt -w `tput cols`
+			echo "Exiting..."
 			exit 1
 		fi
 
