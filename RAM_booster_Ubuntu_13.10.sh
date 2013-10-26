@@ -146,7 +146,7 @@ if [[ -n "$FSTAB_LINE" ]]
 then
 	#Since there's a chance /home in /etc/fstab is identified as a UUID,
 	#get /home's device name from df istead of converting the UUID to a device name
-	HOMEDEV=$(df /home | grep -o '/dev/...[0-9]')
+	HOMEDEV=$(df /home | grep -o '/dev/[^ ]*')
 
 	#Make sure the rest of the script
 	#knows the user's choice
