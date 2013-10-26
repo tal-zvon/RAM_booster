@@ -737,8 +737,8 @@ fi
 FindUUIDs()
 {
 
-ROOT_DEV=$(df / | grep -o '/dev/...[0-9]')
-BOOT_DEV=$(df /boot | grep -o '/dev/...[0-9]')
+ROOT_DEV=$(df / | grep -o '/dev/[^ ]*')
+BOOT_DEV=$(df /boot | grep -o '/dev/[^ ]*')
 
 ROOT_UUID=$(sudo blkid -o value -s UUID $ROOT_DEV)
 
