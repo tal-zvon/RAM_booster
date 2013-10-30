@@ -589,7 +589,7 @@ menuentry "Ubuntu to RAM" {
      set grub_boot=\$grub_boot/boot
   fi
 
-  linux \$grub_boot/vmlinuz-$KER_NAME bootfrom=/dev/disk/by-uuid/$uuid_os_root boot=live toram=filesystem.squashfs apparmor=0 security="" root=/dev/disk/by-uuid/\$uuid_os_root ro $GRUB_CMDLINE_LINUX_DEFAULT
+  linux \$grub_boot/vmlinuz-$KER_NAME bootfrom=/dev/disk/by-uuid/\$uuid_os_root boot=live toram=filesystem.squashfs apparmor=0 security="" root=/dev/disk/by-uuid/\$uuid_os_root ro $GRUB_CMDLINE_LINUX_DEFAULT
   initrd \$grub_boot/initrd.img-$KER_NAME
 }
 EOF
