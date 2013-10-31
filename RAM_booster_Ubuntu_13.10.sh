@@ -33,16 +33,16 @@ GetDevice()
 		#Check if device exists
 		if [[ ! -b "$DEVICE" ]]
 		then
-			echo "$DEVICE is not a valid device."
+			echo "$DEVICE is not a valid device. Please rerun the script and specify the device name of a partition or logical volume." | fmt -w `tput cols`
+			echo "Exiting..."
 			exit 1
 		fi
 
-		#Make sure the device is a partition and not an entire physical drive
-		Partition_Check=`echo $DEVICE | grep -o '[0-9]$'`
-		if [[ -z "$Partition_Check" ]]
+		#Make sure the device is a partition (not an entire physical drive) or a logical volume
+		if ! (echo $DEVICE | grep -q '/dev/sd[a-z][0-9]') && ! (sudo lvdisplay $DEVICE &>/dev/null)
 		then
-			echo "$DEVICE is not a partition but an entire drive. Please rerun the script and specify the device name of a partition instead. Partition devices end in a number such as /dev/hda2" | fmt -w `tput cols`
-			echo -e "\nExiting..."
+			echo "$DEVICE is neither a partition, nor a logical volume. Please rerun the script and specify the device name of a partition or logical volume." | fmt -w `tput cols`
+			echo "Exiting..."
 			exit 1
 		fi
 
@@ -146,7 +146,7 @@ if [[ -n "$FSTAB_LINE" ]]
 then
 	#Since there's a chance /home in /etc/fstab is identified as a UUID,
 	#get /home's device name from df istead of converting the UUID to a device name
-	HOMEDEV=$(df /home | grep -o '/dev/...[0-9]')
+	HOMEDEV=$(df /home | grep -o '/dev/[^ ]*')
 
 	#Make sure the rest of the script
 	#knows the user's choice
@@ -581,7 +581,6 @@ menuentry "Ubuntu to RAM" {
   set uuid_grub_boot=BOOT_UUID
   set uuid_os_root=ROOT_UUID
 
-  search --no-floppy --fs-uuid \$uuid_os_root --set=root
   search --no-floppy --fs-uuid \$uuid_grub_boot --set=grub_boot
 
   set grub_boot=(\$grub_boot)
@@ -590,7 +589,7 @@ menuentry "Ubuntu to RAM" {
      set grub_boot=\$grub_boot/boot
   fi
 
-  linux \$grub_boot/vmlinuz-$KER_NAME boot=live toram=filesystem.squashfs apparmor=0 security="" root=/dev/disk/by-uuid/\$uuid_os_root ro $GRUB_CMDLINE_LINUX_DEFAULT
+  linux \$grub_boot/vmlinuz-$KER_NAME bootfrom=/dev/disk/by-uuid/\$uuid_os_root boot=live toram=filesystem.squashfs apparmor=0 security="" root=/dev/disk/by-uuid/\$uuid_os_root ro $GRUB_CMDLINE_LINUX_DEFAULT
   initrd \$grub_boot/initrd.img-$KER_NAME
 }
 EOF
@@ -737,8 +736,8 @@ fi
 FindUUIDs()
 {
 
-ROOT_DEV=$(df / | grep -o '/dev/...[0-9]')
-BOOT_DEV=$(df /boot | grep -o '/dev/...[0-9]')
+ROOT_DEV=$(df / | grep -o '/dev/[^ ]*')
+BOOT_DEV=$(df /boot | grep -o '/dev/[^ ]*')
 
 ROOT_UUID=$(sudo blkid -o value -s UUID $ROOT_DEV)
 
