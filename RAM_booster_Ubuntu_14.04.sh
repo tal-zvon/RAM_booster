@@ -567,7 +567,7 @@ echo "Adding entry to Grub2 menu"
 cat << '06_RAMSESS'
 #!/bin/sh -e
 
-KER_NAME=$(ls /boot/ | grep vmlinuz | sed 's/vmlinuz-//g' | sort -t"." -k1,1n -k2,2n -k3,3n | tail -1)
+KER_NAME=$(ls /boot/ | grep vmlinuz | sed 's/vmlinuz-//g' | sort -t"." -k1,1n -k2,2n -k3,3n | tail -1 | sed 's/.efi.signed//')
 GRUB_CMDLINE_LINUX_DEFAULT=$([ -e /etc/default/grub ] && cat /etc/default/grub | grep GRUB_CMDLINE_LINUX_DEFAULT | grep -o '["].*["]' | tr -d '"')
 
 if [ -z "$KER_NAME" ]
