@@ -984,8 +984,6 @@ else
 	fi
 fi
 
-#sudo cp /etc/resolv.conf $Orig_OS/$SquashFS/etc/resolv.conf
-
 #Run the actual update
 sudo chroot $Orig_OS/$SquashFS/ /bin/bash -c "apt-get update; apt-get -y dist-upgrade; apt-get -y autoremove" 2>&1 | tee /tmp/chroot_out
 
@@ -1066,7 +1064,6 @@ sudo mount -o bind /dev $Orig_OS/dev || { echo "/dev failed to mount the second 
 sudo mount -o bind /dev/pts $Orig_OS/dev/pts || { echo "/dev/pts failed to mount the second time. Reboot and run $0 again with the -f option."; sudo rm /tmp/chroot_out; sudo umount $Orig_OS/proc $Orig_OS/dev; exit 1; }
 sudo mount -o bind /sys $Orig_OS/sys || { echo "/sys failed to mount the second time. Reboot and run $0 again with the -f option."; sudo rm /tmp/chroot_out; sudo umount $Orig_OS/proc $Orig_OS/dev $Orig_OS/dev/pts; exit 1; }
 sudo mount -o bind /run $Orig_OS/run || { echo "/run failed to mount the second time. Reboot and run $0 again with the -f option."; sudo rm /tmp/chroot_out; sudo umount $Orig_OS/proc $Orig_OS/dev $Orig_OS/dev/pts $Orig_OS/sys; exit 1; }
-#sudo cp /etc/resolv.conf $Orig_OS/etc/resolv.conf
 
 #Copy apt cache from /var/squashfs to Original OS
 #This is so the same packages that were just updated will not have to be redownloaded if the user
@@ -1285,7 +1282,6 @@ case $1 in
 	sudo mount -o bind /sys $Orig_OS/sys || { echo "/sys failed to bind to $Orig_OS/sys."; $0 -U; exit 1; }
 	sudo mount -o bind /home $Orig_OS/home || { echo "/home failed to bind to $Orig_OS/home."; $0 -U; exit 1; }
 	sudo mount -o bind /run $Orig_OS/run || { echo "/run failed to bind to $Orig_OS/run"; $0 -U; exit 1; }
-	#sudo cp /etc/resolv.conf $Orig_OS/etc/resolv.conf
 	sudo chroot $Orig_OS /bin/bash
 
 	sleep 1s
@@ -1313,7 +1309,6 @@ case $1 in
 	sudo mount -o bind /sys $Orig_OS/$SquashFS/sys || { echo "/sys failed to bind to $Orig_OS/$SquashFS/sys."; $0 -U; exit 1; }
 	sudo mount -o bind /home $Orig_OS/$SquashFS/home || { echo "/home failed to bind to $Orig_OS/$SquashFS/home."; $0 -U; exit 1; }
 	sudo mount -o bind /run $Orig_OS/$SquashFS/run || { echo "/run failed to bind to $Orig_OS/$SquashFS/run"; $0 -U; exit 1; }
-	#sudo cp /etc/resolv.conf $Orig_OS/$SquashFS/etc/resolv.conf
 	echo -e "When you are finished, you will need to run the update script with the --force option to recreate the squashfs image.\n" | fmt -w `tput cols`
 	sudo chroot $Orig_OS/$SquashFS /bin/bash
 	echo -e "\nRemember to run the update script with the --force option to recreate the squashfs image or the changes you made will not appear until your next successful update.\n" | fmt -w `tput cols`
