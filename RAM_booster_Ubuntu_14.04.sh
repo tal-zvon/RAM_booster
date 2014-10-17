@@ -1104,6 +1104,7 @@ sudo chroot $Orig_OS/ /bin/bash -c "mv /live/filesystem.squashfs.new /live/files
 
 #Display new size of image
 Image_Size=`sudo du -h $Orig_OS/live/filesystem.squashfs | awk '{ print $1 }'`
+clear
 echo -e "\nThe new size of the image is $Image_Size. This MUST fit in your total RAM, with room to spare. If it does not, you either need to buy more RAM, or manually remove unimportant packages from your OS until the image fits.\n" | fmt -w `tput cols`
 
 #Unmount unnecessary stuff
