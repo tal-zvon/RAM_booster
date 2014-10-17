@@ -932,6 +932,7 @@ cleanup()
         sudo umount $Orig_OS/$SquashFS/dev/pts || { echo "/dev/pts failed to unmount because it's busy. This will be fixed after a reboot."; }
         sudo umount $Orig_OS/$SquashFS/dev || { echo "/dev failed to unmount because it's busy. This will be fixed after a reboot."; }
         sudo umount $Orig_OS/$SquashFS/sys || { echo "/sys failed to unmount because it's busy. This will be fixed after a reboot."; }
+        sudo umount $Orig_OS/$SquashFS/run || { echo "/run failed to unmount because it's busy. This will be fixed after a reboot."; }
         sudo umount $Orig_OS/$SquashFS/boot
 
         #Delete temp file
@@ -954,6 +955,7 @@ sudo mount -o bind /proc $Orig_OS/$SquashFS/proc || { echo "/proc failed to moun
 sudo mount -o bind /dev $Orig_OS/$SquashFS/dev || { echo "/dev failed to mount."; sudo umount $Orig_OS/$SquashFS/proc $REG_DEVICE; exit 1; }
 sudo mount -o bind /dev/pts $Orig_OS/$SquashFS/dev/pts || { echo "/dev/pts failed to mount."; sudo umount $Orig_OS/$SquashFS/proc $REG_DEVICE $Orig_OS/$SquashFS/dev; exit 1; }
 sudo mount -o bind /sys $Orig_OS/$SquashFS/sys || { echo "/sys failed to mount."; sudo umount $Orig_OS/$SquashFS/proc $REG_DEVICE $Orig_OS/$SquashFS/dev $Orig_OS/$SquashFS/dev/pts; exit 1; }
+sudo mount -o bind /run $Orig_OS/$SquashFS/run || { echo "/run failed to mount."; sudo umount $Orig_OS/$SquashFS/proc $REG_DEVICE $Orig_OS/$SquashFS/dev $Orig_OS/$SquashFS/dev/pts $Orig_OS/$SquashFS/sys; exit 1; }
 
 #Put a trap for Ctrl+C to unmount everything
 trap cleanup SIGINT
@@ -982,7 +984,7 @@ else
 	fi
 fi
 
-sudo cp /etc/resolv.conf $Orig_OS/$SquashFS/etc/resolv.conf
+#sudo cp /etc/resolv.conf $Orig_OS/$SquashFS/etc/resolv.conf
 
 #Run the actual update
 sudo chroot $Orig_OS/$SquashFS/ /bin/bash -c "apt-get update; apt-get -y dist-upgrade; apt-get -y autoremove" 2>&1 | tee /tmp/chroot_out
@@ -1012,6 +1014,7 @@ sudo umount $Orig_OS/$SquashFS/proc || { echo "/proc failed to unmount because i
 sudo umount $Orig_OS/$SquashFS/dev/pts || { echo "/dev/pts failed to unmount because it's busy. This will fix itself after you reboot."; }
 sudo umount $Orig_OS/$SquashFS/dev || { echo "/dev failed to unmount because it's busy. This will fix itself after you reboot."; }
 sudo umount $Orig_OS/$SquashFS/sys || { echo "/sys failed to unmount because it's busy. This will fix itself after you reboot."; }
+sudo umount $Orig_OS/$SquashFS/run || { echo "/run failed to unmount because it's busy. This will fix itself after you reboot."; }
 sudo umount $Orig_OS/$SquashFS/boot
 
 #Make sure $Orig_OS/$SquashFS/boot unmounted before copying /boot from temp to it
@@ -1062,7 +1065,8 @@ sudo mount -o bind /proc $Orig_OS/proc || { echo "/proc failed to mount the seco
 sudo mount -o bind /dev $Orig_OS/dev || { echo "/dev failed to mount the second time. Reboot and run $0 again with the -f option."; sudo rm /tmp/chroot_out; sudo umount $Orig_OS/proc; exit 1; }
 sudo mount -o bind /dev/pts $Orig_OS/dev/pts || { echo "/dev/pts failed to mount the second time. Reboot and run $0 again with the -f option."; sudo rm /tmp/chroot_out; sudo umount $Orig_OS/proc $Orig_OS/dev; exit 1; }
 sudo mount -o bind /sys $Orig_OS/sys || { echo "/sys failed to mount the second time. Reboot and run $0 again with the -f option."; sudo rm /tmp/chroot_out; sudo umount $Orig_OS/proc $Orig_OS/dev $Orig_OS/dev/pts; exit 1; }
-sudo cp /etc/resolv.conf $Orig_OS/etc/resolv.conf
+sudo mount -o bind /run $Orig_OS/run || { echo "/run failed to mount the second time. Reboot and run $0 again with the -f option."; sudo rm /tmp/chroot_out; sudo umount $Orig_OS/proc $Orig_OS/dev $Orig_OS/dev/pts $Orig_OS/sys; exit 1; }
+#sudo cp /etc/resolv.conf $Orig_OS/etc/resolv.conf
 
 #Copy apt cache from /var/squashfs to Original OS
 #This is so the same packages that were just updated will not have to be redownloaded if the user
@@ -1113,6 +1117,7 @@ sudo umount $Orig_OS/proc || { echo "/proc failed to unmount because it's busy. 
 sudo umount $Orig_OS/dev/pts || { echo "/dev/pts failed to unmount because it's busy. This will be fixed after a reboot."; }
 sudo umount $Orig_OS/dev || { echo "/dev failed to unmount because it's busy. This will be fixed after a reboot."; }
 sudo umount $Orig_OS/sys || { echo "/sys failed to unmount because it's busy. This will be fixed after a reboot."; }
+sudo umount $Orig_OS/run || { echo "/run failed to unmount because it's busy. This will be fixed after a reboot."; }
 
 #If you have an SSD, you can use its read speed to boot into your RAM Session faster.
 #To do this, create a small partition on your SSD, just big enough to fit the squashfs image.
@@ -1232,6 +1237,7 @@ function unmount {
 			sudo umount $Orig_OS/dev
 			sudo umount $Orig_OS/sys
 			sudo umount $Orig_OS/home
+			sudo umount $Orig_OS/run
 			sudo umount $Orig_OS
 		elif [[ `cat /tmp/mounted` == "RAM" ]]
 		then
@@ -1241,6 +1247,7 @@ function unmount {
 			sudo umount $Orig_OS/$SquashFS/dev
 			sudo umount $Orig_OS/$SquashFS/sys
 			sudo umount $Orig_OS/$SquashFS/home
+			sudo umount $Orig_OS/$SquashFS/run
 			sudo umount $Orig_OS
 		fi
 		
@@ -1277,7 +1284,8 @@ case $1 in
 	sudo mount -o bind /dev/pts $Orig_OS/dev/pts || { echo "/dev/pts failed to bind to $Orig_OS/dev/pts."; $0 -U; exit 1; }
 	sudo mount -o bind /sys $Orig_OS/sys || { echo "/sys failed to bind to $Orig_OS/sys."; $0 -U; exit 1; }
 	sudo mount -o bind /home $Orig_OS/home || { echo "/home failed to bind to $Orig_OS/home."; $0 -U; exit 1; }
-	sudo cp /etc/resolv.conf $Orig_OS/etc/resolv.conf
+	sudo mount -o bind /run $Orig_OS/run || { echo "/run failed to bind to $Orig_OS/run"; $0 -U; exit 1; }
+	#sudo cp /etc/resolv.conf $Orig_OS/etc/resolv.conf
 	sudo chroot $Orig_OS /bin/bash
 
 	sleep 1s
@@ -1304,7 +1312,8 @@ case $1 in
 	sudo mount -o bind /dev/pts $Orig_OS/$SquashFS/dev/pts || { echo "/dev/pts failed to bind to $Orig_OS/$SquashFS/dev/pts."; $0 -U; exit 1; }
 	sudo mount -o bind /sys $Orig_OS/$SquashFS/sys || { echo "/sys failed to bind to $Orig_OS/$SquashFS/sys."; $0 -U; exit 1; }
 	sudo mount -o bind /home $Orig_OS/$SquashFS/home || { echo "/home failed to bind to $Orig_OS/$SquashFS/home."; $0 -U; exit 1; }
-	sudo cp /etc/resolv.conf $Orig_OS/$SquashFS/etc/resolv.conf
+	sudo mount -o bind /run $Orig_OS/$SquashFS/run || { echo "/run failed to bind to $Orig_OS/$SquashFS/run"; $0 -U; exit 1; }
+	#sudo cp /etc/resolv.conf $Orig_OS/$SquashFS/etc/resolv.conf
 	echo -e "When you are finished, you will need to run the update script with the --force option to recreate the squashfs image.\n" | fmt -w `tput cols`
 	sudo chroot $Orig_OS/$SquashFS /bin/bash
 	echo -e "\nRemember to run the update script with the --force option to recreate the squashfs image or the changes you made will not appear until your next successful update.\n" | fmt -w `tput cols`
@@ -1336,6 +1345,8 @@ case $1 in
 	ERR=$(sudo umount $Orig_OS/sys 2>&1) ||
 	ERR_CHECK=$(echo $ERR | grep 'not found'); if [[ -z "$ERR_CHECK" ]]; then ERR_CHECK=$(echo $ERR | grep 'not mounted'); fi; if [[ -z "$ERR_CHECK" ]]; then echo $ERR; fi;
 	ERR=$(sudo umount $Orig_OS/home 2>&1) ||
+	ERR_CHECK=$(echo $ERR | grep 'not found'); if [[ -z "$ERR_CHECK" ]]; then ERR_CHECK=$(echo $ERR | grep 'not mounted'); fi; if [[ -z "$ERR_CHECK" ]]; then echo $ERR; fi;
+	ERR=$(sudo umount $Orig_OS/run 2>&1) ||
 	ERR_CHECK=$(echo $ERR | grep 'not found'); if [[ -z "$ERR_CHECK" ]]; then ERR_CHECK=$(echo $ERR | grep 'not mounted'); fi; if [[ -z "$ERR_CHECK" ]]; then echo $ERR; fi;
 	ERR=$(sudo umount $Orig_OS 2>&1) ||
 	ERR_CHECK=$(echo $ERR | grep 'not found'); if [[ -z "$ERR_CHECK" ]]; then ERR_CHECK=$(echo $ERR | grep 'not mounted'); fi; if [[ -z "$ERR_CHECK" ]]; then echo $ERR; fi;
