@@ -1134,6 +1134,35 @@ sudo rm /tmp/chroot_out
 #sudo umount /mnt/SSD || { echo "/mnt/SSD failed to unmount because it's busy. This will be fixed after a reboot."; }
 sudo umount $Orig_OS || { echo "$Orig_OS failed to unmount because it's busy. This will be fixed after a reboot."; }
 
+#Give user a warning that 
+if $KERNEL_UPDATE && ! $BOTH
+then
+	echo "***************************************************************************"
+	echo "A kernel update occurred, and was applied to your RAM Session,"
+	echo "but NOT your Original OS. This means that even though there is a new"
+	echo "kernel and initrd image in your /boot, only your RAM Session has the"
+	echo "necessary /lib/modules/$KERNEL_VERSION folder to use the new kernel."
+	echo "Unfortunately, grub does NOT know that, so it has already made entries"
+	echo "to boot your Original OS using your new kernel."
+	echo "If you don't understand any of that, all it means is that if you try to"
+	echo "boot into your Original OS using the latest kernel, it WILL FAIL to boot."
+	echo
+	echo "To resolve this, either:"
+	echo "a)"
+	echo -e "\tUse the grub entry that boots your Original OS into your"
+	echo -e "\told kernel and run \"sudo apt-get update && sudo apt-get upgrade\""
+	echo
+	echo "OR"
+	echo
+	echo "b)"
+	echo -e "\tOnce this script exits, run \"sudo rupdate --both -f\" to run updates"
+	echo -e "\ton your Original OS automatically"
+	echo
+	echo "Note: If you have no plans to boot into your Original OS anytime soon,"
+	echo "you may continue to use the RAM Session without a problem"
+	echo "***************************************************************************"
+fi
+
 #Inform user of update completion if needed, as long as --reboot is not set
 if [[ "$REBOOT" == "false" ]]
 then
