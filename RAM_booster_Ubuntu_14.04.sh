@@ -987,6 +987,21 @@ sudo cp /etc/resolv.conf $Orig_OS/$SquashFS/etc/resolv.conf
 #Run the actual update
 sudo chroot $Orig_OS/$SquashFS/ /bin/bash -c "apt-get update; apt-get -y dist-upgrade; apt-get -y autoremove" 2>&1 | tee /tmp/chroot_out
 
+#Kernel updates involve the creation of an initrd image, but in a RAM Session environment,
+#the system detects that it is running from read-only media and skips it assuming it will
+#not survive a reboot anyway. This assumption is wrong for us, so we manually create an
+#initrd image if there was a kernel update
+if grep -q 'linux-image-[0-9]' /tmp/chroot_out
+then
+	KERNEL_UPDATED=true
+	export KERNEL_VERSION=$(grep -m1 -o 'linux-image-[0-9][^ ]*' /tmp/chroot_out | sed 's/linux-image-//g')
+fi
+
+if $KERNEL_UPDATED && [[ ! -e $Orig_OS/$SquashFS/boot/initrd.img-$KERNEL_VERSION ]]
+then
+	sudo chroot $Orig_OS/$SquashFS/ /bin/bash -c "mkinitramfs -o /boot/initrd.img-$KERNEL_VERSION $KERNEL_VERSION"
+fi
+
 #Copy /boot over to fake boot so temporary programs installed in RAM session don't wonder why the OS isn't consistent with /boot.
 sudo mkdir /tmp/bootdir/
 sudo rsync --delete -a $Orig_OS/$SquashFS/boot/* /tmp/bootdir/
