@@ -1136,7 +1136,7 @@ sudo rm /tmp/chroot_out
 sudo umount $Orig_OS || { echo "$Orig_OS failed to unmount because it's busy. This will be fixed after a reboot."; }
 
 #Give user a warning that 
-if $KERNEL_UPDATE && ! $BOTH
+if $KERNEL_UPDATED && ! $BOTH
 then
 	echo "***************************************************************************"
 	echo "A kernel update occurred, and was applied to your RAM Session,"
