@@ -991,6 +991,7 @@ sudo chroot $Orig_OS/$SquashFS/ /bin/bash -c "apt-get update; apt-get -y dist-up
 #the system detects that it is running from read-only media and skips it assuming it will
 #not survive a reboot anyway. This assumption is wrong for us, so we manually create an
 #initrd image if there was a kernel update
+KERNEL_UPDATED=false
 if grep -q 'linux-image-[0-9]' /tmp/chroot_out
 then
 	KERNEL_UPDATED=true
