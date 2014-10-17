@@ -991,6 +991,7 @@ sudo chroot $Orig_OS/$SquashFS/ /bin/bash -c "apt-get update; apt-get -y dist-up
 #the system detects that it is running from read-only media and skips it assuming it will
 #not survive a reboot anyway. This assumption is wrong for us, so we manually create an
 #initrd image if there was a kernel update
+KERNEL_UPDATED=false
 if grep -q 'linux-image-[0-9]' /tmp/chroot_out
 then
 	KERNEL_UPDATED=true
@@ -1104,6 +1105,7 @@ sudo chroot $Orig_OS/ /bin/bash -c "mv /live/filesystem.squashfs.new /live/files
 
 #Display new size of image
 Image_Size=`sudo du -h $Orig_OS/live/filesystem.squashfs | awk '{ print $1 }'`
+clear
 echo -e "\nThe new size of the image is $Image_Size. This MUST fit in your total RAM, with room to spare. If it does not, you either need to buy more RAM, or manually remove unimportant packages from your OS until the image fits.\n" | fmt -w `tput cols`
 
 #Unmount unnecessary stuff
@@ -1133,6 +1135,35 @@ sudo rm /tmp/chroot_out
 #Unmount the rest
 #sudo umount /mnt/SSD || { echo "/mnt/SSD failed to unmount because it's busy. This will be fixed after a reboot."; }
 sudo umount $Orig_OS || { echo "$Orig_OS failed to unmount because it's busy. This will be fixed after a reboot."; }
+
+#Give user a warning that 
+if $KERNEL_UPDATED && ! $BOTH
+then
+	echo "***************************************************************************"
+	echo "A kernel update occurred, and was applied to your RAM Session,"
+	echo "but NOT your Original OS. This means that even though there is a new"
+	echo "kernel and initrd image in your /boot, only your RAM Session has the"
+	echo "necessary /lib/modules/$KERNEL_VERSION folder to use the new kernel."
+	echo "Unfortunately, grub does NOT know that, so it has already made entries"
+	echo "to boot your Original OS using your new kernel."
+	echo "If you don't understand any of that, all it means is that if you try to"
+	echo "boot into your Original OS using the latest kernel, it WILL FAIL to boot."
+	echo
+	echo "To resolve this, either:"
+	echo "a)"
+	echo -e "\tUse the grub entry that boots your Original OS into your"
+	echo -e "\told kernel and run \"sudo apt-get update && sudo apt-get upgrade\""
+	echo
+	echo "OR"
+	echo
+	echo "b)"
+	echo -e "\tOnce this script exits, run \"sudo rupdate --both -f\" to run updates"
+	echo -e "\ton your Original OS automatically"
+	echo
+	echo "Note: If you have no plans to boot into your Original OS anytime soon,"
+	echo "you may continue to use the RAM Session without a problem"
+	echo "***************************************************************************"
+fi
 
 #Inform user of update completion if needed, as long as --reboot is not set
 if [[ "$REBOOT" == "false" ]]
