@@ -1237,6 +1237,7 @@ function unmount {
 			sudo umount $Orig_OS/dev
 			sudo umount $Orig_OS/sys
 			sudo umount $Orig_OS/home
+			sudo umount $Orig_OS/run
 			sudo umount $Orig_OS
 		elif [[ `cat /tmp/mounted` == "RAM" ]]
 		then
@@ -1246,6 +1247,7 @@ function unmount {
 			sudo umount $Orig_OS/$SquashFS/dev
 			sudo umount $Orig_OS/$SquashFS/sys
 			sudo umount $Orig_OS/$SquashFS/home
+			sudo umount $Orig_OS/$SquashFS/run
 			sudo umount $Orig_OS
 		fi
 		
@@ -1282,7 +1284,8 @@ case $1 in
 	sudo mount -o bind /dev/pts $Orig_OS/dev/pts || { echo "/dev/pts failed to bind to $Orig_OS/dev/pts."; $0 -U; exit 1; }
 	sudo mount -o bind /sys $Orig_OS/sys || { echo "/sys failed to bind to $Orig_OS/sys."; $0 -U; exit 1; }
 	sudo mount -o bind /home $Orig_OS/home || { echo "/home failed to bind to $Orig_OS/home."; $0 -U; exit 1; }
-	sudo cp /etc/resolv.conf $Orig_OS/etc/resolv.conf
+	sudo mount -o bind /run $Orig_OS/run || { echo "/run failed to bind to $Orig_OS/run"; $0 -U; exit 1; }
+	#sudo cp /etc/resolv.conf $Orig_OS/etc/resolv.conf
 	sudo chroot $Orig_OS /bin/bash
 
 	sleep 1s
@@ -1309,7 +1312,8 @@ case $1 in
 	sudo mount -o bind /dev/pts $Orig_OS/$SquashFS/dev/pts || { echo "/dev/pts failed to bind to $Orig_OS/$SquashFS/dev/pts."; $0 -U; exit 1; }
 	sudo mount -o bind /sys $Orig_OS/$SquashFS/sys || { echo "/sys failed to bind to $Orig_OS/$SquashFS/sys."; $0 -U; exit 1; }
 	sudo mount -o bind /home $Orig_OS/$SquashFS/home || { echo "/home failed to bind to $Orig_OS/$SquashFS/home."; $0 -U; exit 1; }
-	sudo cp /etc/resolv.conf $Orig_OS/$SquashFS/etc/resolv.conf
+	sudo mount -o bind /run $Orig_OS/$SquashFS/run || { echo "/run failed to bind to $Orig_OS/$SquashFS/run"; $0 -U; exit 1; }
+	#sudo cp /etc/resolv.conf $Orig_OS/$SquashFS/etc/resolv.conf
 	echo -e "When you are finished, you will need to run the update script with the --force option to recreate the squashfs image.\n" | fmt -w `tput cols`
 	sudo chroot $Orig_OS/$SquashFS /bin/bash
 	echo -e "\nRemember to run the update script with the --force option to recreate the squashfs image or the changes you made will not appear until your next successful update.\n" | fmt -w `tput cols`
@@ -1341,6 +1345,8 @@ case $1 in
 	ERR=$(sudo umount $Orig_OS/sys 2>&1) ||
 	ERR_CHECK=$(echo $ERR | grep 'not found'); if [[ -z "$ERR_CHECK" ]]; then ERR_CHECK=$(echo $ERR | grep 'not mounted'); fi; if [[ -z "$ERR_CHECK" ]]; then echo $ERR; fi;
 	ERR=$(sudo umount $Orig_OS/home 2>&1) ||
+	ERR_CHECK=$(echo $ERR | grep 'not found'); if [[ -z "$ERR_CHECK" ]]; then ERR_CHECK=$(echo $ERR | grep 'not mounted'); fi; if [[ -z "$ERR_CHECK" ]]; then echo $ERR; fi;
+	ERR=$(sudo umount $Orig_OS/run 2>&1) ||
 	ERR_CHECK=$(echo $ERR | grep 'not found'); if [[ -z "$ERR_CHECK" ]]; then ERR_CHECK=$(echo $ERR | grep 'not mounted'); fi; if [[ -z "$ERR_CHECK" ]]; then echo $ERR; fi;
 	ERR=$(sudo umount $Orig_OS 2>&1) ||
 	ERR_CHECK=$(echo $ERR | grep 'not found'); if [[ -z "$ERR_CHECK" ]]; then ERR_CHECK=$(echo $ERR | grep 'not mounted'); fi; if [[ -z "$ERR_CHECK" ]]; then echo $ERR; fi;
