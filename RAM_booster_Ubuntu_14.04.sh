@@ -1429,6 +1429,13 @@ FindUUIDs
 #Add grub2 entry to menu
 GrubEntry
 
+#Modify /etc/grub.d/10_linux so grub doesn't make menu enties
+#for kernels that can't run
+if ! grep -q '\[ x"$i" = x"$SKIP_KERNEL" \] && continue' /etc/grub.d/10_linux
+then
+	sudo sed -i 's/\(if grub_file_is_not_garbage\)/[ x"$i" = x"$SKIP_KERNEL" ] \&\& continue\n                  \1/g' /etc/grub.d/10_linux
+fi
+
 #Copy the OS to /var/squashfs
 echo
 CopyFileSystem
