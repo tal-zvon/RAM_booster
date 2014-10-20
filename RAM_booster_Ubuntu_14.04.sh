@@ -1433,7 +1433,7 @@ GrubEntry
 #for kernels that can't run
 if ! grep -q '\[ x"$i" = x"$SKIP_KERNEL" \] && continue' /etc/grub.d/10_linux
 then
-	sudo sed -i 's/\(if grub_file_is_not_garbage\)/[ x"$i" = x"$SKIP_KERNEL" ] \&\& continue\n                  \1/g' /etc/grub.d/10_linux
+	sudo sed -i 's@\(if grub_file_is_not_garbage\)@[ x"$i" = x"$SKIP_KERNEL" ] \&\& continue\n                  [ -d /lib/modules/${i#/boot/vmlinuz-} ] || continue\n                  \1@g' /etc/grub.d/10_linux
 fi
 
 #Copy the OS to /var/squashfs
