@@ -670,6 +670,11 @@ RevertChanges()
 	echo "Hiding grub menu..."
 	sudo sed -i 's/#\(GRUB_HIDDEN_TIMEOUT=0\)/\1/g' /etc/default/grub
 
+	#Fix /etc/grub.d/10_linux
+	echo "Fixing /etc/grub.d/10_linux"
+	sudo sed -i '/\[ x"$i" = x"$SKIP_KERNEL" \] && continue/d' /etc/grub.d/10_linux
+	sudo sed -i '/\[ -d \/lib\/modules\/${i#\/boot\/vmlinuz-} \] || continue/d' /etc/grub.d/10_linux
+
 	#Update grub
 	echo -e "\nUpdating grub:"
 	sudo update-grub2
