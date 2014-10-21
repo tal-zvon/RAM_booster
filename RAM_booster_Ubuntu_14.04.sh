@@ -616,10 +616,6 @@ sudo chmod a+x /etc/grub.d/06_RAMSESS
 
 #Unhide grub menu by uncommenting line in /etc/default/grub
 sudo sed -i 's/\(GRUB_HIDDEN_TIMEOUT=0\)/#\1/g' /etc/default/grub
-
-#Commit the changes by updating the grub menu
-sudo update-grub2
-
 }
 
 #Undo everything the script does (Uninstall)
@@ -1477,6 +1473,9 @@ fi
 #Copy the OS to /var/squashfs
 echo
 CopyFileSystem
+
+#Commit the changes by updating the grub menu
+sudo update-grub2
 
 #Fix Hardlink bug
 sudo bash -c 'echo "# Stop Login Crash" >> '${DEST}'/etc/sysctl.conf'
