@@ -675,6 +675,7 @@ RevertChanges()
 	#Fix /etc/grub.d/10_linux
 	echo "Fixing /etc/grub.d/10_linux"
 	sudo sed -i '/\[ x"$i" = x"$SKIP_KERNEL" \] && continue/d' /etc/grub.d/10_linux
+	sudo sed -i '/MOD_PREFIX/d' /etc/grub.d/10_linux
 	sudo sed -i '/\[ -d \/lib\/modules\/${i#\/boot\/vmlinuz-} \] || continue/d' /etc/grub.d/10_linux
 
 	#Update grub
@@ -1221,7 +1222,8 @@ uid=$(/usr/bin/id -u) && [ "$uid" = "0" ] ||
 { echo "You must be root to run $0. Try again with the command 'sudo $0'"; exit 1; }
 
 #Device of Original OS
-DEVICE=
+ROOT_DEVICE=
+BOOT_DEVICE=
 
 Orig_OS='/mnt/Original_OS'
 SquashFS='var/squashfs'
@@ -1245,6 +1247,7 @@ function unmount {
 			sudo umount $Orig_OS/sys
 			sudo umount $Orig_OS/home
 			sudo umount $Orig_OS/run
+			[[ $BOOT_DEVICE == $ROOT_DEVICE ]] || sudo umount $Orig_OS/boot
 			sudo umount $Orig_OS
 		elif [[ `cat /tmp/mounted` == "RAM" ]]
 		then
@@ -1255,6 +1258,8 @@ function unmount {
 			sudo umount $Orig_OS/$SquashFS/sys
 			sudo umount $Orig_OS/$SquashFS/home
 			sudo umount $Orig_OS/$SquashFS/run
+			sudo umount $Orig_OS/$SquashFS/boot
+			sudo umount $Orig_OS/$SquashFS/mnt
 			sudo umount $Orig_OS
 		fi
 		
@@ -1285,13 +1290,21 @@ case $1 in
 
 	#Mount Original OS
 	sudo mkdir -p $Orig_OS
-	sudo mount $DEVICE $Orig_OS/ || { echo "$DEVICE failed to mount."; $0 -U; exit 1; }
+	sudo mount $ROOT_DEVICE $Orig_OS/ || { echo "$ROOT_DEVICE failed to mount."; $0 -U; exit 1; }
 	sudo mount -o bind /proc $Orig_OS/proc || { echo "/proc failed to bind to $Orig_OS/proc."; $0 -U; exit 1; }
 	sudo mount -o bind /dev $Orig_OS/dev || { echo "/dev failed to bind to $Orig_OS/dev."; $0 -U; exit 1; }
 	sudo mount -o bind /dev/pts $Orig_OS/dev/pts || { echo "/dev/pts failed to bind to $Orig_OS/dev/pts."; $0 -U; exit 1; }
 	sudo mount -o bind /sys $Orig_OS/sys || { echo "/sys failed to bind to $Orig_OS/sys."; $0 -U; exit 1; }
 	sudo mount -o bind /home $Orig_OS/home || { echo "/home failed to bind to $Orig_OS/home."; $0 -U; exit 1; }
 	sudo mount -o bind /run $Orig_OS/run || { echo "/run failed to bind to $Orig_OS/run"; $0 -U; exit 1; }
+	
+	#Check if we should mount boot device
+	if ! [[ $BOOT_DEVICE == $ROOT_DEVICE ]]
+	then
+		sudo mount $BOOT_DEVICE $Orig_OS/boot || { echo "$BOOT_DEVICE failed to mount at $Orig_OS/boot"; $0 -U; exit 1; }
+	fi
+
+	#Chroot into the environment
 	sudo chroot $Orig_OS /bin/bash
 
 	sleep 1s
@@ -1312,13 +1325,25 @@ case $1 in
 
 	#Mount RAMDisk
 	sudo mkdir -p $Orig_OS
-	sudo mount $DEVICE $Orig_OS/ || { echo "$DEVICE failed to mount."; $0 -U; exit 1; }
+	sudo mount $ROOT_DEVICE $Orig_OS/ || { echo "$ROOT_DEVICE failed to mount."; $0 -U; exit 1; }
 	sudo mount -o bind /proc $Orig_OS/$SquashFS/proc || { echo "/proc failed to bind to $Orig_OS/$SquashFS/proc."; $0 -U; exit 1; }
 	sudo mount -o bind /dev $Orig_OS/$SquashFS/dev || { echo "/dev failed to bind to $Orig_OS/$SquashFS/dev."; $0 -U; exit 1; }
 	sudo mount -o bind /dev/pts $Orig_OS/$SquashFS/dev/pts || { echo "/dev/pts failed to bind to $Orig_OS/$SquashFS/dev/pts."; $0 -U; exit 1; }
 	sudo mount -o bind /sys $Orig_OS/$SquashFS/sys || { echo "/sys failed to bind to $Orig_OS/$SquashFS/sys."; $0 -U; exit 1; }
 	sudo mount -o bind /home $Orig_OS/$SquashFS/home || { echo "/home failed to bind to $Orig_OS/$SquashFS/home."; $0 -U; exit 1; }
 	sudo mount -o bind /run $Orig_OS/$SquashFS/run || { echo "/run failed to bind to $Orig_OS/$SquashFS/run"; $0 -U; exit 1; }
+
+	#Mount Original OS to /mnt. We need to know what kernel modules it has for grub
+	sudo mount $ROOT_DEVICE $Orig_OS/$SquashFS/mnt || { echo "$ROOT_DEVICE failed to mount at $Orig_OS/$SquashFS/mnt"; $0 -U; exit 1; }
+
+	#Check if we should mount /boot device
+	if [[ $BOOT_DEVICE == $ROOT_DEVICE ]]
+	then
+		sudo mount -o bind $Orig_OS/boot $Orig_OS/$SquashFS/boot || { echo "$Orig_OS/boot failed to bind to $Orig_OS/$SquashFS/boot"; $0 -U; exit 1; }
+	else
+		sudo mount $BOOT_DEVICE $Origin_OS/$SquashFS/boot || { echo "$BOOT_DEVICE failed to mount at $Orig_OS/$SquashFS/boot"; $0 -U; exit 1; }
+	fi
+
 	echo -e "When you are finished, you will need to run the update script with the --force option to recreate the squashfs image.\n" | fmt -w `tput cols`
 	sudo chroot $Orig_OS/$SquashFS /bin/bash
 	echo -e "\nRemember to run the update script with the --force option to recreate the squashfs image or the changes you made will not appear until your next successful update.\n" | fmt -w `tput cols`
@@ -1353,6 +1378,11 @@ case $1 in
 	ERR_CHECK=$(echo $ERR | grep 'not found'); if [[ -z "$ERR_CHECK" ]]; then ERR_CHECK=$(echo $ERR | grep 'not mounted'); fi; if [[ -z "$ERR_CHECK" ]]; then echo $ERR; fi;
 	ERR=$(sudo umount $Orig_OS/run 2>&1) ||
 	ERR_CHECK=$(echo $ERR | grep 'not found'); if [[ -z "$ERR_CHECK" ]]; then ERR_CHECK=$(echo $ERR | grep 'not mounted'); fi; if [[ -z "$ERR_CHECK" ]]; then echo $ERR; fi;
+	[[ $BOOT_DEVICE == $ROOT_DEVICE ]] ||
+	{
+		ERR=$(sudo umount $Orig_OS/boot 2>&1) ||
+		ERR_CHECK=$(echo $ERR | grep 'not found'); if [[ -z "$ERR_CHECK" ]]; then ERR_CHECK=$(echo $ERR | grep 'not mounted'); fi; if [[ -z "$ERR_CHECK" ]]; then echo $ERR; fi;
+	}
 	ERR=$(sudo umount $Orig_OS 2>&1) ||
 	ERR_CHECK=$(echo $ERR | grep 'not found'); if [[ -z "$ERR_CHECK" ]]; then ERR_CHECK=$(echo $ERR | grep 'not mounted'); fi; if [[ -z "$ERR_CHECK" ]]; then echo $ERR; fi;
 
@@ -1371,7 +1401,8 @@ rchroot
 ) | sudo tee $DEST/usr/sbin/rchroot >/dev/null
 
 sudo chmod a+x $DEST/usr/sbin/rchroot
-sudo sed -i 's#\(DEVICE=\)#\1"'$ROOT_DEV'"#' $DEST/usr/sbin/rchroot
+sudo sed -i 's#\(ROOT_DEVICE=\)#\1"'$ROOT_DEV'"#' $DEST/usr/sbin/rchroot
+sudo sed -i 's#\(BOOT_DEVICE=\)#\1"'$BOOT_DEV'"#' $DEST/usr/sbin/rchroot
 }
 
 ####################################################################
@@ -1440,7 +1471,7 @@ GrubEntry
 #for kernels that can't run
 if ! grep -q '\[ x"$i" = x"$SKIP_KERNEL" \] && continue' /etc/grub.d/10_linux
 then
-	sudo sed -i 's@\(if grub_file_is_not_garbage\)@[ x"$i" = x"$SKIP_KERNEL" ] \&\& continue\n                  [ -d /lib/modules/${i#/boot/vmlinuz-} ] || continue\n                  \1@g' /etc/grub.d/10_linux
+	sudo sed -i 's@\(if grub_file_is_not_garbage\)@[ x"$i" = x"$SKIP_KERNEL" ] \&\& continue\n                  MOD_PREFIX=$([ -e /RAM_Session ] && echo "/mnt/")\n                  [ -d /lib/modules/${i#/boot/vmlinuz-} ] || continue\n                  \1@g' /etc/grub.d/10_linux
 fi
 
 #Copy the OS to /var/squashfs
