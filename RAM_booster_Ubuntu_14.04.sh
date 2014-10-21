@@ -1482,7 +1482,9 @@ echo
 CopyFileSystem
 
 #Commit the changes by updating the grub menu
+echo "Updating grub:"
 sudo update-grub2
+echo
 
 #Fix Hardlink bug
 sudo bash -c 'echo "# Stop Login Crash" >> '${DEST}'/etc/sysctl.conf'
