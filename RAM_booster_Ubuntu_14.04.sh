@@ -287,7 +287,8 @@ c|copy*)
 	#knows the user's choice
 	NewHome='false'
 
-	echo -e "You chose to copy /home as is. I hope you know what you are doing...\n"
+	echo -e "You chose to copy /home as is. I hope you read carefully and know what that means...\n"
+	sleep 4
 	;;
 *)
 	#User chose an invalid answer
