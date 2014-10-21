@@ -671,6 +671,11 @@ RevertChanges()
 	echo "Hiding grub menu..."
 	sudo sed -i 's/#\(GRUB_HIDDEN_TIMEOUT=0\)/\1/g' /etc/default/grub
 
+	#Fix /etc/grub.d/10_linux
+	echo "Fixing /etc/grub.d/10_linux"
+	sudo sed -i '/\[ x"$i" = x"$SKIP_KERNEL" \] && continue/d' /etc/grub.d/10_linux
+	sudo sed -i '/\[ -d \/lib\/modules\/${i#\/boot\/vmlinuz-} \] || continue/d' /etc/grub.d/10_linux
+
 	#Update grub
 	echo -e "\nUpdating grub:"
 	sudo update-grub2
@@ -1001,7 +1006,13 @@ fi
 
 if $KERNEL_UPDATED && [[ ! -e $Orig_OS/$SquashFS/boot/initrd.img-$KERNEL_VERSION ]]
 then
+	#Create the initrd image
 	sudo chroot $Orig_OS/$SquashFS/ /bin/bash -c "mkinitramfs -o /boot/initrd.img-$KERNEL_VERSION $KERNEL_VERSION"
+
+	#Tell grub NOT to generate entries for the Original OS using the new kernel we just upgraded to if the Original OS was
+	#not also upgraded
+	$BOTH ||
+	sudo chroot $Orig_OS/$SquashFS/ /bin/bash -c "export SKIP_KERNEL=/boot/vmlinuz-$KERNEL_VERSION; update-grub" 2>&1
 fi
 
 #Copy /boot over to fake boot so temporary programs installed in RAM session don't wonder why the OS isn't consistent with /boot.
@@ -1142,30 +1153,27 @@ sudo umount $Orig_OS || { echo "$Orig_OS failed to unmount because it's busy. Th
 #Give user a warning that 
 if $KERNEL_UPDATED && ! $BOTH
 then
-	echo "***************************************************************************"
-	echo "A kernel update occurred, and was applied to your RAM Session,"
-	echo "but NOT your Original OS. This means that even though there is a new"
-	echo "kernel and initrd image in your /boot, only your RAM Session has the"
-	echo "necessary /lib/modules/$KERNEL_VERSION folder to use the new kernel."
-	echo "Unfortunately, grub does NOT know that, so it has already made entries"
-	echo "to boot your Original OS using your new kernel."
-	echo "If you don't understand any of that, all it means is that if you try to"
-	echo "boot into your Original OS using the latest kernel, it WILL FAIL to boot."
+	echo -e "***************************************************************************"
+	echo -e "A kernel update occurred, and was applied to your RAM Session, but NOT"
+	echo -e "your Original OS. This means that even though there is a new kernel and"
+	echo -e "initrd image in your /boot, only your RAM Session has the necessary"
+	echo -e "/lib/modules/$KERNEL_VERSION folder to use the new kernel."
 	echo
-	echo "To resolve this, either:"
-	echo "a)"
-	echo -e "\tUse the grub entry that boots your Original OS into your"
-	echo -e "\told kernel and run \"sudo apt-get update && sudo apt-get upgrade\""
+	echo -e "Grub has been forced to ignore the new kernel for the Original OS,"
+	echo -e "but not the RAM_Session."
 	echo
-	echo "OR"
-	echo
-	echo "b)"
-	echo -e "\tOnce this script exits, run \"sudo rupdate --both -f\" to run updates"
-	echo -e "\ton your Original OS automatically"
-	echo
-	echo "Note: If you have no plans to boot into your Original OS anytime soon,"
-	echo "you may continue to use the RAM Session without a problem"
-	echo "***************************************************************************"
+	echo -e "All this means is - don't be suprised that:"
+	echo -e ""
+	echo -e "       1. Your Original OS will NOT have the same kernel version as the"
+	echo -e "               RAM_Session until you update the Original OS"
+	echo -e "       2. Your Original OS will have the new kernel and initrd image"
+	echo -e "               in it's /boot but will NOT be using it, because until"
+	echo -e "               you run updates, it can't"
+	echo 
+	echo -e "Updates to your Original OS can either be run by booting into your"
+	echo -e "Original OS and running \"sudo apt-get update; sudo apt-get dist-upgrade\""
+	echo -e "OR by running \"sudo rupdate --both -f\" here in the RAM_Session"
+	echo -e "***************************************************************************"
 fi
 
 #Inform user of update completion if needed, as long as --reboot is not set
@@ -1426,6 +1434,13 @@ FindUUIDs
 
 #Add grub2 entry to menu
 GrubEntry
+
+#Modify /etc/grub.d/10_linux so grub doesn't make menu enties
+#for kernels that can't run
+if ! grep -q '\[ x"$i" = x"$SKIP_KERNEL" \] && continue' /etc/grub.d/10_linux
+then
+	sudo sed -i 's@\(if grub_file_is_not_garbage\)@[ x"$i" = x"$SKIP_KERNEL" ] \&\& continue\n                  [ -d /lib/modules/${i#/boot/vmlinuz-} ] || continue\n                  \1@g' /etc/grub.d/10_linux
+fi
 
 #Copy the OS to /var/squashfs
 echo
