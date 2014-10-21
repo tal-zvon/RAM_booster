@@ -568,7 +568,8 @@ echo "Adding entry to Grub2 menu"
 cat << '06_RAMSESS'
 #!/bin/sh -e
 
-KER_NAME=$(ls /boot/ | grep vmlinuz | sed 's/vmlinuz-//g' | sort -t"." -k1,1n -k2,2n -k3,3n | tail -1 | sed 's/.efi.signed//')
+MOD_DIR=$(if [ -e /Original_OS ]; then echo /var/squashfs/lib/modules/; elif [ -e /RAM_Session ]; then echo /lib/modules/; fi)
+KER_NAME=$(for KERN in $(ls /boot/ | grep vmlinuz | sed 's/vmlinuz-//g' | sort -r -t"." -k1,1n -k2,2n -k3,3n | sed 's/.efi.signed//'); do [ -d $MOD_DIR/$KERN ] && { echo $KERN; break; }; done)
 GRUB_CMDLINE_LINUX_DEFAULT=$([ -e /etc/default/grub ] && cat /etc/default/grub | grep GRUB_CMDLINE_LINUX_DEFAULT | grep -o '["].*["]' | tr -d '"')
 
 if [ -z "$KER_NAME" ]
