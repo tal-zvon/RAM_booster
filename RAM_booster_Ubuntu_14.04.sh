@@ -960,6 +960,10 @@ sudo mount -o bind /dev $Orig_OS/$SquashFS/dev || { echo "/dev failed to mount."
 sudo mount -o bind /dev/pts $Orig_OS/$SquashFS/dev/pts || { echo "/dev/pts failed to mount."; sudo umount $Orig_OS/$SquashFS/proc $REG_DEVICE $Orig_OS/$SquashFS/dev; exit 1; }
 sudo mount -o bind /sys $Orig_OS/$SquashFS/sys || { echo "/sys failed to mount."; sudo umount $Orig_OS/$SquashFS/proc $REG_DEVICE $Orig_OS/$SquashFS/dev $Orig_OS/$SquashFS/dev/pts; exit 1; }
 sudo mount -o bind /run $Orig_OS/$SquashFS/run || { echo "/run failed to mount."; sudo umount $Orig_OS/$SquashFS/proc $REG_DEVICE $Orig_OS/$SquashFS/dev $Orig_OS/$SquashFS/dev/pts $Orig_OS/$SquashFS/sys; exit 1; }
+#Bind Original OS to /mnt in the chroot. Necessary os that grub's 10_linux can check
+#the /lib/modules folder on the Original OS to tell which kernels the Original OS
+#is able to run
+sudo mount -o bind $Orig_OS $Orig_OS/$SquashFS/mnt || { echo "$Orig_OS failed to mount to $Orig_OS/$SquashFS/mnt"; sudo umount $Orig_OS/$SquashFS/proc $REG_DEVICE $Orig_OS/$SquashFS/dev $Orig_OS/$SquashFS/dev/pts $Orig_OS/$SquashFS/sys $Orig_OS/$SquashFS/run; exit 1; }
 
 #Put a trap for Ctrl+C to unmount everything
 trap cleanup SIGINT
@@ -990,6 +994,9 @@ fi
 
 #Run the actual update
 sudo chroot $Orig_OS/$SquashFS/ /bin/bash -c "apt-get update; apt-get -y dist-upgrade; apt-get -y autoremove" 2>&1 | tee /tmp/chroot_out
+
+#Unmount /mnt. This MUST be done before mksquashfs tries to build an image
+sudo umount $Orig_OS/$SquashFS/mnt
 
 #Kernel updates involve the creation of an initrd image, but in a RAM Session environment,
 #the system detects that it is running from read-only media and skips it assuming it will
