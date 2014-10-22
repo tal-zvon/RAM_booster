@@ -577,9 +577,9 @@ then
         KER_NAME=$(uname -r)
 fi
 
-cat << EOF
-
 echo "Found RAM Session image: /boot/vmlinuz-$KER_NAME" >&2
+
+cat << EOF
 
 menuentry "Ubuntu to RAM" {
   set uuid_grub_boot=BOOT_UUID
