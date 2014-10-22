@@ -1077,6 +1077,25 @@ sudo mount -o bind /dev/pts $Orig_OS/dev/pts || { echo "/dev/pts failed to mount
 sudo mount -o bind /sys $Orig_OS/sys || { echo "/sys failed to mount the second time. Reboot and run $0 again with the -f option."; sudo rm /tmp/chroot_out; sudo umount $Orig_OS/proc $Orig_OS/dev $Orig_OS/dev/pts; exit 1; }
 sudo mount -o bind /run $Orig_OS/run || { echo "/run failed to mount the second time. Reboot and run $0 again with the -f option."; sudo rm /tmp/chroot_out; sudo umount $Orig_OS/proc $Orig_OS/dev $Orig_OS/dev/pts $Orig_OS/sys; exit 1; }
 
+#Check where we should mount boot from again
+if [[ -n "$BOOT_CHECK" ]]
+then
+	#/boot IS on a separate partition from / and gets mounted by /etc/fstab 
+	#Make sure $BOOT_CHECK is not a UUID
+	UUID_CHECK=$(echo $BOOT_CHECK | grep -o 'UUID=[-a-z0-9]*' | sed 's/UUID=//')
+
+	if [[ -z "$UUID_CHECK" ]]
+	then
+		#$BOOT_CHECK is a device
+		BOOT_CHECK=$(echo $BOOT_CHECK | grep -o '/dev/...[0-9]')
+
+		sudo mount $BOOT_CHECK $Orig_OS/boot || { echo "$BOOT_CHECK failed to mount to /boot for the Orignal OS. Reboot and run $0 again with the \"--both -f\" options."; sudo rm /tmp/chroot_out; sudo umount $Orig_OS/proc $Orig_OS/dev $Orig_OS/dev/pts $Orig_OS/sys $Orig_OS/run; exit 1; }
+	else
+		#$BOOT_CHECK is a UUID
+		sudo mount -U $UUID_CHECK $Orig_OS/boot || { echo "$UUID_CHECK failed to mount to /boot for the Orignal OS. Reboot and run $0 again with the \"--both -f\" options."; sudo rm /tmp/chroot_out; sudo umount $Orig_OS/proc $Orig_OS/dev $Orig_OS/dev/pts $Orig_OS/sys $Orig_OS/run; exit 1; }
+	fi
+fi
+
 #Copy apt cache from /var/squashfs to Original OS
 #This is so the same packages that were just updated will not have to be redownloaded if the user
 #wishes to update the Original OS
@@ -1127,6 +1146,11 @@ sudo umount $Orig_OS/dev/pts || { echo "/dev/pts failed to unmount because it's 
 sudo umount $Orig_OS/dev || { echo "/dev failed to unmount because it's busy. This will be fixed after a reboot."; }
 sudo umount $Orig_OS/sys || { echo "/sys failed to unmount because it's busy. This will be fixed after a reboot."; }
 sudo umount $Orig_OS/run || { echo "/run failed to unmount because it's busy. This will be fixed after a reboot."; }
+#If boot was mounted from somewhere, unmount it
+if [[ -n "$BOOT_CHECK" ]]
+then
+	sudo umount $Orig_OS/boot || { echo "/boot failed to unmount because it's busy. This will be fixed after a reboot."; }
+fi
 
 #If you have an SSD, you can use its read speed to boot into your RAM Session faster.
 #To do this, create a small partition on your SSD, just big enough to fit the squashfs image.
