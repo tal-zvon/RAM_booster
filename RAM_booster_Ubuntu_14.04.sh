@@ -1013,11 +1013,6 @@ if $KERNEL_UPDATED && [[ ! -e $Orig_OS/$SquashFS/boot/initrd.img-$KERNEL_VERSION
 then
 	#Create the initrd image
 	sudo chroot $Orig_OS/$SquashFS/ /bin/bash -c "mkinitramfs -o /boot/initrd.img-$KERNEL_VERSION $KERNEL_VERSION"
-
-	#Tell grub NOT to generate entries for the Original OS using the new kernel we just upgraded to if the Original OS was
-	#not also upgraded
-	$BOTH ||
-	sudo chroot $Orig_OS/$SquashFS/ /bin/bash -c "export SKIP_KERNEL=/boot/vmlinuz-$KERNEL_VERSION; update-grub" 2>&1
 fi
 
 #Copy /boot over to fake boot so temporary programs installed in RAM session don't wonder why the OS isn't consistent with /boot.
@@ -1474,7 +1469,7 @@ GrubEntry
 #for kernels that can't run
 if ! grep -q '\[ x"$i" = x"$SKIP_KERNEL" \] && continue' /etc/grub.d/10_linux
 then
-	sudo sed -i 's@\(if grub_file_is_not_garbage\)@[ x"$i" = x"$SKIP_KERNEL" ] \&\& continue\n                  MOD_PREFIX=$([ -e /RAM_Session ] \&\& echo "/mnt/" || echo "")\n                  [ -d $MOD_PREFIX/lib/modules/${i#/boot/vmlinuz-} ] || continue\n                  \1@g' /etc/grub.d/10_linux
+	sudo sed -i 's@\(if grub_file_is_not_garbage\)@MOD_PREFIX=$([ -e /RAM_Session ] \&\& echo "/mnt/" || echo "")\n                  [ -d $MOD_PREFIX/lib/modules/${i#/boot/vmlinuz-} ] || continue\n                  \1@g' /etc/grub.d/10_linux
 fi
 
 #Copy the OS to /var/squashfs
