@@ -1339,7 +1339,7 @@ case $1 in
 	then
 		sudo mount -o bind $Orig_OS/boot $Orig_OS/$SquashFS/boot || { echo "$Orig_OS/boot failed to bind to $Orig_OS/$SquashFS/boot"; $0 -U; exit 1; }
 	else
-		sudo mount $BOOT_DEVICE $Origin_OS/$SquashFS/boot || { echo "$BOOT_DEVICE failed to mount at $Orig_OS/$SquashFS/boot"; $0 -U; exit 1; }
+		sudo mount $BOOT_DEVICE $Orig_OS/$SquashFS/boot || { echo "$BOOT_DEVICE failed to mount at $Orig_OS/$SquashFS/boot"; $0 -U; exit 1; }
 	fi
 
 	echo -e "When you are finished, you will need to run the update script with the --force option to recreate the squashfs image.\n" | fmt -w `tput cols`
