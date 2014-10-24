@@ -287,7 +287,7 @@ c|copy*)
 	#knows the user's choice
 	NewHome='false'
 
-	echo -e "You chose to copy /home as is. I hope you read carefully and know what that means...\n"
+	echo -e "You chose to copy /home as is. I hope you read carefully and know what that means...\n" | fmt -w `tput cols`
 	sleep 4
 	;;
 *)
