@@ -980,7 +980,7 @@ then
 else
 	#/boot IS on a separate partition from / and gets mounted by /etc/fstab 
 	#Make sure $BOOT_CHECK is not a UUID
-	UUID_CHECK=$(echo $BOOT_CHECK | grep -o 'UUID=[-a-z0-9]*' | sed 's/UUID=//')
+	UUID_CHECK=$(echo $BOOT_CHECK | grep -o 'UUID=[-a-zA-Z0-9]*' | sed 's/UUID=//')
 
 	if [[ -z "$UUID_CHECK" ]]
 	then
@@ -1084,7 +1084,7 @@ if [[ -n "$BOOT_CHECK" ]]
 then
 	#/boot IS on a separate partition from / and gets mounted by /etc/fstab 
 	#Make sure $BOOT_CHECK is not a UUID
-	UUID_CHECK=$(echo $BOOT_CHECK | grep -o 'UUID=[-a-z0-9]*' | sed 's/UUID=//')
+	UUID_CHECK=$(echo $BOOT_CHECK | grep -o 'UUID=[-a-zA-Z0-9]*' | sed 's/UUID=//')
 
 	if [[ -z "$UUID_CHECK" ]]
 	then
@@ -1541,7 +1541,7 @@ then
 fi
 
 #Remove entry for root directory in RAM session's fstab
-sudo sed -i '/^UUID=[-0-9a-z]*[ ]*\/[ ]/d' $DEST/etc/fstab
+sudo sed -i '/^UUID=[-0-9a-zA-Z]*[ ]*\/[ ]/d' $DEST/etc/fstab
 
 #Remove entry for /boot in RAM session's fstab
 #Reasoning:
@@ -1554,7 +1554,7 @@ sudo sed -i '/^UUID=[-0-9a-z]*[ ]*\/[ ]/d' $DEST/etc/fstab
 #updating /boot only when a permanent software update is going to be made just seems like the cleanest alternative.
 
 #This comments out the /boot in RAM Session's /etc/fstab.
-sudo sed -i 's/\(^UUID=[-0-9a-z]*[ \t]*\/boot[ \t]\)/#\1/' $DEST/etc/fstab
+sudo sed -i 's/\(^UUID=[-0-9a-zA-Z]*[ \t]*\/boot[ \t]\)/#\1/' $DEST/etc/fstab
 sudo sed -i 's/\(^\/dev\/...[0-9][ \t]*\/boot[ \t]\)/#\1/' $DEST/etc/fstab
 
 #Perform cleanup
