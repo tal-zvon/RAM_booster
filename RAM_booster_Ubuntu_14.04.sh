@@ -971,7 +971,7 @@ sudo mount -o bind $Orig_OS $Orig_OS/$SquashFS/mnt || { echo "$Orig_OS failed to
 trap cleanup SIGINT
 
 #Check where the original /boot comes from
-BOOT_CHECK=`cat $Orig_OS/etc/fstab | grep '/boot' | awk '{ print $1 }'`
+BOOT_CHECK=`cat $Orig_OS/etc/fstab | grep -v '^[ \t]*#' | grep '/boot' | awk '{ print $1 }'`
 
 if [[ -z "$BOOT_CHECK" ]]
 then
