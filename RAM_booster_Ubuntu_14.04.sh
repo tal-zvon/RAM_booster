@@ -623,6 +623,12 @@ sudo sed -i 's/\(GRUB_HIDDEN_TIMEOUT=0\)/#\1/g' /etc/default/grub
 #Undo everything the script does (Uninstall)
 RevertChanges()
 {
+	if [[ -e /RAM_Session ]]
+	then
+		echo "You can only uninstall the RAM Session from within the Original OS."
+		exit 0
+	fi
+
 	echo -e "Uninstalling...\n"
 
 	#Delete /mnt/tmp
