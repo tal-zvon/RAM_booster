@@ -1,7 +1,10 @@
 Uninstall_RAM_Booster() {
-	echo "Uninstalling"
+	echo "Are you sure you want to uninstall?"
+	echo "This will delete you RAM Session completely!"
 }
 
+#Allows usage of "ECHO" instead of "echo"
+#for long sentences that need to be wrapped
 ECHO() {
 	echo "$@" | fmt -w `tput cols`
 }
