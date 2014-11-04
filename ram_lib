@@ -1,0 +1,7 @@
+Uninstall_RAM_Booster() {
+	echo "Uninstalling"
+}
+
+ECHO() {
+	echo "$@" | fmt -w `tput cols`
+}
