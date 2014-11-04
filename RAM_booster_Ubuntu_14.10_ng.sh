@@ -1,18 +1,28 @@
 #!/bin/bash
 
-#Make sure user didn't force script to run in sh
+###################################################
+# Make sure user didn't force script to run in sh #
+###################################################
+
 ps ax | grep $$ | grep bash > /dev/null ||
 {
 	clear
 	echo "You are forcing the script to run in sh when it was written for bash."
 	echo "Please run it in bash instead, and NEVER run any script the way you just did."
 	exit 1
-} 
+}
+
+####################
+# Global Variables #
+####################
 
 #Path to the file that contains all the functions for this script
 RAM_LIB='./ram_lib'
 
-#Only run if user is root
+############################
+# Only run if user is root #
+############################
+
 uid=$(/usr/bin/id -u) && [ "$uid" = "0" ] || 
 {
 	clear
@@ -21,7 +31,10 @@ uid=$(/usr/bin/id -u) && [ "$uid" = "0" ] ||
 	exit 1
 } 
 
-#Source the file with all the functions for this script
+##########################################################
+# Source the file with all the functions for this script #
+##########################################################
+
 if [[ -e $RAM_LIB ]]
 then
 	. $RAM_LIB
@@ -31,7 +44,10 @@ else
 	exit 1
 fi
 
-#Check args passed to this script
+####################################
+# Check args passed to this script #
+####################################
+
 case "$1" in
 	--uninstall)
 		#If $1 is --uninstall, force uninstall and exit
@@ -50,3 +66,19 @@ case "$1" in
 		;;
 esac
 
+############################
+# Check if OS is supported #
+############################
+
+OS_Check=`cat /etc/issue | grep -o '[0-9][0-9]*\.[0-9][0-9]*'`
+
+if [[ "$OS_Check" != "14.10" ]]
+then
+	clear
+        echo "This script was written to work with Ubuntu 14.10."
+	echo "You are running `cat /etc/issue | egrep -o '[a-Z]+[ ][0-9]+\.[0-9]+\.*[0-9]*'`."
+	ECHO "This means the script has NOT been tested for your OS. Run this at your own risk."
+        echo 
+        echo "Press enter to continue or Ctrl+C to exit"
+        read key
+fi
