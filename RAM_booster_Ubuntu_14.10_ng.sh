@@ -75,10 +75,22 @@ OS_Check=`cat /etc/issue | grep -o '[0-9][0-9]*\.[0-9][0-9]*'`
 if [[ "$OS_Check" != "14.10" ]]
 then
 	clear
-        echo "This script was written to work with Ubuntu 14.10."
+	echo "This script was written to work with Ubuntu 14.10."
 	echo "You are running `cat /etc/issue | egrep -o '[a-Z]+[ ][0-9]+\.[0-9]+\.*[0-9]*'`."
 	ECHO "This means the script has NOT been tested for your OS. Run this at your own risk."
-        echo 
-        echo "Press enter to continue or Ctrl+C to exit"
-        read key
+	echo 
+	echo "Press enter to continue or Ctrl+C to exit"
+	read key
 fi
+
+########################################################
+# Check if RAM_booster has already run on this machine #
+########################################################
+
+if [ -e /Original_OS ]
+then
+	echo -e "$0 has already run on this computer. It will not run again until you uninstall it.\n"
+	echo -n "Would you like to uninstall? [y/N]: "
+	read answer
+fi
+
