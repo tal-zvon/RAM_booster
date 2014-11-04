@@ -31,18 +31,22 @@ else
 	exit 1
 fi
 
-#Check args passwd to this script
-if [[ "$1" == "--uninstall" ]]
-then
-	#If $1 is --uninstall, force uninstall and exit
-        clear
-	Uninstall_RAM_Booster
-        exit 0
-elif [[ "$1" != "" ]]
-then
-	#If $1 is anything else, other than "--uninstall" or blank, it's invalid
-	clear
-	echo "\"$1\" is not a valid argument"
-	exit 1
-fi
+#Check args passed to this script
+case "$1" in
+	--uninstall)
+		#If $1 is --uninstall, force uninstall and exit
+		clear
+		Uninstall_RAM_Booster
+		exit 0
+		;;
+	"")
+		#If no args, no problem
+		;;
+	*)
+		#If $1 is anything else, other than "--uninstall" or blank, it's invalid
+		clear
+		echo "\"$1\" is not a valid argument"
+		exit 1
+		;;
+esac
 
