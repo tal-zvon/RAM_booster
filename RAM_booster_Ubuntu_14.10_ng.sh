@@ -89,7 +89,9 @@ fi
 
 if [ -e /Original_OS ]
 then
-	echo -e "$0 has already run on this computer. It will not run again until you uninstall it.\n"
+	clear
+	ECHO "$0 has already run on this computer. It will not run again until you uninstall it."
+	echo
 	echo -n "Would you like to uninstall? [y/N]: "
 	read answer
 fi
