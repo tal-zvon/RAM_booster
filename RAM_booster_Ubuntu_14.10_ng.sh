@@ -109,3 +109,13 @@ then
 	esac
 fi
 
+##############################################################################
+# Check if the user is trying to run this script from within the RAM Session #
+##############################################################################
+
+if [ -e /RAM_Session ]
+then
+	clear
+	echo "This script cannot be run from inside the RAM Session."
+	exit 0
+fi
