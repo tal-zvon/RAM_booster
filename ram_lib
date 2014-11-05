@@ -1,6 +1,33 @@
+#Convert input to lowercase
+toLower() 
+{
+	echo $1 | tr "[:upper:]" "[:lower:]" 
+}
+
+#Ask user if he really wants to uninstall
+#Note: Does NOT actually uninstall - that would be the
+#	Uninstall_RAM_Booster function
+Uninstall_Prompt() {
+	echo "This will delete your RAM Session completely!"
+	read -p "Would you like to proceed with the uninstall? [y/N]: " answer
+
+	#Convert answer to lowercase
+	answer=$(toLower $answer)
+
+	case $answer in
+		y|yes)
+			Uninstall_RAM_Booster
+			exit 0
+			;;  
+		*) 
+			echo "Uninstall Cancelled"
+			exit 0
+			;;  
+	esac
+}
+
 Uninstall_RAM_Booster() {
-	echo "Are you sure you want to uninstall?"
-	echo "This will delete you RAM Session completely!"
+	echo Uninstalling...
 }
 
 #Allows usage of "ECHO" instead of "echo"

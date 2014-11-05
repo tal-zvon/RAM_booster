@@ -52,7 +52,7 @@ case "$1" in
 	--uninstall)
 		#If $1 is --uninstall, force uninstall and exit
 		clear
-		Uninstall_RAM_Booster
+		Uninstall_Prompt
 		exit 0
 		;;
 	"")
@@ -92,7 +92,20 @@ then
 	clear
 	ECHO "$0 has already run on this computer. It will not run again until you uninstall it."
 	echo
-	echo -n "Would you like to uninstall? [y/N]: "
-	read answer
+	read -p "Would you like to uninstall the RAM Session? [y/N]: " answer
+
+	#Convert answer to lowercase
+	answer=$(toLower $answer)
+
+	case $answer in
+		y|yes)
+			clear
+			Uninstall_Prompt
+			exit 0
+			;;  
+		*)  
+			exit 0
+			;;  
+	esac
 fi
 
