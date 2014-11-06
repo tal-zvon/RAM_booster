@@ -148,5 +148,5 @@ then
 fi
 
 echo
-echo -n "What would you like to do?: [(S)eporate/(c)opy as is]: "
+echo -n "What would you like to do?: [(S)eparate/(c)opy as is]: "
 read answer
