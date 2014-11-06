@@ -144,7 +144,7 @@ ECHO "/home is the place where your desktop, documents, music, pictures, and pro
 if [[ -n $HOME_DEV ]]
 then
 	echo
-	ECHO "Your /home is currently being mounted from $HOME_DEV. If you choose to have it separate, the RAM Session will mount the $HOME_DEV device as well."
+	ECHO "Your /home is currently located on $HOME_DEV. If you choose to have it separate, the RAM Session will mount the $HOME_DEV device as /home as well."
 fi
 
 echo
