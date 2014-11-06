@@ -185,7 +185,8 @@ case $answer in
 			#Make sure the device is a partition (not an entire physical drive) or a logical volume
 			if ! (echo $HOME_DEV | grep -q '/dev/sd[a-z][0-9]') && ! (sudo lvdisplay $HOME_DEV &>/dev/null)
 			then
-				ECHO "$HOME_DEV is neither a partition, nor a logical volume. Please rerun the script and specify the device name of a partition or logical volume."
+				echo
+				ECHO "\"$HOME_DEV\" is neither a partition, nor a logical volume. Please rerun the script and specify the device name of a partition or logical volume."
 				echo "Exiting..."
 				exit 1
 			fi
