@@ -276,9 +276,13 @@ case $answer in
 			#Check if there was a problem formatting the device
 			if [[ "$?" != 0 ]]
 			then
+				echo
 				echo "Formatting $HOME_DEV failed."
 				echo "Exiting..."
 				exit 1
+			else
+				echo "$HOME_DEV formatted successfully"
+				sleep 4
 			fi
 		fi
 		;;  
