@@ -187,3 +187,9 @@ case $answer in
 		exit 1
 		;;
 esac
+
+#################################################################
+# If the user hits Ctrl+C at any point, have the script cleanup #
+#################################################################
+
+trap CtrlC SIGINT
