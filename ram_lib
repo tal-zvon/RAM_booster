@@ -1,7 +1,7 @@
 #Convert input to lowercase
 toLower() 
 {
-	echo $1 | tr "[:upper:]" "[:lower:]" 
+	echo $@ | tr "[:upper:]" "[:lower:]" 
 }
 
 #Ask user if he really wants to uninstall
