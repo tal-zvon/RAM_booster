@@ -140,6 +140,9 @@ Ask_User_About_Home() {
 	sudo umount /mnt/tmp
 	sudo rmdir /mnt/tmp
 
+	#Clear trap
+	trap - SIGINT
+
 	#Format the device
 	sudo mkfs.ext4 -L home $HOME_DEV
 
