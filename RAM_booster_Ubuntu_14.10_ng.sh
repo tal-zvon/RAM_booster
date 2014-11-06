@@ -215,6 +215,9 @@ case $answer in
 				exit 1
 			fi
 
+			#If user hits Ctrl+C, unmount /mnt/tmp
+			trap 'sudo umount /mnt/tmp && sudo rmdir /mnt/tmp; echo; exit 1' SIGINT
+
 			#Count how many files are on the newly mounted device
 			FILE_COUNT=`sudo ls -lR /mnt/tmp | grep ^- | wc -l`
 			if [[ "$FILE_COUNT" -gt 0 ]]
