@@ -159,6 +159,7 @@ case $answer in
 		if [[ -n $HOME_DEV ]]
 		then
 			#/home is already on a separate partition, so we know exactly what to use
+			echo
 			ECHO "You chose to use $HOME_DEV as your /home for the RAM Session"
 			sleep 4
 		else
@@ -172,12 +173,13 @@ case $answer in
 		#$HOME_DEV to indicate that the device for /home on the RAM Session
 		#should be the same as the device for / (ie. copy /home)
 		HOME_DEV=''
+		echo
 		ECHO "You chose to copy /home as is. I hope you read carefully and know what that means..."
 		sleep 4
 		;;  
 	*)
-		echo "Invalid answer"
 		echo
+		echo "Invalid answer"
 		echo "Exiting..."
 		exit 1
 		;;
