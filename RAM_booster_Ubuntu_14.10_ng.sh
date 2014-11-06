@@ -241,7 +241,7 @@ case $answer in
 					#Convert answer to lowercase
 					answer=$(toLower $answer)
 
-					if [[ "$answer" == "I do" ]]
+					if [[ "$answer" == "i do" ]]
 					then
 						echo -e "Formatting $HOME_DEV\n"
 					else
@@ -249,7 +249,7 @@ case $answer in
 						sudo umount /mnt/tmp && sudo rmdir /mnt/tmp
 						exit 1
 					fi
-				elif [[ "$answer" == "I am sure" ]]
+				elif [[ "$answer" == "i am sure" ]]
 				then
 					echo -e "Formatting $HOME_DEV\n"
 				else
