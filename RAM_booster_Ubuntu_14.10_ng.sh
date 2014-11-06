@@ -152,8 +152,7 @@ then
 fi
 
 echo
-echo -n "What would you like to do?: [(S)eparate/(c)opy as is]: "
-read answer
+read -p "What would you like to do?: [(S)eparate/(c)opy as is]: " answer
 
 #Convert answer to lowercase
 answer=$(toLower $answer)
@@ -172,8 +171,7 @@ case $answer in
 			#Ask user which partition to use for /home
 			clear
 			ECHO "Which partition do you want to use as /home?"
-			echo -n "Your choice: "
-			read -e HOME_DEV
+			read -p "Your choice: " -e HOME_DEV
 
 			#Check if device exists
 			if [[ ! -b "$HOME_DEV" ]]
@@ -222,8 +220,8 @@ case $answer in
 			then
 				clear
 				ECHO "The device you chose is NOT empty! Are you sure you want to delete all data on it? Type \"I am sure\" to proceed, or \"ls\" to see what's on the device you chose."
-				echo -ne "\nYour choice: "
-				read answer
+				echo
+				read -p "Your choice: " answer
 
 				#Convert answer to lowercase
 				answer=$(toLower $answer)
@@ -236,8 +234,8 @@ case $answer in
 					nautilus /mnt/tmp 2>/dev/null >/dev/null &
 					clear
 					echo "Do you still wish to format the device and erase all this data? Type \"I do\" to proceed or anything else to exit." | fmt -w `tput cols`
-					echo -ne "\nYour choice: "
-					read answer
+					echo
+					read -p "Your choice: " answer
 
 					#Convert answer to lowercase
 					answer=$(toLower $answer)
