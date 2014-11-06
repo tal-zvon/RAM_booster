@@ -168,7 +168,7 @@ case $answer in
 			ECHO "You chose to use $HOME_DEV as your /home for the RAM Session"
 			sleep 4
 		else
-			#Ask use what he wants to use as /home
+			#Ask user what he wants to use as /home
 			#Note: This function sets the global variable $HOME_DEV
 			Ask_User_About_Home
 		fi
