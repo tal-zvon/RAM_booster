@@ -163,9 +163,10 @@ Ask_User_About_Home() {
 CtrlC()
 {
 	echo
-	ECHO "You interupted the script while it was running. Would you like to revert all the changes it made so you can start fresh next time you run the script? WARNING: This will delete any existing RAM Session! [Y/n]"
+	ECHO "You interupted the script while it was running. Would you like to revert all the changes it made so you can start fresh next time you run the script?"
+	ECHO "WARNING: This will delete any existing RAM Session!"
 	echo
-	read -p "Your choice: " answer
+	read -p "Your choice [Y/n]: " answer
 
 	#Convert answer to lowercase
 	answer=$(toLower $answer)
