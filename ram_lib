@@ -26,6 +26,7 @@ Uninstall_Prompt() {
 	esac
 }
 
+#Actually uninstalls the RAM Session
 Uninstall_RAM_Booster() {
 	echo Uninstalling...
 }
