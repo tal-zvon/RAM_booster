@@ -170,6 +170,7 @@ case $answer in
 			sleep 4
 		else
 			#Ask user which partition to use for /home
+			clear
 			ECHO "Which partition do you want to use as /home?"
 			echo -n "Your choice: "
 			read -e HOME_DEV
@@ -177,7 +178,8 @@ case $answer in
 			#Check if device exists
 			if [[ ! -b "$HOME_DEV" ]]
 			then
-				ECHO "$HOME_DEV is not a valid device. Please rerun the script and specify the device name of a partition or logical volume."
+				echo
+				ECHO "\"$HOME_DEV\" is not a valid device. Please rerun the script and specify the device name of a partition or logical volume."
 				echo "Exiting..."
 				exit 1
 			fi
