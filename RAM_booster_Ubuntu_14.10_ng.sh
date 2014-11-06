@@ -150,3 +150,35 @@ fi
 echo
 echo -n "What would you like to do?: [(S)eparate/(c)opy as is]: "
 read answer
+
+#Convert answer to lowercase
+answer=$(toLower $answer)
+
+case $answer in
+	s|separate)
+		if [[ -n $HOME_DEV ]]
+		then
+			#/home is already on a separate partition, so we know exactly what to use
+			ECHO "You chose to use $HOME_DEV as your /home for the RAM Session"
+			sleep 4
+		else
+			#Ask user which partition to use for /home
+			ECHO "Which partition do you want to use as /home?"
+		fi
+		;;  
+	c|copy)  
+		#Even if /home is currently on a different partition than /, the
+		#user chose to copy /home instead of use that partition, so clear
+		#$HOME_DEV to indicate that the device for /home on the RAM Session
+		#should be the same as the device for / (ie. copy /home)
+		HOME_DEV=''
+		ECHO "You chose to copy /home as is. I hope you read carefully and know what that means..."
+		sleep 4
+		;;  
+	*)
+		echo "Invalid answer"
+		echo
+		echo "Exiting..."
+		exit 1
+		;;
+esac
