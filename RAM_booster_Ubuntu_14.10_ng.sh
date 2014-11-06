@@ -19,6 +19,11 @@ ps ax | grep $$ | grep bash > /dev/null ||
 #Path to the file that contains all the functions for this script
 RAM_LIB='./ram_lib'
 
+#Device of the /home partition
+#Blank if same partition as /
+#Note: It gets set automatically - do NOT modify
+HOME_DEV=''
+
 ############################
 # Only run if user is root #
 ############################
@@ -119,3 +124,29 @@ then
 	echo "This script cannot be run from inside the RAM Session."
 	exit 0
 fi
+
+#################################################
+# Find out what the user wants to do with /home # 
+#################################################
+
+#Figure out the device of /home
+#Note: $HOME_DEV will be blank if /home is on the same partition as /
+HOME_DEV=$(readlink -f `df /home | tail -1 | grep '/home' | cut -d ' ' -f 1` 2>/dev/null)
+
+clear
+ECHO "This script will create a copy of your Ubuntu OS in /var/squashfs/ and then use that copy to create a squashfs image of it located at /live. After this separation, your old OS and your new OS (the RAM Session) will be two completely separate entities. Updates of one OS will not affect the update of the other (unless done so using the update script - in which case two separate updates take place one after the other), and the setup of packages on one will not transfer to the other. Depending on what you choose however, your /home may be shared between the two systems."
+
+echo
+
+ECHO "/home is the place where your desktop, documents, music, pictures, and program settings are stored. Would you like /home to be stored on a separate partition so that it can be writable? If you choose yes, you may need to provide a device name of a partition as this script will not attempt to partition your drives for you. If you choose no, /home will be copied to the RAM session as is, and will become permanent. This means everytime you reboot, it will revert to the way it is right now. Moving it to a separate partition will also make /home shared between the two systems."
+
+#If /home is already on a separate partition, let the user know
+if [[ -n $HOME_DEV ]]
+then
+	echo
+	ECHO "Your /home is currently being mounted from $HOME_DEV. If you choose to have it separate, the RAM Session will mount the $HOME_DEV device as well."
+fi
+
+echo
+echo -n "What would you like to do?: [(S)eporate/(c)opy as is]:"
+read answer
