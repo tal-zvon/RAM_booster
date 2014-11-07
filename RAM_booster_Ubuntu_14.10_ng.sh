@@ -342,3 +342,9 @@ sudo mkdir -p ${DEST}
 
 sudo bash -c 'echo "This is the RAM Session. Your OS is running from within RAM." > '${DEST}'/RAM_Session'
 sudo bash -c 'echo "This is your Original OS. You are NOT inside the RAM Session." > /Original_OS'
+
+###########################
+# Add Grub2 entry to menu #
+###########################
+
+GrubEntry

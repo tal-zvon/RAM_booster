@@ -187,3 +187,65 @@ CtrlC()
 		;;
 	esac
 }
+
+#Add grub2 entry
+GrubEntry()
+{
+	#Adding entry to Grub2 menu
+	echo "Adding entry to Grub2 menu"
+
+	(
+	cat << $'\t06_RAMSESS'
+	#!/bin/sh -e
+
+	MOD_DIR=$(if [ -e /Original_OS ]; then echo /var/squashfs/lib/modules/; elif [ -e /RAM_Session ]; then echo /lib/modules/; fi)
+	KER_NAME=$(for KERN in $(ls /boot/ | grep vmlinuz | sed 's/vmlinuz-//g' | sort -r -t"." -k1,1n -k2,2n -k3,3n | sed 's/.efi.signed//'); do [ -d $MOD_DIR/$KERN ] && { echo $KERN; break; }; done)
+	GRUB_CMDLINE_LINUX_DEFAULT=$([ -e /etc/default/grub ] && cat /etc/default/grub | grep GRUB_CMDLINE_LINUX_DEFAULT | grep -o '["].*["]' | tr -d '"')
+
+	if [ -z "$KER_NAME" ]
+	then
+		KER_NAME=$(uname -r)
+	fi
+
+	echo "Found RAM Session image: /boot/vmlinuz-$KER_NAME" >&2
+
+	cat << EOF
+
+	menuentry "Ubuntu to RAM" {
+	  set uuid_grub_boot=BOOT_UUID
+	  set uuid_os_root=ROOT_UUID
+
+	  search --no-floppy --fs-uuid \$uuid_grub_boot --set=grub_boot
+
+	  set grub_boot=(\$grub_boot)
+
+	  if [ \$uuid_grub_boot == \$uuid_os_root ] ; then                 
+	     set grub_boot=\$grub_boot/boot
+	  fi
+
+	  linux \$grub_boot/vmlinuz-$KER_NAME bootfrom=/dev/disk/by-uuid/\$uuid_os_root boot=live toram=filesystem.squashfs apparmor=0 security="" root=/dev/disk/by-uuid/\$uuid_os_root ro $GRUB_CMDLINE_LINUX_DEFAULT
+	  initrd \$grub_boot/initrd.img-$KER_NAME
+	}
+	EOF
+	06_RAMSESS
+	) | sed 's/^\t//' | sudo tee /etc/grub.d/06_RAMSESS >/dev/null
+
+	#See how it went
+	if [[ "$?" != 0 ]]
+	then
+		echo "Failed to add entry to Grub menu."
+		echo "You'll have to do this manually."
+	else
+		echo "Grub entry added successfully."
+	fi
+
+	#Replace BOOT_UUID and ROOT_UUID above with actual values
+	sudo sed -i 's/ROOT_UUID/'$ROOT_UUID'/' /etc/grub.d/06_RAMSESS
+	sudo sed -i 's/BOOT_UUID/'$BOOT_UUID'/' /etc/grub.d/06_RAMSESS
+
+	#Make script executable
+	sudo chmod a+x /etc/grub.d/06_RAMSESS
+
+	#Unhide grub menu by uncommenting line in /etc/default/grub
+	sudo sed -i 's/\(GRUB_HIDDEN_TIMEOUT=0\)/#\1/g' /etc/default/grub
+}
