@@ -32,6 +32,21 @@ COPY_HOME=true
 #to reflect the new location
 HOME_DEV=$(readlink -f `df /home | tail -1 | grep '/home' | cut -d ' ' -f 1` 2>/dev/null)
 
+#The device of the root partition
+ROOT_DEV=$(readlink -f `df / | grep -o '/dev/[^ ]*'`)
+
+#The device of the boot partition
+BOOT_DEV=$(readlink -f `df /boot | grep -o '/dev/[^ ]*'`)
+
+#The UUID of the root partition
+ROOT_UUID=$(sudo blkid -o value -s UUID $ROOT_DEV)
+
+#The UUID of the boot partition
+BOOT_UUID=$(sudo blkid -o value -s UUID $BOOT_DEV)
+
+#The folder where the RAM Session will be stored
+DEST=/var/squashfs
+
 ############################
 # Only run if user is root #
 ############################
@@ -315,3 +330,15 @@ else
         echo "Initramfs updated successfully."
 fi
 
+##################################################
+# Create folder where RAM Session will be stored #
+##################################################
+
+sudo mkdir -p ${DEST}
+
+###########################################################################
+# Write files to / to identify where you are - Original OS or RAM Session #
+###########################################################################
+
+sudo bash -c 'echo "This is the RAM Session. Your OS is running from within RAM." > '${DEST}'/RAM_Session'
+sudo bash -c 'echo "This is your Original OS. You are NOT inside the RAM Session." > /Original_OS'
