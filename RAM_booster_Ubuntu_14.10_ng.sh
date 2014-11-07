@@ -193,3 +193,125 @@ esac
 #################################################################
 
 trap CtrlC SIGINT
+
+###################################
+# Install some essential packages #
+###################################
+
+echo
+echo "Installing essential packages:"
+
+echo "Running apt-get update..."
+sudo apt-get update 2>/dev/null >/dev/null
+
+echo "Installing squashfs-tools..."
+sudo apt-get -y --force-yes install squashfs-tools 2>/dev/null >/dev/null ||
+{
+	ECHO "squashfs-tools failed to install. You'll have to download and install it manually..."
+	exit 1
+}
+
+echo "Installing live-boot-initramfs-tools..."
+sudo apt-get -y --force-yes install live-boot-initramfs-tools 2>/dev/null >/dev/null ||
+{
+	ECHO "live-boot-initramfs-tools failed to install. You'll have to download and install it manually..."
+	exit 1
+}
+
+sudo apt-get -y --force-yes install live-boot 2>/dev/null >/dev/null ||
+{
+	ECHO "live-boot failed to install. You'll have to download and install it manually..."
+	exit 1
+}
+
+#######################################################
+# Change a few things to make boot process look nicer #
+#######################################################
+
+#Hide expr error on boot
+sudo sed -i 's/\(size=$( expr $(ls -la ${MODULETORAMFILE} | awk '\''{print $5}'\'') \/ 1024 + 5000\)/\1 2>\/dev\/null/' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
+
+#Hide 'sh:bad number' error on boot
+sudo sed -i 's#\(if \[ "\${freespace}" -lt "\${size}" ]\)#\1 2>/dev/null#' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
+
+#Suppress udevadm output
+sudo sed -i 's#if ${PATH_ID} "${sysfs_path}"#if ${PATH_ID} "${sysfs_path}" 2>/dev/null#g' /lib/live/boot/9990-misc-helpers.sh 2>/dev/null
+
+#Make rsync at boot use human readable byte counter
+sudo sed -i 's/rsync -a --progress/rsync -a -h --progress/g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
+
+#Fix boot messages
+sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/console\)#\1\
+				echo -n " * `basename $MODULETORAMFILE` is: " 1>/dev/console\
+				rsync -a -h -n --progress ${MODULETORAMFILE} ${copyto} | grep "total size is" | grep -Eo "[0-9]+[.]*[0-9]*[mMgG]" 1>/dev/console\
+				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
+
+#Hide umount /live/overlay error
+sudo sed -i 's#\(umount /live/overlay\)#\1 2>/dev/null#g' /lib/live/boot/9990-overlay.sh 2>/dev/null
+
+#Fix the "hwdb.bin: No such file or directory" bug (on boot)
+[ -e /lib/udev/hwdb.bin ] &&
+(
+cat << 'HWDB'
+#!/bin/sh
+PREREQ=""
+prereqs()
+{
+	echo "$PREREQ"
+}
+
+case $1 in
+prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+. /usr/share/initramfs-tools/hook-functions             #provides copy_exec
+rm -f ${DESTDIR}/lib/udev/hwdb.bin                      #copy_exec will not overwrite an existing file
+copy_exec /lib/udev/hwdb.bin /lib/udev/hwdb.bin         #Takes location in filesystem and location in initramfs as arguments
+HWDB
+) | sudo tee /usr/share/initramfs-tools/hooks/hwdb.bin >/dev/null
+
+#Fix permissions
+sudo chmod 755 /usr/share/initramfs-tools/hooks/hwdb.bin
+sudo chown root:root /usr/share/initramfs-tools/hooks/hwdb.bin
+
+echo
+echo "Packages installed successfully"
+
+#########################################
+# Update the kernel module dependencies #
+#########################################
+
+echo "Updating the kernel module dependencies..."
+sudo depmod -a
+
+if [[ "$?" != 0 ]] 
+then
+        echo "Kernel module dependencies failed to update."
+	echo
+        echo "Exiting..."
+        exit 1
+else
+        echo "Kernel module dependencies updated successfully."
+fi
+
+########################
+# Update the initramfs #
+########################
+
+echo
+echo "Updating the initramfs..."
+sudo update-initramfs -u
+
+if [[ "$?" != 0 ]] 
+then
+        echo "Initramfs failed to update."
+	echo
+        echo "Exiting..."
+        exit 1
+else
+        echo "Initramfs updated successfully."
+fi
+
