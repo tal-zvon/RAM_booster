@@ -388,8 +388,9 @@ sudo rsync -aAXSH -hv --delete --progress / ${DEST} --exclude={"/dev/*",\
 #normal considering we are copying a filesystem that is currently in use
 case "$?" in
 	0|24)
-		echo "Filesystem copied successfully."
 		echo
+		echo "Filesystem copied successfully."
+		sleep 4
 	*)
 		echo
 		echo "Copying filesystem failed."
@@ -421,11 +422,62 @@ else
 		#Change ${DEST}/etc/fstab
 		sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> '${DEST}'/etc/fstab'
 
-		#Copy /home to the new partition
+		echo
+		echo "Copying /home to ${HOME_DEV}..."
 
-		######################
-		# UNFINISHED SECTION #
-		######################
+		#Mount $HOME_DEV
+		sudo mkdir /mnt/tmp
+		sudo mount $HOME_DEV /mnt/tmp
+
+		#Copy /home to $HOME_DEV and write down its
+		#exit code
+		sudo rsync -aAXSH -hv --delete --progress /home/ /mnt/tmp/
+		EXIT_CODE="$?"
+
+		#Unmount and remove /mnt/tmp, which we have to do
+		#whether the rsync command succedded or not
+		sudo umount /mnt/tmp
+		sudo rmdir /mnt/tmp
+
+		#Check if rsync was successful
+		case "$EXIT_CODE" in
+			0|24)
+				echo
+				echo "/home copied to $HOME_DEV successfully"
+				sleep 4
+				;;
+			*)
+				echo
+				echo "Failed to copy /home to $HOME_DEV"
+				echo
+				echo "Exiting..."
+				exit 1
+				;;
+		esac
+
+		#Ask user if they want to share /home
+		echo
+		ECHO "Would you like to have your Original OS use $HOME_DEV as its /home as well?"
+		ECHO "If you choose yes, your Original OS's /home and your RAM Session's /home will be shared"
+		ECHO "If you choose no, your Original OS's /home and your RAM Session's /home will be different"
+		read -p "Your choice [Y/n]: " answer
+
+		#Convert answer to lowercase
+		answer=$(toLower $answer)
+
+		case $answer in
+			*)
+				sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> /etc/fstab'
+				echo
+				ECHO "Your /etc/fstab has been modified to mount $HOME_DEV as your /home at boot"
+				sleep 4
+				;;  
+			n|no)  
+				#Do nothing
+				ECHO "Your Original OS's /home and your RAM Session's /home will remain separate."
+				sleep 4
+				;;  
+		esac
 
 	fi
 fi
