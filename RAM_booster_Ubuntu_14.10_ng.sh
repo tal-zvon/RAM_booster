@@ -357,3 +357,75 @@ if ! grep -q '\[ x"$i" = x"$SKIP_KERNEL" \] && continue' /etc/grub.d/10_linux
 then
 	sudo sed -i 's@\(if grub_file_is_not_garbage\)@MOD_PREFIX=$([ -e /RAM_Session ] \&\& echo "/mnt/" || echo "")\n                  [ -d $MOD_PREFIX/lib/modules/${i#/boot/vmlinuz-} ] || continue\n                  \1@g' /etc/grub.d/10_linux
 fi
+
+########################
+# Copy the OS to $DEST #
+########################
+
+echo
+echo "Ready to copy your filesystem to ${DEST}..."
+echo "Press enter to begin"
+#Set timeout incase the user left so the script continues to run
+read -t 60 key
+
+#Stores rsync arguments that vary between copying /home and mounting it
+RSYNC_OPTIONS=''
+
+if $COPY_HOME
+then
+	RSYNC_OPTIONS='--exclude=.local/share/Trash/files/*'
+else
+	RSYNC_OPTIONS='--exclude=/home/*'
+fi
+
+#Copy the filesystem to $DEST
+sudo rsync -aAXSH -hv --delete --progress / ${DEST} --exclude={"/dev/*",\
+"/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/etc/mtab",\
+"/live","/Original_OS","${DEST}",/lost+found} $RSYNC_OPTIONS
+
+#Check how the operation went
+#Exit code 24 indicates some source files vanished, which is pretty
+#normal considering we are copying a filesystem that is currently in use
+case "$?" in
+	0|24)
+		echo "Filesystem copied successfully."
+		echo
+	*)
+		echo
+		echo "Copying filesystem failed."
+		echo
+		echo "Exiting..."
+		exit 1
+		;;
+esac
+
+if $COPY_HOME
+then
+	if $HOME_ALREADY_MOUNTED
+	then
+		#/home was being mounted, but user chose to copy it instead
+		#Remove entry of current partition being used for /home from
+		#${DEST}/etc/fstab
+		sudo sed -i '/^[^#].*\/home/d' ${DEST}/etc/fstab
+	fi
+else
+	if ! $HOME_ALREADY_MOUNTED
+	then
+		#If user chose to use a partition as /home, and
+		#the current system wasn't doing it already, modify
+		#${DEST}/etc/fstab
+
+		#First, figure out the UUID for the new /home
+		HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
+
+		#Change ${DEST}/etc/fstab
+		sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> '${DEST}'/etc/fstab'
+
+		#Copy /home to the new partition
+
+		######################
+		# UNFINISHED SECTION #
+		######################
+
+	fi
+fi
