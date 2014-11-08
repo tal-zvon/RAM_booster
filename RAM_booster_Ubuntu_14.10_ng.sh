@@ -22,7 +22,7 @@ RAM_LIB='./ram_lib'
 #True if home is already on another partition. False otherwise
 HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo false)
 
-#True if /home should just be copied over to /var/squashfs/home
+#True if /home should just be copied over to $DEST/home
 #False otherwise
 #Note: Do NOT remove the default value
 COPY_HOME=true
@@ -45,7 +45,7 @@ ROOT_UUID=$(sudo blkid -o value -s UUID $ROOT_DEV)
 BOOT_UUID=$(sudo blkid -o value -s UUID $BOOT_DEV)
 
 #The folder where the RAM Session will be stored
-DEST=/var/squashfs
+DEST=/var/squashfs/
 
 ############################
 # Only run if user is root #
@@ -153,7 +153,7 @@ fi
 #################################################
 
 clear
-ECHO "This script will create a copy of your Ubuntu OS in /var/squashfs/ and then use that copy to create a squashfs image of it located at /live. After this separation, your old OS and your new OS (the RAM Session) will be two completely separate entities. Updates of one OS will not affect the update of the other (unless done so using the update script - in which case two separate updates take place one after the other), and the setup of packages on one will not transfer to the other. Depending on what you choose however, your /home may be shared between the two systems."
+ECHO "This script will create a copy of your Ubuntu OS in ${DEST} and then use that copy to create a squashfs image of it located at /live. After this separation, your old OS and your new OS (the RAM Session) will be two completely separate entities. Updates of one OS will not affect the update of the other (unless done so using the update script - in which case two separate updates take place one after the other), and the setup of packages on one will not transfer to the other. Depending on what you choose however, your /home may be shared between the two systems."
 
 echo
 
