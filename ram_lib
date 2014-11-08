@@ -249,3 +249,126 @@ GrubEntry()
 	#Unhide grub menu by uncommenting line in /etc/default/grub
 	sudo sed -i 's/\(GRUB_HIDDEN_TIMEOUT=0\)/#\1/g' /etc/default/grub
 }
+
+#Copy the OS to $DEST
+CopyFileSystem() {
+	echo
+	echo "Ready to copy your filesystem to ${DEST}..."
+	echo "Press enter to begin"
+	#Set timeout incase the user left so the script continues to run
+	read -t 60 key
+
+	#Stores rsync arguments that vary between copying /home and mounting it
+	RSYNC_OPTIONS=''
+
+	if $COPY_HOME
+	then
+		RSYNC_OPTIONS='--exclude=.local/share/Trash/files/*'
+	else
+		RSYNC_OPTIONS='--exclude=/home/*'
+	fi
+
+	#Copy the filesystem to $DEST
+	sudo rsync -aAXSH -hv --delete --progress / ${DEST} --exclude={"/dev/*",\
+	"/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/etc/mtab",\
+	"/live","/Original_OS","${DEST}",/lost+found} $RSYNC_OPTIONS
+
+	#Check how the operation went
+	#Exit code 24 indicates some source files vanished, which is pretty
+	#normal considering we are copying a filesystem that is currently in use
+	case "$?" in
+		0|24)
+			echo
+			echo "Filesystem copied successfully."
+			sleep 4
+		*)
+			echo
+			echo "Copying filesystem failed."
+			echo
+			echo "Exiting..."
+			exit 1
+			;;
+	esac
+
+	if $COPY_HOME
+	then
+		if $HOME_ALREADY_MOUNTED
+		then
+			#/home was being mounted, but user chose to copy it instead
+			#Remove entry of current partition being used for /home from
+			#${DEST}/etc/fstab
+			sudo sed -i '/^[^#].*\/home/d' ${DEST}/etc/fstab
+		fi
+	else
+		if ! $HOME_ALREADY_MOUNTED
+		then
+			#If user chose to use a partition as /home, and
+			#the current system wasn't doing it already, modify
+			#${DEST}/etc/fstab
+
+			#First, figure out the UUID for the new /home
+			HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
+
+			#Change ${DEST}/etc/fstab
+			sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> '${DEST}'/etc/fstab'
+
+			echo
+			echo "Copying /home to ${HOME_DEV}..."
+
+			#Mount $HOME_DEV
+			sudo mkdir /mnt/tmp
+			sudo mount $HOME_DEV /mnt/tmp
+
+			#Copy /home to $HOME_DEV and write down its
+			#exit code
+			sudo rsync -aAXSH -hv --delete --progress /home/ /mnt/tmp/
+			EXIT_CODE="$?"
+
+			#Unmount and remove /mnt/tmp, which we have to do
+			#whether the rsync command succedded or not
+			sudo umount /mnt/tmp
+			sudo rmdir /mnt/tmp
+
+			#Check if rsync was successful
+			case "$EXIT_CODE" in
+				0|24)
+					echo
+					echo "/home copied to $HOME_DEV successfully"
+					sleep 4
+					;;
+				*)
+					echo
+					echo "Failed to copy /home to $HOME_DEV"
+					echo
+					echo "Exiting..."
+					exit 1
+					;;
+			esac
+
+			#Ask user if they want to share /home
+			echo
+			ECHO "Would you like to have your Original OS use $HOME_DEV as its /home as well?"
+			ECHO "If you choose yes, your Original OS's /home and your RAM Session's /home will be shared"
+			ECHO "If you choose no, your Original OS's /home and your RAM Session's /home will be different"
+			read -p "Your choice [Y/n]: " answer
+
+			#Convert answer to lowercase
+			answer=$(toLower $answer)
+
+			case $answer in
+				*)
+					sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> /etc/fstab'
+					echo
+					ECHO "Your /etc/fstab has been modified to mount $HOME_DEV as your /home at boot"
+					sleep 4
+					;;  
+				n|no)  
+					#Do nothing
+					ECHO "Your Original OS's /home and your RAM Session's /home will remain separate."
+					sleep 4
+					;;  
+			esac
+
+		fi
+	fi
+}
