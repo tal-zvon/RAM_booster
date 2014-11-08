@@ -214,7 +214,6 @@ trap CtrlC SIGINT
 ###################################
 
 clear
-echo
 echo "Installing essential packages:"
 
 echo "Running apt-get update..."
@@ -298,12 +297,11 @@ sudo sed -i 's#\(umount /live/overlay\)#\1 2>/dev/null#g' /lib/live/boot/9990-ov
 sudo chmod 755 /usr/share/initramfs-tools/hooks/hwdb.bin
 sudo chown root:root /usr/share/initramfs-tools/hooks/hwdb.bin
 
-echo DONE
-
 #########################################
 # Update the kernel module dependencies #
 #########################################
 
+echo
 echo "Updating the kernel module dependencies..."
 sudo depmod -a
 
