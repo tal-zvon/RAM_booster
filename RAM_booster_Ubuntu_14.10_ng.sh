@@ -246,7 +246,7 @@ echo "Packages installed successfully"
 #######################################################
 
 echo
-echo -n "Making boot process look nicer..."
+echo "Making boot process look nicer..."
 
 #Hide expr error on boot
 sudo sed -i 's/\(size=$( expr $(ls -la ${MODULETORAMFILE} | awk '\''{print $5}'\'') \/ 1024 + 5000\)/\1 2>\/dev\/null/' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
