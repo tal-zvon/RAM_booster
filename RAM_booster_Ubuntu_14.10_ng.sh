@@ -267,26 +267,26 @@ sudo sed -i 's#\(umount /live/overlay\)#\1 2>/dev/null#g' /lib/live/boot/9990-ov
 #Fix the "hwdb.bin: No such file or directory" bug (on boot)
 [ -e /lib/udev/hwdb.bin ] &&
 (
-cat << 'HWDB'
-#!/bin/sh
-PREREQ=""
-prereqs()
-{
-	echo "$PREREQ"
-}
+	cat << $'\tHWDB'
+		#!/bin/sh
+		PREREQ=""
+		prereqs()
+		{
+			echo "$PREREQ"
+		}
 
-case $1 in
-prereqs)
-	prereqs
-	exit 0
-	;;
-esac
+		case $1 in
+		prereqs)
+			prereqs
+			exit 0
+			;;
+		esac
 
-. /usr/share/initramfs-tools/hook-functions             #provides copy_exec
-rm -f ${DESTDIR}/lib/udev/hwdb.bin                      #copy_exec will not overwrite an existing file
-copy_exec /lib/udev/hwdb.bin /lib/udev/hwdb.bin         #Takes location in filesystem and location in initramfs as arguments
-HWDB
-) | sudo tee /usr/share/initramfs-tools/hooks/hwdb.bin >/dev/null
+		. /usr/share/initramfs-tools/hook-functions             #provides copy_exec
+		rm -f ${DESTDIR}/lib/udev/hwdb.bin                      #copy_exec will not overwrite an existing file
+		copy_exec /lib/udev/hwdb.bin /lib/udev/hwdb.bin         #Takes location in filesystem and location in initramfs as arguments
+	HWDB
+) | sed 's/^\t\t//' | sudo tee /usr/share/initramfs-tools/hooks/hwdb.bin >/dev/null
 
 #Fix permissions
 sudo chmod 755 /usr/share/initramfs-tools/hooks/hwdb.bin
