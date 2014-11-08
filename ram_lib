@@ -192,6 +192,7 @@ CtrlC()
 GrubEntry()
 {
 	#Adding entry to Grub2 menu
+	echo
 	echo "Adding entry to Grub2 menu"
 
 	(
