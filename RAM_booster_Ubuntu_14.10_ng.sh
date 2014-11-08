@@ -213,6 +213,7 @@ trap CtrlC SIGINT
 # Install some essential packages #
 ###################################
 
+clear
 echo
 echo "Installing essential packages:"
 
@@ -239,9 +240,14 @@ sudo apt-get -y --force-yes install live-boot 2>/dev/null >/dev/null ||
 	exit 1
 }
 
+echo "Packages installed successfully"
+
 #######################################################
 # Change a few things to make boot process look nicer #
 #######################################################
+
+echo
+echo -n "Making boot process look nicer..."
 
 #Hide expr error on boot
 sudo sed -i 's/\(size=$( expr $(ls -la ${MODULETORAMFILE} | awk '\''{print $5}'\'') \/ 1024 + 5000\)/\1 2>\/dev\/null/' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
@@ -292,8 +298,7 @@ sudo sed -i 's#\(umount /live/overlay\)#\1 2>/dev/null#g' /lib/live/boot/9990-ov
 sudo chmod 755 /usr/share/initramfs-tools/hooks/hwdb.bin
 sudo chown root:root /usr/share/initramfs-tools/hooks/hwdb.bin
 
-echo
-echo "Packages installed successfully"
+echo DONE
 
 #########################################
 # Update the kernel module dependencies #
