@@ -195,40 +195,40 @@ GrubEntry()
 	echo "Adding entry to Grub2 menu"
 
 	(
-	cat << $'\t06_RAMSESS'
-	#!/bin/sh -e
+		cat << $'\t06_RAMSESS'
+		#!/bin/sh -e
 
-	MOD_DIR=$(if [ -e /Original_OS ]; then echo /var/squashfs/lib/modules/; elif [ -e /RAM_Session ]; then echo /lib/modules/; fi)
-	KER_NAME=$(for KERN in $(ls /boot/ | grep vmlinuz | sed 's/vmlinuz-//g' | sort -r -t"." -k1,1n -k2,2n -k3,3n | sed 's/.efi.signed//'); do [ -d $MOD_DIR/$KERN ] && { echo $KERN; break; }; done)
-	GRUB_CMDLINE_LINUX_DEFAULT=$([ -e /etc/default/grub ] && cat /etc/default/grub | grep GRUB_CMDLINE_LINUX_DEFAULT | grep -o '["].*["]' | tr -d '"')
+		MOD_DIR=$(if [ -e /Original_OS ]; then echo /var/squashfs/lib/modules/; elif [ -e /RAM_Session ]; then echo /lib/modules/; fi)
+		KER_NAME=$(for KERN in $(ls /boot/ | grep vmlinuz | sed 's/vmlinuz-//g' | sort -r -t"." -k1,1n -k2,2n -k3,3n | sed 's/.efi.signed//'); do [ -d $MOD_DIR/$KERN ] && { echo $KERN; break; }; done)
+		GRUB_CMDLINE_LINUX_DEFAULT=$([ -e /etc/default/grub ] && cat /etc/default/grub | grep GRUB_CMDLINE_LINUX_DEFAULT | grep -o '["].*["]' | tr -d '"')
 
-	if [ -z "$KER_NAME" ]
-	then
-		KER_NAME=$(uname -r)
-	fi
+		if [ -z "$KER_NAME" ]
+		then
+			KER_NAME=$(uname -r)
+		fi
 
-	echo "Found RAM Session image: /boot/vmlinuz-$KER_NAME" >&2
+		echo "Found RAM Session image: /boot/vmlinuz-$KER_NAME" >&2
 
-	cat << EOF
+		cat << EOF
 
-	menuentry "Ubuntu to RAM" {
-	  set uuid_grub_boot=BOOT_UUID
-	  set uuid_os_root=ROOT_UUID
+		menuentry "Ubuntu to RAM" {
+		  set uuid_grub_boot=BOOT_UUID
+		  set uuid_os_root=ROOT_UUID
 
-	  search --no-floppy --fs-uuid \$uuid_grub_boot --set=grub_boot
+		  search --no-floppy --fs-uuid \$uuid_grub_boot --set=grub_boot
 
-	  set grub_boot=(\$grub_boot)
+		  set grub_boot=(\$grub_boot)
 
-	  if [ \$uuid_grub_boot == \$uuid_os_root ] ; then                 
-	     set grub_boot=\$grub_boot/boot
-	  fi
+		  if [ \$uuid_grub_boot == \$uuid_os_root ] ; then                 
+		     set grub_boot=\$grub_boot/boot
+		  fi
 
-	  linux \$grub_boot/vmlinuz-$KER_NAME bootfrom=/dev/disk/by-uuid/\$uuid_os_root boot=live toram=filesystem.squashfs apparmor=0 security="" root=/dev/disk/by-uuid/\$uuid_os_root ro $GRUB_CMDLINE_LINUX_DEFAULT
-	  initrd \$grub_boot/initrd.img-$KER_NAME
-	}
-	EOF
-	06_RAMSESS
-	) | sed 's/^\t//' | sudo tee /etc/grub.d/06_RAMSESS >/dev/null
+		  linux \$grub_boot/vmlinuz-$KER_NAME bootfrom=/dev/disk/by-uuid/\$uuid_os_root boot=live toram=filesystem.squashfs apparmor=0 security="" root=/dev/disk/by-uuid/\$uuid_os_root ro $GRUB_CMDLINE_LINUX_DEFAULT
+		  initrd \$grub_boot/initrd.img-$KER_NAME
+		}
+		EOF
+		06_RAMSESS
+	) | sed 's/^\t\t//' | sudo tee /etc/grub.d/06_RAMSESS >/dev/null
 
 	#See how it went
 	if [[ "$?" != 0 ]]
