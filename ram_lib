@@ -195,7 +195,7 @@ GrubEntry()
 	echo "Adding entry to Grub2 menu"
 
 	(
-		cat << $'\t06_RAMSESS'
+		cat << $'\t\t06_RAMSESS'
 		#!/bin/sh -e
 
 		MOD_DIR=$(if [ -e /Original_OS ]; then echo /var/squashfs/lib/modules/; elif [ -e /RAM_Session ]; then echo /lib/modules/; fi)
