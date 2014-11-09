@@ -68,3 +68,9 @@ Split up long sed lines
 	I can replace a line in the script file with itself plus my first line, and then
 	have a second sed statement that replaces the line I just placed with itself and the
 	next line
+
+===========================
+
+Instead of messing with grub and stuff to try to make it so that grub-update always works, can I just have 2 /boot partitions?
+	Might not be possible
+	The other way is already working - I just need to clean it up
