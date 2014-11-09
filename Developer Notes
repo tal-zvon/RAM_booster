@@ -26,3 +26,45 @@ Speed up rsync filesystem copy to /var/squashfs during testing:
 	The first time, it will obivously take just as long to copy the FS. Every other time, rsync will see
 	the similar files already on the NFS share and skip them. rsync runs with --delete, so it will take care of
 	anything that should no longer be on the share.
+
+===============================================================
+
+Rewrite Notes:
+
+
+add a way to automatically download new rupdate and rchroot
+make rchroot NOT require manual running of "rupdate -f"
+
+make updating of original OS not REQUIRE creation of squashfs image for RAM Session, that may or may not have been updated
+
+The point of the rewrite is to make the code easier to read and debug
+	Make sure the code doesn't become overly complex
+
+Maybe remove some things that complicate the code, like the whole gparted section
+	If it is very well organized, and I still think it's important, maybe leave it in
+
+Find out what causes the mounts to fail to unmount
+
+Create new forum thread?
+
+===========================
+
+For now, I skipped the part that asks if we should add a cron job for updates (CronAsk)
+since it's hard to test without a working RAM Session
+
+===========================
+
+Check the "Change a few things to make boot process look nicer" section at the end to see if all those fixes are necessary
+
+===========================
+
+I made almost no changes to the grub2 menu entry, except to make it work when indented
+1. Make sure it works
+2. Is there a way to simplify it, while still having it work in both the RAM Session and the Original OS?
+
+===========================
+
+Split up long sed lines
+	I can replace a line in the script file with itself plus my first line, and then
+	have a second sed statement that replaces the line I just placed with itself and the
+	next line
