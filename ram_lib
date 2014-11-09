@@ -314,6 +314,7 @@ CopyFileSystem() {
 
 			echo
 			echo "Copying /home to ${HOME_DEV}..."
+			sleep 4
 
 			#Mount $HOME_DEV
 			sudo mkdir /mnt/tmp
