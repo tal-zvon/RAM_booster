@@ -270,7 +270,7 @@ CopyFileSystem() {
 	fi
 
 	#Copy the filesystem to $DEST
-	sudo rsync -aAXSH -hv --delete --progress / ${DEST} --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/etc/mtab","/live","/Original_OS","${DEST}",/lost+found} $RSYNC_OPTIONS
+	sudo rsync -aAXSH -hv --delete --progress / ${DEST} --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/etc/mtab","/live","/Original_OS","/RAM_Session","${DEST}",/lost+found} $RSYNC_OPTIONS
 
 	#Check how the operation went
 	#Exit code 24 indicates some source files vanished, which is pretty
