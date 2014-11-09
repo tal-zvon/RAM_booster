@@ -357,15 +357,15 @@ CopyFileSystem() {
 			answer=$(toLower $answer)
 
 			case $answer in
+				n|no)  
+					#Do nothing
+					ECHO "Your Original OS's /home and your RAM Session's /home will remain separate."
+					sleep 4
+					;;  
 				*)
 					sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> /etc/fstab'
 					echo
 					ECHO "Your /etc/fstab has been modified to mount $HOME_DEV as your /home at boot"
-					sleep 4
-					;;  
-				n|no)  
-					#Do nothing
-					ECHO "Your Original OS's /home and your RAM Session's /home will remain separate."
 					sleep 4
 					;;  
 			esac
