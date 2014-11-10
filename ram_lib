@@ -229,13 +229,16 @@ GrubEntry()
 		}
 		EOF
 		06_RAMSESS
-	) | sed 's/^\t\t//' | sudo tee /etc/grub.d/06_RAMSESS >/dev/null
+	) | sed 's/^\t\t//' | sudo tee /etc/grub.d/06_RAMSESS &>/dev/null
 
 	#See how it went
 	if [[ "$?" != 0 ]]
 	then
 		echo "Failed to add entry to Grub menu."
-		echo "You'll have to do this manually."
+		ECHO "Cannot proceed. Please report this problem on my thread at Ubuntu Forums"
+		echo
+		echo "Running uninstall..."
+		Uninstall_Prompt
 	else
 		echo "Grub entry added successfully."
 	fi
