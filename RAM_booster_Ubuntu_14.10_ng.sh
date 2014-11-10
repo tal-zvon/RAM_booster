@@ -413,3 +413,11 @@ fi
 ########################
 
 CopyFileSystem
+
+###############
+# Update Grub #
+###############
+
+echo
+echo "Updating grub:"
+sudo update-grub
