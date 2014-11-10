@@ -93,3 +93,7 @@ the idea is this:
 ===========================
 
 I skipped the "Hardlink bug" fix - I couldn't remember what it fixes
+
+===========================
+
+Skipped time bug fix. I'll see if I need it when the RAM Session is bootable
