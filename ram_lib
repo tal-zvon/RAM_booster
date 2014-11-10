@@ -199,7 +199,7 @@ GrubEntry()
 		cat << $'\t\t06_RAMSESS'
 		#!/bin/sh -e
 
-		MOD_DIR=$(if [ -e /Original_OS ]; then echo /var/squashfs/lib/modules/; elif [ -e /RAM_Session ]; then echo /lib/modules/; fi)
+		MOD_DIR=$(if [ -e /Original_OS ]; then echo DEST/lib/modules/; elif [ -e /RAM_Session ]; then echo /lib/modules/; fi)
 		KER_NAME=$(for KERN in $(ls /boot/ | grep vmlinuz | sed 's/vmlinuz-//g' | sort -r -t"." -k1,1n -k2,2n -k3,3n | sed 's/.efi.signed//'); do [ -d $MOD_DIR/$KERN ] && { echo $KERN; break; }; done)
 		GRUB_CMDLINE_LINUX_DEFAULT=$([ -e /etc/default/grub ] && cat /etc/default/grub | grep GRUB_CMDLINE_LINUX_DEFAULT | grep -o '["].*["]' | tr -d '"')
 
@@ -242,6 +242,9 @@ GrubEntry()
 	else
 		echo "Grub entry added successfully."
 	fi
+
+	#Replace DEST with $DEST in /etc/grub.d/06_RAMSESS
+	sudo sed -i "s|DEST|${DEST}|g" /etc/grub.d/06_RAMSESS
 
 	#Replace BOOT_UUID and ROOT_UUID above with actual values
 	sudo sed -i 's/ROOT_UUID/'$ROOT_UUID'/' /etc/grub.d/06_RAMSESS
