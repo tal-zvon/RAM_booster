@@ -89,3 +89,7 @@ To make it easier to debug people's problems when they post about them, I should
 the idea is this:
 	have the script be relatively clean and simple - if something fails, don't have it spit out large amounts of text on screen
 	have a log file that users can upload that makes it very easy to duplicate their setup, and try the same options they did
+
+===========================
+
+I skipped the "Hardlink bug" fix - I couldn't remember what it fixes
