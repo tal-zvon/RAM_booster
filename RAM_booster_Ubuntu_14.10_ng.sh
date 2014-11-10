@@ -223,8 +223,11 @@ then
 		#Ask user if they want to share /home
 		clear
 		ECHO "Would you like to have your Original OS use $HOME_DEV as its /home as well?"
+		echo
 		ECHO "If you choose yes, your Original OS's /home and your RAM Session's /home will be shared"
+		echo
 		ECHO "If you choose no, your Original OS's /home and your RAM Session's /home will be different"
+		echo
 		read -p "Your choice [Y/n]: " answer
 
 		#Convert answer to lowercase
