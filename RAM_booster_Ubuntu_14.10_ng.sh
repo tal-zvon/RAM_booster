@@ -47,6 +47,13 @@ BOOT_UUID=$(sudo blkid -o value -s UUID $BOOT_DEV)
 #The folder where the RAM Session will be stored
 DEST=/var/squashfs/
 
+#Only applies when the Original OS starts out having /home on the same partition as /
+#and the user chooses to use a separate partition for /home on the RAM Session
+#true if the Original OS's /etc/fstab should be modified to also use
+#	the partition that the RAM Session will be using as /home
+#false if it should not
+SHARE_HOME=true
+
 ############################
 # Only run if user is root #
 ############################
@@ -202,6 +209,43 @@ case $answer in
 		exit 1
 		;;
 esac
+
+####################################################################################
+# If the Original OS's /home was on the same partition as /, and the user chose    #
+# to have the RAM Session's /home on a separate partition, ask if we should change #
+# the Original OS's /etc/fstab to also mount that partition as /home               #
+####################################################################################
+
+if ! $COPY_HOME
+then
+	if ! $HOME_ALREADY_MOUNTED
+	then
+		#Ask user if they want to share /home
+		clear
+		ECHO "Would you like to have your Original OS use $HOME_DEV as its /home as well?"
+		ECHO "If you choose yes, your Original OS's /home and your RAM Session's /home will be shared"
+		ECHO "If you choose no, your Original OS's /home and your RAM Session's /home will be different"
+		read -p "Your choice [Y/n]: " answer
+
+		#Convert answer to lowercase
+		answer=$(toLower $answer)
+
+		case $answer in
+			n|no)  
+				SHARE_HOME=false
+				echo
+				ECHO "Your Original OS's /home and your RAM Session's /home will remain separate."
+				sleep 4
+				;;
+			*)
+				SHARE_HOME=true
+				echo
+				ECHO "Your /etc/fstab will be modified to mount $HOME_DEV as your /home at boot"
+				sleep 4
+				;;
+		esac
+	fi
+fi
 
 #################################################################
 # If the user hits Ctrl+C at any point, have the script cleanup #

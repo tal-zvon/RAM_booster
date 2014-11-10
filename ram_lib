@@ -346,30 +346,12 @@ CopyFileSystem() {
 					;;
 			esac
 
-			#Ask user if they want to share /home
-			echo
-			ECHO "Would you like to have your Original OS use $HOME_DEV as its /home as well?"
-			ECHO "If you choose yes, your Original OS's /home and your RAM Session's /home will be shared"
-			ECHO "If you choose no, your Original OS's /home and your RAM Session's /home will be different"
-			read -p "Your choice [Y/n]: " answer
-
-			#Convert answer to lowercase
-			answer=$(toLower $answer)
-
-			case $answer in
-				n|no)  
-					#Do nothing
-					ECHO "Your Original OS's /home and your RAM Session's /home will remain separate."
-					sleep 4
-					;;  
-				*)
-					sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> /etc/fstab'
-					echo
-					ECHO "Your /etc/fstab has been modified to mount $HOME_DEV as your /home at boot"
-					sleep 4
-					;;  
-			esac
-
+			#If user chose to share /home between the Original OS and the RAM Session,
+			#modify /etc/fstab to make it happen
+			if $SHARE_HOME
+			then
+				sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> /etc/fstab'
+			fi
 		fi
 	fi
 }
