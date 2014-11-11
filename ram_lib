@@ -297,6 +297,9 @@ CopyFileSystem() {
 			;;
 	esac
 
+	#Remove entry for / in RAM Session's fstab
+	sudo sed -i '/^UUID=[-0-9a-zA-Z]*[ \t]*\/[ \t]/d' $DEST/etc/fstab
+
 	if $COPY_HOME
 	then
 		if $HOME_ALREADY_MOUNTED
