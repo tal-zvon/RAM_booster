@@ -19,6 +19,12 @@ ps ax | grep $$ | grep bash > /dev/null ||
 #Path to the file that contains all the functions for this script
 RAM_LIB='./ram_lib'
 
+#Path to the rupdate script
+RUPDATE_FILE='extras/rupdate'
+
+#Path to the rchroot script
+RCHROOT_FILE='extras/rchroot'
+
 #True if home is already on another partition. False otherwise
 HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo false)
 
@@ -76,6 +82,28 @@ then
 else
 	clear
 	echo "The library that comes with RAM Booster ($RAM_LIB) was not found!"
+	exit 1
+fi
+
+############################
+# Check for rupdate script #
+############################
+
+if [[ ! -e $RUPDATE_FILE ]]
+then
+	clear
+	echo "\"$RUPDATE_FILE\" was not found!"
+	exit 1
+fi
+
+############################
+# Check for rchroot script #
+############################
+
+if [[ ! -e $RCHROOT_FILE ]]
+then
+	clear
+	echo "\"$RCHROOT_FILE\" not found!"
 	exit 1
 fi
 
@@ -465,3 +493,23 @@ sudo find ${DEST}/var/log -type f -iname '*.gz' -exec rm -v {} \;
 echo
 echo "Cleaning recent log files:"
 sudo find ${DEST}/var/log -type f | while read file; do echo "emptied '$file'"; echo -n '' | sudo tee $file; done 
+
+#####################################
+# Add rupdate script to RAM Session #
+#####################################
+
+sudo cp -v $RUPDATE_FILE ${DEST}/usr/sbin/
+sudo chown root:root ${DEST}/usr/sbin/rupdate
+sudo chmod 755 ${DEST}/usr/sbin/rupdate
+#Add the root device to the rupdate script
+sudo sed -i 's#\(REG_DEVICE=\)#\1"'$ROOT_DEV'"#' ${DEST}/usr/sbin/rupdate
+
+#####################################
+# Add rchroot script to RAM Session #
+#####################################
+sudo cp -v $RCHROOT_FILE ${DEST}/usr/sbin/
+sudo chown root:root ${DEST}/usr/sbin/rchroot
+sudo chmod 755 ${DEST}/usr/sbin/rchroot
+#Add root and boot devices to rchroot script
+sudo sed -i 's#\(ROOT_DEVICE=\)#\1"'$ROOT_DEV'"#' $DEST/usr/sbin/rchroot
+sudo sed -i 's#\(BOOT_DEVICE=\)#\1"'$BOOT_DEV'"#' $DEST/usr/sbin/rchroot
