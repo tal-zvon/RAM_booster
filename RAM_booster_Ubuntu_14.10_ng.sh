@@ -507,9 +507,32 @@ sudo sed -i 's#\(REG_DEVICE=\)#\1"'$ROOT_DEV'"#' ${DEST}/usr/sbin/rupdate
 #####################################
 # Add rchroot script to RAM Session #
 #####################################
+
 sudo cp -v $RCHROOT_FILE ${DEST}/usr/sbin/
 sudo chown root:root ${DEST}/usr/sbin/rchroot
 sudo chmod 755 ${DEST}/usr/sbin/rchroot
 #Add root and boot devices to rchroot script
 sudo sed -i 's#\(ROOT_DEVICE=\)#\1"'$ROOT_DEV'"#' $DEST/usr/sbin/rchroot
 sudo sed -i 's#\(BOOT_DEVICE=\)#\1"'$BOOT_DEV'"#' $DEST/usr/sbin/rchroot
+
+#######################
+# Make squashfs image #
+#######################
+
+echo
+echo "Creating squashfs image..."
+sudo mkdir -p /live
+sudo mksquashfs ${DEST} /live/filesystem.squashfs -noappend -always-use-fragments
+
+#See how it went
+if [[ "$?" != 0 ]]
+then
+        echo "Squashfs image creation failed."
+	echo
+        echo "Exiting..."
+        exit 1
+else
+	echo
+        echo "Squashfs image created successfully."
+fi
+
