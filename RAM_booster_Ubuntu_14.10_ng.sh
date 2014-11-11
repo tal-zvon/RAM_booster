@@ -452,15 +452,16 @@ sudo sed -i '/^\/dev\/...[0-9][ \t]*\/boot[ \t]/d' $DEST/etc/fstab
 #Note: The 'root' we skip is the name of root's cron file. Since we
 #might be writing to it, we don't want to delete it
 echo
-echo "Cleaning unnecessary files..."
+echo "Cleaning unnecessary files:"
 sudo find ${DEST}/var/run ${DEST}/var/crash ${DEST}/var/mail ${DEST}/var/spool ${DEST}/var/lock ${DEST}/var/backups ${DEST}/var/tmp -type f -not -name "root" -exec rm {} \;
 
 #Delete only OLD log files
+echo
 echo "Deleting old log files:"
 sudo find ${DEST}/var/log -type f -iregex '.*\.[0-9].*' -exec rm -v {} \;
 sudo find ${DEST}/var/log -type f -iname '*.gz' -exec rm -v {} \;
 
 #Clean current log files
 echo
-echo "Cleaning old log files..."
-sudo find ${DEST}/var/log -type f | while read file; do echo -n '' | sudo tee $file; done 
+echo "Cleaning recent log files:"
+sudo find ${DEST}/var/log -type f | while read file; do echo "emptied '$file'"; echo -n '' | sudo tee $file; done 
