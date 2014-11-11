@@ -441,5 +441,5 @@ echo "This is NOT the real /boot. This is a temporary /boot that software you in
 #expert on the linux kernel by any means, and I have no idea if this is
 #dangerous in any way, but updating /boot only when a permanent software
 #update is going to be made just seems like the cleanest alternative.
-sudo sed -i 's/\(^UUID=[-0-9a-zA-Z]*[ \t]*\/boot[ \t]\)/#\1/' $DEST/etc/fstab
-sudo sed -i 's/\(^\/dev\/...[0-9][ \t]*\/boot[ \t]\)/#\1/' $DEST/etc/fstab
+sudo sed -i '/^UUID=[-0-9a-zA-Z]*[ \t]*\/boot[ \t]/d' $DEST/etc/fstab
+sudo sed -i '/^\/dev\/...[0-9][ \t]*\/boot[ \t]/d' $DEST/etc/fstab
