@@ -498,7 +498,7 @@ sudo find ${DEST}/var/log -type f | while read file; do echo "emptied '$file'"; 
 # Add rupdate script to RAM Session #
 #####################################
 
-sudo cp -v $RUPDATE_FILE ${DEST}/usr/sbin/
+sudo cp $RUPDATE_FILE ${DEST}/usr/sbin/
 sudo chown root:root ${DEST}/usr/sbin/rupdate
 sudo chmod 755 ${DEST}/usr/sbin/rupdate
 #Add the root device to the rupdate script
@@ -508,7 +508,7 @@ sudo sed -i 's#\(REG_DEVICE=\)#\1"'$ROOT_DEV'"#' ${DEST}/usr/sbin/rupdate
 # Add rchroot script to RAM Session #
 #####################################
 
-sudo cp -v $RCHROOT_FILE ${DEST}/usr/sbin/
+sudo cp $RCHROOT_FILE ${DEST}/usr/sbin/
 sudo chown root:root ${DEST}/usr/sbin/rchroot
 sudo chmod 755 ${DEST}/usr/sbin/rchroot
 #Add root and boot devices to rchroot script
@@ -534,6 +534,7 @@ then
 else
 	echo
         echo "Squashfs image created successfully."
+	sleep 4
 fi
 
 ###########################################
@@ -544,6 +545,7 @@ fi
 Image_Size=$(sudo du -h /live/filesystem.squashfs | awk '{ print $1 }')
 
 #Tell user how much RAM they should have
+clear
 ECHO "The size of the image is $Image_Size. This MUST fit in your total RAM, with room to spare. If it does not, you either need to buy more RAM, or manually remove unimportant packages from your OS until the image fits."
 echo
 
