@@ -421,3 +421,8 @@ CopyFileSystem
 echo
 echo "Updating grub:"
 sudo update-grub
+
+#############################################
+# Add note to fake /boot that it's not real #
+#############################################
+echo "This is NOT the real /boot. This is a temporary /boot that software you install in the RAM Session can use to stay happy. The real boot is mounted when you use one of the scripts to update or make changes." | sudo tee $DEST/boot/IMPORTANT_README >/dev/null
