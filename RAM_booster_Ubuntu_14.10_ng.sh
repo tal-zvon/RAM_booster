@@ -426,3 +426,20 @@ sudo update-grub
 # Add note to fake /boot that it's not real #
 #############################################
 echo "This is NOT the real /boot. This is a temporary /boot that software you install in the RAM Session can use to stay happy. The real boot is mounted when you use one of the scripts to update or make changes." | sudo tee $DEST/boot/IMPORTANT_README >/dev/null
+
+##############################################
+# Remove /boot from RAM Session's /etc/fstab #
+##############################################
+#Reasoning:
+#Because of the nature of the RAM Session - the fact that it reverts
+#back to a previous state after a reboot, if /boot was placed into a
+#separate partition, it would be exempt from this action. In cases where
+#software is installed that makes changes to /boot, such as changes
+#to initrd images, a reboot would result in the software that made the
+#changes being removed while the initrd image would still contain the
+#changes. This would cause the OS to be in an inconsistent state. I'm no
+#expert on the linux kernel by any means, and I have no idea if this is
+#dangerous in any way, but updating /boot only when a permanent software
+#update is going to be made just seems like the cleanest alternative.
+sudo sed -i 's/\(^UUID=[-0-9a-zA-Z]*[ \t]*\/boot[ \t]\)/#\1/' $DEST/etc/fstab
+sudo sed -i 's/\(^\/dev\/...[0-9][ \t]*\/boot[ \t]\)/#\1/' $DEST/etc/fstab
