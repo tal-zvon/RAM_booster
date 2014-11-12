@@ -343,6 +343,10 @@ sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/console\)#\1
 				rsync -h -n -v ${MODULETORAMFILE} ${copyto} | grep "total size is" | grep -Eo "[0-9]+[.]*[0-9]*[mMgG]" 1>/dev/console\
 				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
+#Fix the "can't create /root/etc/fstab.d/live: nonexistent directory" error at boot
+#Appears on Ubuntu 14.10
+sudo sed -i 's|\(echo.*/root/etc/fstab.d/live$\)|[ -d /root/etc/fstab.d ] \&\& \1|g' /lib/live/boot/9990-fstab.sh
+
 #Hide umount /live/overlay error
 #sudo sed -i 's#\(umount /live/overlay\)#\1 2>/dev/null#g' /lib/live/boot/9990-overlay.sh 2>/dev/null
 
