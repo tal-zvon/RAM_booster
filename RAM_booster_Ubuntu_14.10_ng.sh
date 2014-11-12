@@ -335,11 +335,13 @@ sudo sed -i 's#\(if \[ "\${freespace}" -lt "\${size}" ]\)#\1 2>/dev/null#' /lib/
 #Make rsync at boot use human readable byte counter
 sudo sed -i 's/rsync -a --progress/rsync -a -h --progress/g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
-#Fix boot messages
-#sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/console\)#\1\
-#				echo -n " * `basename $MODULETORAMFILE` is: " 1>/dev/console\
-#				rsync -a -h -n --progress ${MODULETORAMFILE} ${copyto} | grep "total size is" | grep -Eo "[0-9]+[.]*[0-9]*[mMgG]" 1>/dev/console\
-#				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
+#Add right before rsync runs that says the total filesize of the squashfs image
+#It looks like this:
+# * filesystem.squashfs: 1.19G
+sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/console\)#\1\
+				echo -n " * `basename $MODULETORAMFILE` is: " 1>/dev/console\
+				rsync -h -n -v ${MODULETORAMFILE} ${copyto} | grep "total size is" | grep -Eo "[0-9]+[.]*[0-9]*[mMgG]" 1>/dev/console\
+				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
 #Hide umount /live/overlay error
 #sudo sed -i 's#\(umount /live/overlay\)#\1 2>/dev/null#g' /lib/live/boot/9990-overlay.sh 2>/dev/null
