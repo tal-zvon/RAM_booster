@@ -375,7 +375,7 @@ sudo sed -i 's#\(rsync -a -h --progress .*\)#\1\
 
 #Fix the "can't create /root/etc/fstab.d/live: nonexistent directory" error at boot
 #Appears on Ubuntu 14.10
-sudo sed -i 's|\(echo.*/root/etc/fstab.d/live$\)|[ -d /root/etc/fstab.d ] \&\& \1|g' /lib/live/boot/9990-fstab.sh
+sudo sed -i 's|^\(\t\t\)\(echo.*/root/etc/fstab.d/live$\)|\1[ -d /root/etc/fstab.d ] \&\& \2|g' /lib/live/boot/9990-fstab.sh
 
 #########################################
 # Update the kernel module dependencies #
