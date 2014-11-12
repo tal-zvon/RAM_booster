@@ -357,7 +357,7 @@ sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/console\)#ec
 				\1\
 				echo -n " * `basename $MODULETORAMFILE` is: " 1>/dev/console\
 				rsync -h -n -v ${MODULETORAMFILE} ${copyto} | grep "total size is" | grep -Eo "[0-9]+[.]*[0-9]*[mMgG]" 1>/dev/console\
-				sleep 1
+				sleep 1\
 				echo -ne "\\033c" 1>/dev/console\
 				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
