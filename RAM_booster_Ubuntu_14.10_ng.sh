@@ -357,7 +357,10 @@ sudo sed -i 's/rsync -a --progress/rsync -a -h --progress/g' /lib/live/boot/9990
 #	4. Add newline
 #	5. Show the rsync process copying filesystem.squashfs to RAM
 #	6. Add some newlines before letting the system continue
+#Note: The grep command checks to see if the fix has been applied to
+#the file already by looking for the string '033c' in it
 
+grep -q '033c' /lib/live/boot/9990-toram-todisk.sh ||
 sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/console\)#sleep 1\
 				echo -ne "\\033c" 1>/dev/console\
 				\1\
@@ -365,6 +368,7 @@ sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/console\)#sl
 				rsync -h -n -v ${MODULETORAMFILE} ${copyto} | grep "total size is" | grep -Eo "[0-9]+[.]*[0-9]*[mMgG]" 1>/dev/console\
 				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
+grep -q '033c' /lib/live/boot/9990-toram-todisk.sh ||
 sudo sed -i 's#\(rsync -a -h --progress .*\)#\1\
 				echo 1>/dev/console\
 				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
