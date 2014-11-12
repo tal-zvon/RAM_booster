@@ -335,7 +335,7 @@ sudo sed -i 's#\(if \[ "\${freespace}" -lt "\${size}" ]\)#\1 2>/dev/null#' /lib/
 #Make rsync at boot use human readable byte counter
 sudo sed -i 's/rsync -a --progress/rsync -a -h --progress/g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
-#Add right before rsync runs that says the total filesize of the squashfs image
+#Add line right before rsync runs that says the total filesize of the squashfs image
 #It looks like this:
 # * filesystem.squashfs: 1.19G
 sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/console\)#\1\
