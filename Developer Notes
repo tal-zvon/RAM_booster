@@ -106,10 +106,16 @@ Skipped time bug fix. I'll see if I need it when the RAM Session is bootable
 ===========================
 
 1. Download counter
-	Do an md5 hash of the external IP of someone, and send it to
-		some server I can check
-	Warn users I'm doing this, and that I can't actually tell what
-		their IP is
+	Either:
+		a)
+
+			Do an md5 hash of the external IP of someone,
+				and send it to some server I can check
+			Warn users I'm doing this, and that I can't
+				actually tell what their IP is
+		b)
+			See if github can already do the counting
+
 2. Make a VERSION global variable that is easy to change, which effects the version check
 	Make an extras_$VERSION folder for each release that has the
 		scripts, so they don't all update all the time from the same
