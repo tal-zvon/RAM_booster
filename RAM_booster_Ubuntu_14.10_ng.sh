@@ -350,13 +350,16 @@ sudo sed -i 's#\(if \[ "\${freespace}" -lt "\${size}" ]\)#\1 2>/dev/null#' /lib/
 #Make rsync at boot use human readable byte counter
 sudo sed -i 's/rsync -a --progress/rsync -a -h --progress/g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
-#The following 2 sed lines will cause this to be the boot process:
+#The following 2 sed lines change the way rsync appears on screen at boot
+#The final result will be this:
 #	1. Wait 1 second for user to finish reading whatever was on screen (or take a picture of it or something)
 #	2. Clear the screen
 #	3. Show:
 #		* Copying /live/medium/live/filesystem.squashfs to RAM
 #		* filesystem.squashfs: 1.19G
-#	4. Add some newlines before continuing
+#	4. Add newline
+#	5. Show the rsync process copying filesystem.squashfs to RAM
+#	6. Add some newlines before letting the system continue
 
 sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/console\)#sleep 1\
 				echo -ne "\\033c" 1>/dev/console\
