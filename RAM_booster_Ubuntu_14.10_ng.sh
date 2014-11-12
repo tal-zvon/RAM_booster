@@ -342,7 +342,7 @@ echo "Making boot process look nicer..."
 sudo sed -i 's/\(size=$( expr $(ls -la ${MODULETORAMFILE} | awk '\''{print $5}'\'') \/ 1024 + 5000\)/\1 2>\/dev\/null/' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
 #Hide 'sh:bad number' error on boot
-sudo sed -i 's#\(if \[ "\${freespace}" -lt "\${size}" ]\)#\1 2>/dev/null#' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
+sudo sed -i 's#\(if \[ "\${freespace}" -lt "\${size}" ]\)$#\1 2>/dev/null#' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
 #Make rsync at boot use human readable byte counter
 sudo sed -i 's/rsync -a --progress/rsync -a -h --progress/g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
