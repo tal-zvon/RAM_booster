@@ -16,14 +16,17 @@ ps ax | grep $$ | grep bash > /dev/null ||
 # Global Variables #
 ####################
 
+#Ubuntu Version this script will work on
+UBUNTU_VERSION='14.10'
+
 #Path to the file that contains all the functions for this script
-RAM_LIB='./ram_lib'
+RAM_LIB="extras_$UBUNTU_VERSION/ram_lib"
 
 #Path to the rupdate script
-RUPDATE_FILE='extras/rupdate'
+RUPDATE_FILE="extras_$UBUNTU_VERSION/rupdate"
 
 #Path to the rchroot script
-RCHROOT_FILE='extras/rchroot'
+RCHROOT_FILE="extras_$UBUNTU_VERSION/rchroot"
 
 #True if home is already on another partition. False otherwise
 HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo false)
@@ -133,14 +136,15 @@ esac
 # Check if OS is supported #
 ############################
 
-OS_Check=`cat /etc/issue | grep -o '[0-9][0-9]*\.[0-9][0-9]*'`
+OS_NAME=$(cat /etc/os-release | grep PRETTY_NAME | grep -o "\"[^\"]*\"" | tr -d '"')
+OS_VERSION=$(cat /etc/os-release | grep VERSION_ID | grep -o "\"[^\"]*\"" | tr -d '"')
 
-if [[ "$OS_Check" != "14.10" ]]
+if [[ "$OS_VERSION" != "$UBUNTU_VERSION" ]]
 then
 	clear
-	echo "This script was written to work with Ubuntu 14.10."
-	echo "You are running `cat /etc/issue | egrep -o '[a-Z]+[ ][0-9]+\.[0-9]+\.*[0-9]*'`."
-	ECHO "This means the script has NOT been tested for your OS. Run this at your own risk."
+	ECHO "This script was written to work with Ubuntu ${UBUNTU_VERSION}. You are running ${OS_NAME}. This means the script has NOT been tested for your OS."
+	echo
+	echo "Run this at your own risk."
 	echo 
 	echo "Press enter to continue or Ctrl+C to exit"
 	read key
