@@ -316,6 +316,21 @@ sudo apt-get -y --force-yes install live-boot 2>/dev/null >/dev/null ||
 
 echo "Packages installed successfully"
 
+#####################
+# Remove ureadahead #
+#####################
+#Reasoning:
+#ureadahead preloads commonly used programs to ram. Since we're loading
+#everything into RAM, it's unnecessary
+
+echo
+echo "Removing ureadahead..."
+
+sudo apt-get -y purge ureadahead 2>/dev/null >/dev/null ||
+{
+	ECHO "Failed to remove ureadahead. This is NOT a major problem."
+}
+
 #######################################################
 # Change a few things to make boot process look nicer #
 #######################################################
