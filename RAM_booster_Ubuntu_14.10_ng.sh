@@ -316,6 +316,21 @@ sudo apt-get -y --force-yes install live-boot 2>/dev/null >/dev/null ||
 
 echo "Packages installed successfully"
 
+#####################
+# Remove ureadahead #
+#####################
+#Reasoning:
+#ureadahead preloads commonly used programs to ram. Since we're loading
+#everything into RAM, it's unnecessary
+
+echo
+echo "Removing ureadahead..."
+
+sudo apt-get -y purge ureadahead 2>/dev/null >/dev/null ||
+{
+	ECHO "Failed to remove ureadahead. This is NOT a major problem."
+}
+
 #######################################################
 # Change a few things to make boot process look nicer #
 #######################################################
@@ -324,53 +339,43 @@ echo
 echo "Making boot process look nicer..."
 
 #Hide expr error on boot
-sudo sed -i 's/\(size=$( expr $(ls -la ${MODULETORAMFILE} | awk '\''{print $5}'\'') \/ 1024 + 5000\)/\1 2>\/dev\/null/' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
+sudo sed -i 's/\(size=$( expr $(ls -la ${MODULETORAMFILE} | awk '\''{print $5}'\'') \/ 1024 + 5000\)\( )\)$/\1 2>\/dev\/null\2/' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
 #Hide 'sh:bad number' error on boot
-sudo sed -i 's#\(if \[ "\${freespace}" -lt "\${size}" ]\)#\1 2>/dev/null#' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
-
-#Suppress udevadm output
-sudo sed -i 's#if ${PATH_ID} "${sysfs_path}"#if ${PATH_ID} "${sysfs_path}" 2>/dev/null#g' /lib/live/boot/9990-misc-helpers.sh 2>/dev/null
+sudo sed -i 's#\(if \[ "\${freespace}" -lt "\${size}" ]\)$#\1 2>/dev/null#' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
 #Make rsync at boot use human readable byte counter
 sudo sed -i 's/rsync -a --progress/rsync -a -h --progress/g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
-#Fix boot messages
-sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/console\)#\1\
+#The following 2 sed lines change the way rsync appears on screen at boot
+#The final result will be this:
+#	1. Wait 1 second for user to finish reading whatever was on screen (or take a picture of it or something)
+#	2. Clear the screen
+#	3. Show:
+#		* Copying /live/medium/live/filesystem.squashfs to RAM
+#		* filesystem.squashfs: 1.19G
+#	4. Add newline
+#	5. Show the rsync process copying filesystem.squashfs to RAM
+#	6. Add some newlines before letting the system continue
+#Note: The grep command checks to see if the fix has been applied to
+#the file already by looking for the string '033c' in it
+
+grep -q '033c' /lib/live/boot/9990-toram-todisk.sh ||
+sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/console\)#sleep 1\
+				echo -ne "\\033c" 1>/dev/console\
+				\1\
 				echo -n " * `basename $MODULETORAMFILE` is: " 1>/dev/console\
-				rsync -a -h -n --progress ${MODULETORAMFILE} ${copyto} | grep "total size is" | grep -Eo "[0-9]+[.]*[0-9]*[mMgG]" 1>/dev/console\
+				rsync -h -n -v ${MODULETORAMFILE} ${copyto} | grep "total size is" | grep -Eo "[0-9]+[.]*[0-9]*[mMgG]" 1>/dev/console\
 				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
-#Hide umount /live/overlay error
-sudo sed -i 's#\(umount /live/overlay\)#\1 2>/dev/null#g' /lib/live/boot/9990-overlay.sh 2>/dev/null
+grep -q '033c' /lib/live/boot/9990-toram-todisk.sh ||
+sudo sed -i 's#\(rsync -a -h --progress .*\)#\1\
+				echo 1>/dev/console\
+				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
 
-#Fix the "hwdb.bin: No such file or directory" bug (on boot)
-[ -e /lib/udev/hwdb.bin ] &&
-(
-	cat << $'\tHWDB'
-		#!/bin/sh
-		PREREQ=""
-		prereqs()
-		{
-			echo "$PREREQ"
-		}
-
-		case $1 in
-		prereqs)
-			prereqs
-			exit 0
-			;;
-		esac
-
-		. /usr/share/initramfs-tools/hook-functions             #provides copy_exec
-		rm -f ${DESTDIR}/lib/udev/hwdb.bin                      #copy_exec will not overwrite an existing file
-		copy_exec /lib/udev/hwdb.bin /lib/udev/hwdb.bin         #Takes location in filesystem and location in initramfs as arguments
-	HWDB
-) | sed 's/^\t\t//' | sudo tee /usr/share/initramfs-tools/hooks/hwdb.bin >/dev/null
-
-#Fix permissions
-sudo chmod 755 /usr/share/initramfs-tools/hooks/hwdb.bin
-sudo chown root:root /usr/share/initramfs-tools/hooks/hwdb.bin
+#Fix the "can't create /root/etc/fstab.d/live: nonexistent directory" error at boot
+#Appears on Ubuntu 14.10
+sudo sed -i 's|^\(\t\t\)\(echo.*/root/etc/fstab.d/live$\)|\1[ -d /root/etc/fstab.d ] \&\& \2|g' /lib/live/boot/9990-fstab.sh
 
 #########################################
 # Update the kernel module dependencies #
@@ -431,10 +436,10 @@ GrubEntry
 # Modify /etc/grub.d/10_linux so grub doesn't make menu entries #
 # for kernels that can't run                                    #
 #################################################################
-if ! grep -q '\[ x"$i" = x"$SKIP_KERNEL" \] && continue' /etc/grub.d/10_linux
-then
-	sudo sed -i 's@\(if grub_file_is_not_garbage\)@MOD_PREFIX=$([ -e /RAM_Session ] \&\& echo "/mnt/" || echo "")\n                  [ -d $MOD_PREFIX/lib/modules/${i#/boot/vmlinuz-} ] || continue\n                  \1@g' /etc/grub.d/10_linux
-fi
+
+#grep makes sure the fix isn't already applied
+grep -q 'MOD_PREFIX' /etc/grub.d/10_linux ||
+sudo sed -i 's@\(if grub_file_is_not_garbage\)@MOD_PREFIX=$([ -e /RAM_Session ] \&\& echo "/mnt/" || echo "")\n                  [ -d $MOD_PREFIX/lib/modules/${i#/boot/vmlinuz-} ] || continue\n                  \1@g' /etc/grub.d/10_linux
 
 ########################
 # Copy the OS to $DEST #
