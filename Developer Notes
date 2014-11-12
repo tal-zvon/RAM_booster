@@ -102,3 +102,19 @@ I skipped the "Hardlink bug" fix - I couldn't remember what it fixes
 ===========================
 
 Skipped time bug fix. I'll see if I need it when the RAM Session is bootable
+
+===========================
+
+1. Download counter
+	Do an md5 hash of the external IP of someone, and send it to
+		some server I can check
+	Warn users I'm doing this, and that I can't actually tell what
+		their IP is
+2. Make a VERSION global variable that is easy to change, which effects the version check
+	Make an extras_$VERSION folder for each release that has the
+		scripts, so they don't all update all the time from the same
+		script
+	Make a RELEASE_INFO file in the extras_$VERSION folders, and
+		show the user what changed before an update
+	Maybe have a way to revert an update, which with git, should be
+		pretty easy
