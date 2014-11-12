@@ -105,7 +105,7 @@ Skipped time bug fix. I'll see if I need it when the RAM Session is bootable
 
 ===========================
 
-1. Download counter
+Download counter
 	Either:
 		a)
 
@@ -116,11 +116,7 @@ Skipped time bug fix. I'll see if I need it when the RAM Session is bootable
 		b)
 			See if github can already do the counting
 
-2. Make a VERSION global variable that is easy to change, which effects the version check
-	Make an extras_$VERSION folder for each release that has the
-		scripts, so they don't all update all the time from the same
-		script
-	Make a RELEASE_INFO file in the extras_$VERSION folders, and
-		show the user what changed before an update
-	Maybe have a way to revert an update, which with git, should be
-		pretty easy
+===========================
+
+Maybe have a way to revert an update, which with git, should be
+	pretty easy
