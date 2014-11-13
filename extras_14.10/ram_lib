@@ -4,6 +4,19 @@ toLower()
 	echo $@ | tr "[:upper:]" "[:lower:]" 
 }
 
+#Writes all args directly to log file
+LOGGER() {
+	IFS=$'\n'
+	#echo "$@" >> $LOG
+	for LINE in $(echo "$@")
+	do
+		echo -e "${LINE}" >> $LOG
+	done
+
+	#Draw line
+	echo '================================================================================' >> $LOG
+}
+
 #Runs commands, and redirects the output to a log file
 COMMAND() {
 	IFS=$'\n'
