@@ -6,12 +6,10 @@ toLower()
 
 #Writes all args directly to log file
 LOGGER() {
-	IFS=$'\n'
-	#echo "$@" >> $LOG
-	for LINE in $(echo "$@")
+	while IFS= read -r LINE
 	do
-		echo -e "${LINE}" >> $LOG
-	done
+		echo "${LINE}" >> $LOG
+	done < <(echo "$@")
 
 	#Draw line
 	echo '================================================================================' >> $LOG
@@ -19,27 +17,25 @@ LOGGER() {
 
 #Runs commands, and redirects the output to a log file
 COMMAND() {
-	IFS=$'\n'
-
 	echo "COMMAND:" >> $LOG
 
 	#Write the command to the log file
 	#Some commands (especially sed commands) span multiple lines
 	#This indents every line
-	for LINE in $(echo "$@")
+	while IFS= read -r LINE
 	do
 		echo -e "\t${LINE}" >> $LOG
-	done
+	done < <(echo "$@")
 
 	echo "OUTPUT:" >> $LOG
 
 	#Write the stdout AND stderr to the log file
 	#Most output spans multiple lines
 	#This indents every line
-	for LINE in $("$@" 2>&1)
+	while IFS= read -r LINE
 	do
 		echo -e "\t${LINE}" >> $LOG
-	done
+	done < <("$@" 2>&1)
 
 	#Draw line
 	echo '================================================================================' >> $LOG
