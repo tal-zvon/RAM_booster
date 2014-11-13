@@ -308,23 +308,23 @@ clear
 echo "Installing essential packages:"
 
 echo "Running apt-get update..."
-sudo apt-get update 2>/dev/null >/dev/null
+COMMAND sudo apt-get update
 
 echo "Installing squashfs-tools..."
-sudo apt-get -y --force-yes install squashfs-tools 2>/dev/null >/dev/null ||
+COMMAND sudo apt-get -y --force-yes install squashfs-tools ||
 {
 	ECHO "squashfs-tools failed to install. You'll have to download and install it manually..."
 	exit 1
 }
 
 echo "Installing live-boot-initramfs-tools..."
-sudo apt-get -y --force-yes install live-boot-initramfs-tools 2>/dev/null >/dev/null ||
+COMMAND sudo apt-get -y --force-yes install live-boot-initramfs-tools ||
 {
 	ECHO "live-boot-initramfs-tools failed to install. You'll have to download and install it manually..."
 	exit 1
 }
 
-sudo apt-get -y --force-yes install live-boot 2>/dev/null >/dev/null ||
+COMMAND sudo apt-get -y --force-yes install live-boot ||
 {
 	ECHO "live-boot failed to install. You'll have to download and install it manually..."
 	exit 1
@@ -342,7 +342,7 @@ echo "Packages installed successfully"
 echo
 echo "Removing ureadahead..."
 
-sudo apt-get -y purge ureadahead 2>/dev/null >/dev/null ||
+COMMAND sudo apt-get -y purge ureadahead ||
 {
 	ECHO "Failed to remove ureadahead. This is NOT a major problem."
 }
@@ -355,13 +355,13 @@ echo
 echo "Making boot process look nicer..."
 
 #Hide expr error on boot
-sudo sed -i 's/\(size=$( expr $(ls -la ${MODULETORAMFILE} | awk '\''{print $5}'\'') \/ 1024 + 5000\)\( )\)$/\1 2>\/dev\/null\2/' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
+COMMAND sudo sed -i 's/\(size=$( expr $(ls -la ${MODULETORAMFILE} | awk '\''{print $5}'\'') \/ 1024 + 5000\)\( )\)$/\1 2>\/dev\/null\2/' /lib/live/boot/9990-toram-todisk.sh
 
 #Hide 'sh:bad number' error on boot
-sudo sed -i 's#\(if \[ "\${freespace}" -lt "\${size}" ]\)$#\1 2>/dev/null#' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
+COMMAND sudo sed -i 's#\(if \[ "\${freespace}" -lt "\${size}" ]\)$#\1 2>/dev/null#' /lib/live/boot/9990-toram-todisk.sh
 
 #Make rsync at boot use human readable byte counter
-sudo sed -i 's/rsync -a --progress/rsync -a -h --progress/g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
+COMMAND sudo sed -i 's/rsync -a --progress/rsync -a -h --progress/g' /lib/live/boot/9990-toram-todisk.sh
 
 #The following 2 sed lines change the way rsync appears on screen at boot
 #The final result will be this:
@@ -377,17 +377,17 @@ sudo sed -i 's/rsync -a --progress/rsync -a -h --progress/g' /lib/live/boot/9990
 #the file already by looking for the string '033c' in it
 
 grep -q '033c' /lib/live/boot/9990-toram-todisk.sh ||
-sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/console\)#sleep 1\
+COMMAND sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/console\)#sleep 1\
 				echo -ne "\\033c" 1>/dev/console\
 				\1\
 				echo -n " * `basename $MODULETORAMFILE` is: " 1>/dev/console\
 				rsync -h -n -v ${MODULETORAMFILE} ${copyto} | grep "total size is" | grep -Eo "[0-9]+[.]*[0-9]*[mMgG]" 1>/dev/console\
-				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
+				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh
 
 grep -q '033c' /lib/live/boot/9990-toram-todisk.sh ||
-sudo sed -i 's#\(rsync -a -h --progress .*\)#\1\
+COMMAND sudo sed -i 's#\(rsync -a -h --progress .*\)#\1\
 				echo 1>/dev/console\
-				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh 2>/dev/null
+				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh
 
 #Fix the "can't create /root/etc/fstab.d/live: nonexistent directory" error at boot
 #Appears on Ubuntu 14.10

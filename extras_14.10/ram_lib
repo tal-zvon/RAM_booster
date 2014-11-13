@@ -93,12 +93,12 @@ Ask_User_About_Home() {
 	#our script
 	if [[ -d /mnt/tmp ]]
 	then
-		sudo umount /mnt/tmp 2>/dev/null >/dev/null
+		COMMAND sudo umount /mnt/tmp
 	else
-		sudo mkdir -p /mnt/tmp
+		COMMAND sudo mkdir -p /mnt/tmp
 	fi
 
-	sudo mount $HOME_DEV /mnt/tmp 2>/dev/null
+	COMMAND sudo mount $HOME_DEV /mnt/tmp
 
 	#Check if there were problems mounting the device
 	if [[ "$?" != 0 ]]
@@ -111,7 +111,7 @@ Ask_User_About_Home() {
 	fi
 
 	#If user hits Ctrl+C, unmount /mnt/tmp
-	trap 'sudo umount /mnt/tmp 2>/dev/null && sudo rmdir /mnt/tmp; echo; exit 1' SIGINT
+	trap 'COMMAND sudo umount /mnt/tmp && sudo rmdir /mnt/tmp; echo; exit 1' SIGINT
 
 	#Count how many files are on the newly mounted device
 	FILE_COUNT=`sudo ls -lR /mnt/tmp | grep ^- | wc -l`
