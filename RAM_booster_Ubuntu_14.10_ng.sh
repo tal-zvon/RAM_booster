@@ -390,7 +390,7 @@ COMMAND sudo sed -i 's#\(echo " [*] Copying $MODULETORAMFILE to RAM" 1>/dev/cons
 
 grep -q '#Part 2' /lib/live/boot/9990-toram-todisk.sh ||
 COMMAND sudo sed -i 's#\(rsync -a -h --progress .*\)#\1\
-				#Part 2\
+				\#Part 2\
 				echo 1>/dev/console\
 				echo 1>/dev/console#g' /lib/live/boot/9990-toram-todisk.sh
 
