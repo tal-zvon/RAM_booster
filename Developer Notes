@@ -1,3 +1,24 @@
+PROBLEMS WITH 'COMMAND' FUNCTION:
+	1. It does NOT return the exit code of the command
+		Instead of running the command for the first time in the head of the for loop,
+		do something like this:
+
+			OUTPUT=$($@ 2>&1)
+			EXIT_CODE=$?
+
+		change
+			for LINE in $("$@" 2>&1)
+		to
+			for LINE in $("$OUTPUT" 2>&1)
+
+		and at the end of the function:
+			return $EXIT_CODE
+
+		Note: I have no idea if it'll work, but it's a start
+
+	2. It does not deal with blank lines well - I think it just skips them
+
+
 rsync stdout can be hidden at boot by doing the following:
 
 	Edit script
