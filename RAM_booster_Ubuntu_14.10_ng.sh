@@ -16,6 +16,9 @@ ps ax | grep $$ | grep bash > /dev/null ||
 # Global Variables #
 ####################
 
+#The log file
+LOG='/var/log/ram_booster.log'
+
 #Ubuntu Version this script will work on
 UBUNTU_VERSION='14.10'
 
@@ -86,6 +89,15 @@ else
 	clear
 	echo "The library that comes with RAM Booster ($RAM_LIB) was not found!"
 	exit 1
+fi
+
+######################
+# Delete old logfile #
+######################
+
+if [[ -e $LOG ]]
+then
+	sudo rm -f $LOG
 fi
 
 ############################
