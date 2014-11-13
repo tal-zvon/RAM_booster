@@ -16,6 +16,7 @@ LOGGER() {
 }
 
 #Runs commands, and redirects the output to a log file
+#Returns the exit code of the command
 COMMAND() {
 	echo "COMMAND:" >> $LOG
 
@@ -29,16 +30,21 @@ COMMAND() {
 
 	echo "OUTPUT:" >> $LOG
 
+	OUTPUT=$("$@" 2>&1)
+	EXIT_CODE=$?
+
 	#Write the stdout AND stderr to the log file
 	#Most output spans multiple lines
 	#This indents every line
 	while IFS= read -r LINE
 	do
 		echo -e "\t${LINE}" >> $LOG
-	done < <("$@" 2>&1)
+	done < <(echo "$OUTPUT")
 
 	#Draw line
 	echo '================================================================================' >> $LOG
+
+	return $EXIT_CODE
 }
 #Ask user if he really wants to uninstall
 #Note: Does NOT actually uninstall - that would be the
