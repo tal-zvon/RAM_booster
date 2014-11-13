@@ -91,14 +91,18 @@ else
 	exit 1
 fi
 
-######################
-# Delete old logfile #
-######################
+####################################################################
+# Overwrite old logfile, and check if we can write to $LOG at all, #
+# drawing a line on top to start the border of the first command   #
+####################################################################
 
-if [[ -e $LOG ]]
-then
-	sudo rm -f $LOG
-fi
+echo '================================================================================' | sudo tee $LOG 2>/dev/null ||
+{
+	clear
+	echo "Failed to write to '$LOG' log file"
+	echo "Exiting..."
+	exit 1
+}
 
 ############################
 # Check for rupdate script #
