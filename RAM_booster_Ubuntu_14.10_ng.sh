@@ -554,6 +554,13 @@ sudo chmod 755 ${DEST}/usr/sbin/rchroot
 sudo sed -i 's#\(ROOT_DEVICE=\)#\1"'$ROOT_DEV'"#' $DEST/usr/sbin/rchroot
 sudo sed -i 's#\(BOOT_DEVICE=\)#\1"'$BOOT_DEV'"#' $DEST/usr/sbin/rchroot
 
+##################################
+# Write some useful info to $LOG #
+##################################
+
+#/var/squashfs/etc/fstab
+LOGGER "$(echo -e "/var/squashfs/etc/fstab:\n"; cat /var/squashfs/etc/fstab)"
+
 #######################
 # Make squashfs image #
 #######################
