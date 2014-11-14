@@ -16,6 +16,10 @@ ps ax | grep $$ | grep bash > /dev/null ||
 # Global Variables #
 ####################
 
+#The folder where this script is located
+#Used to make sure that the script can be run from any folder
+SCRIPT_DIR=$(readlink -f $(dirname $0))
+
 #The log file
 LOG='/var/log/ram_booster.log'
 
@@ -23,13 +27,13 @@ LOG='/var/log/ram_booster.log'
 UBUNTU_VERSION='14.10'
 
 #Path to the file that contains all the functions for this script
-RAM_LIB="extras_$UBUNTU_VERSION/ram_lib"
+RAM_LIB="$SCRIPT_DIR/extras_$UBUNTU_VERSION/ram_lib"
 
 #Path to the rupdate script
-RUPDATE_FILE="extras_$UBUNTU_VERSION/rupdate"
+RUPDATE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rupdate"
 
 #Path to the rchroot script
-RCHROOT_FILE="extras_$UBUNTU_VERSION/rchroot"
+RCHROOT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rchroot"
 
 #True if home is already on another partition. False otherwise
 HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo false)
