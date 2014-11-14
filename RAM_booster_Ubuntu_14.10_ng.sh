@@ -117,6 +117,12 @@ LOGGER "$(echo -e "/etc/lsb-release:\n"; cat /etc/lsb-release)"
 #Some git info
 LOGGER "$(echo "Git:"; echo -en "\tCurrent Branch:\n\t\t"; git branch | grep '[*]'; echo -en "\tLatest Commit:\n\t\t"; git log --oneline -1 | cut -d ' ' -f 1)"
 
+#fdisk
+LOGGER "$(echo "fdisk -l:"; sudo fdisk -l)"
+
+#blkid which shows the UUIDs that fstab uses
+LOGGER "$(echo -e "blkid:\n"; sudo blkid)"
+
 ############################
 # Check for rupdate script #
 ############################
