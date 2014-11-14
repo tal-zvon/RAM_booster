@@ -18,6 +18,32 @@ LOGGER() {
 #Runs commands, and redirects the output to a log file
 #Returns the exit code of the command
 COMMAND() {
+	#See if anything is being piped to our function
+	#Eg:
+	#	echo 'stuff and junk' | COMMAND sudo tee 's/stuff/thing/g'
+	if [[ -t 0 ]]
+	then
+		#Nothing is being piped. Output is just the result of running the command
+		OUTPUT=$("$@" 2>&1)
+		EXIT_CODE=$?
+	else
+		#Something is being piped. Output is the result of piping
+		#STDIN to $@
+		STDIN=$(cat -)
+
+		echo "STDIN:" >> $LOG
+
+		#Indent STDIN lines for the log file
+		while IFS= read -r LINE
+		do
+			echo -e "\t${LINE}" >> $LOG
+		done < <(echo "$STDIN")
+
+		#Pipe stdin to $@
+		OUTPUT=$(echo "$STDIN" | "$@" 2>&1)
+		EXIT_CODE=$?
+	fi
+
 	echo "COMMAND:" >> $LOG
 
 	#Write the command to the log file
@@ -29,9 +55,6 @@ COMMAND() {
 	done < <(echo "$@")
 
 	echo "OUTPUT:" >> $LOG
-
-	OUTPUT=$("$@" 2>&1)
-	EXIT_CODE=$?
 
 	#Write the stdout AND stderr to the log file
 	#Most output spans multiple lines
