@@ -16,8 +16,15 @@ LOGGER() {
 }
 
 #Runs commands, and redirects the output to a log file
-#Returns the exit code of the command
+#Returns the exit code of the command so that it can easily be checked
+#if the command succeeded or failed:
+#	$ echo /etc/passwd | COMMAND grep 'some_user' && echo "User 'some_user' found' || echo "User 'some_user' not found"
 COMMAND() {
+	#Legend:
+	#	STDIN - contains the FULL output being piped to the command that this function is to run
+	#	$@ - contains the command itself that this function is supposed to run
+	#	OUTPUT - the final output the command passed to this function produces
+
 	#See if anything is being piped to our function
 	#Eg:
 	#	echo 'stuff and junk' | COMMAND sudo sed 's/stuff/thing/g'
