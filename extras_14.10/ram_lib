@@ -20,7 +20,7 @@ LOGGER() {
 COMMAND() {
 	#See if anything is being piped to our function
 	#Eg:
-	#	echo 'stuff and junk' | COMMAND sudo tee 's/stuff/thing/g'
+	#	echo 'stuff and junk' | COMMAND sudo sed 's/stuff/thing/g'
 	if [[ -t 0 ]]
 	then
 		#Nothing is being piped. Output is just the result of running the command
