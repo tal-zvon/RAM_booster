@@ -31,92 +31,77 @@ Speed up rsync filesystem copy to /var/squashfs during testing:
 
 Rewrite Notes:
 
+	RAM_booster script itself:
+		For now, I skipped the part that asks if we should add
+			a cron job for updates (CronAsk) since it's hard
+			to test without a working RAM Session
 
-add a way to automatically download new rupdate and rchroot
-make rchroot NOT require manual running of "rupdate -f"
+		I made almost no changes to the grub2 menu entry, except to make it work when indented
+			1. Make sure it works
+			2. Is there a way to simplify it, while still having it work in both the RAM Session and the Original OS?
 
-make updating of original OS not REQUIRE creation of squashfs image for RAM Session, that may or may not have been updated
+		Instead of messing with grub and stuff to try to make it so that grub-update always works, can I just have 2 /boot partitions?
+			Might not be possible
+			The other way is already working - I just need to clean it up
 
-The point of the rewrite is to make the code easier to read and debug
-	Make sure the code doesn't become overly complex
+		Split up long sed lines
+			I can replace a line in the script file with itself plus my first line, and then
+			have a second sed statement that replaces the line I just placed with itself and the
+			next line
 
-Maybe remove some things that complicate the code, like the whole gparted section
-	If it is very well organized, and I still think it's important, maybe leave it in
+		Uninstall function
+			Restore the files I changed with sed. I can either:
+				Purge the live-boot and other software that I installed, in order to delete the files I changed under /lib/live/boot
+				OR
+				Create a backup of the 2 files I change under /lib/live/boot, and have the Uninstall Function restore it
 
-Find out what causes the mounts to fail to unmount
+				Note: My idea of restoring lines one at a time seems way more difficult than the other 2 options.
 
-Create new forum thread?
+		When LVM is used, make sure the LOGGER gets info about how the volume groups and logical volumes are organized, so I can duplicate it
 
-===========================
+		I skipped the "Hardlink bug" fix - I couldn't remember what it fixes
 
-For now, I skipped the part that asks if we should add a cron job for updates (CronAsk)
-since it's hard to test without a working RAM Session
+		Skipped time bug fix. I'll see if I need it when the RAM Session is bootable
 
-===========================
+		Download counter
+			Either:
+				a)
+					Do an md5 hash of the MAC Address
+					or external IP of someone, and
+					send it to some server I can check
 
-Check the "Change a few things to make boot process look nicer" section at the end to see if all those fixes are necessary
+					Warn users I'm doing this, and
+					that I can't actually tell what
+					their IP or MAC Address is
+				b)
+					See if github can already do the counting
 
-===========================
+	rupdate script:
+		do NOT include 'rupdate -O'. It's unnecessary (as the
+			user can just boot the Original OS) and
+			complicates the code a lot
 
-I made almost no changes to the grub2 menu entry, except to make it work when indented
-1. Make sure it works
-2. Is there a way to simplify it, while still having it work in both the RAM Session and the Original OS?
+	rchroot script:
+		make sure rchroot does NOT require manual running of "rupdate -f"
 
-===========================
+	Other:
+		add a way to automatically download new rupdate and rchroot
 
-Split up long sed lines
-	I can replace a line in the script file with itself plus my first line, and then
-	have a second sed statement that replaces the line I just placed with itself and the
-	next line
+		The point of the rewrite is to make the code easier to read and debug
+			Make sure the code doesn't become overly complex
 
-===========================
+		Maybe remove some things that complicate the code,
+			like the whole gparted section
 
-Instead of messing with grub and stuff to try to make it so that grub-update always works, can I just have 2 /boot partitions?
-	Might not be possible
-	The other way is already working - I just need to clean it up
 
-===========================
+		Find out what causes the mounts to fail to unmount
+			Run GUI stuff, install random stuff, and then try to unmount the chroot
 
-To make it easier to debug people's problems when they post about them, I should do this:
-	Create a log file that:
-		Starts out with some info about the setup. Things like:
-			/etc/fstab
-			fdisk -l
-			vgdisplay/lvdisplay if relevant
-			commit they are running (in case a later version has already solved that problem)
-		Shows every option the user chose
-		Shows every command the script ran, including the stdout and stderr
-	Idea for how to do it:
-		COMMAND() { $@ &>/var/log/somefile.log; return $?; }
-		And then run every command like this:
-			"COMMAND sed -i ..."
-			"COMMAND rsync ..."
-the idea is this:
-	have the script be relatively clean and simple - if something fails, don't have it spit out large amounts of text on screen
-	have a log file that users can upload that makes it very easy to duplicate their setup, and try the same options they did
+		Maybe have a way to revert an update, which with git, should be
+			pretty easy
 
-===========================
+	Do a video:
 
-I skipped the "Hardlink bug" fix - I couldn't remember what it fixes
+	Thread on UF.org:
+		Probably create a new thread
 
-===========================
-
-Skipped time bug fix. I'll see if I need it when the RAM Session is bootable
-
-===========================
-
-Download counter
-	Either:
-		a)
-
-			Do an md5 hash of the external IP of someone,
-				and send it to some server I can check
-			Warn users I'm doing this, and that I can't
-				actually tell what their IP is
-		b)
-			See if github can already do the counting
-
-===========================
-
-Maybe have a way to revert an update, which with git, should be
-	pretty easy
