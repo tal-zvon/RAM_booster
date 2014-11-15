@@ -171,6 +171,31 @@ case "$1" in
 		;;
 esac
 
+################################################################
+# Write down some global variables to /etc/ram_booster.conf    #
+#         which rupdate, rchroot and the Uninstall_RAM_Booster #
+#         function can use                                     #
+# Note: Must be after section that checks args, or             #
+#         /etc/ram_booster.conf will get created even if       #
+#         script is called with --uninstall                    #
+################################################################
+
+#Create /etc/ram_booster.conf
+sudo touch /etc/ram_booster.conf &>/dev/null
+if [[ "$?" != "0" ]]
+then
+	echo "Failed to create /etc/ram_booster.conf"
+	echo "Exiting..."
+	exit 1
+fi
+
+#Set permissions on it
+sudo chown root:root /etc/ram_booster.conf
+sudo chmod 644 /etc/ram_booster.conf
+
+#Write $DEST to /etc/ram_booster.conf
+echo "DEST=$DEST" | sudo tee /etc/ram_booster.conf &>/dev/null
+
 ############################
 # Check if OS is supported #
 ############################
