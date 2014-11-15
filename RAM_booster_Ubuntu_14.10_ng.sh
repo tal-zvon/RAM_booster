@@ -585,8 +585,9 @@ sudo find ${DEST}/var/log -type f | while read file; do echo "emptied '$file'"; 
 sudo cp $RUPDATE_FILE ${DEST}/usr/sbin/
 sudo chown root:root ${DEST}/usr/sbin/rupdate
 sudo chmod 755 ${DEST}/usr/sbin/rupdate
-#Add the root device to the rupdate script
-sudo sed -i 's#\(REG_DEVICE=\)#\1"'$ROOT_DEV'"#' ${DEST}/usr/sbin/rupdate
+#Note: rupdate can now read this info from /var/lib/ram_booster/conf
+#	Add the root device to the rupdate script
+#	sudo sed -i 's#\(REG_DEVICE=\)#\1"'$ROOT_DEV'"#' ${DEST}/usr/sbin/rupdate
 
 #####################################
 # Add rchroot script to RAM Session #
@@ -595,9 +596,10 @@ sudo sed -i 's#\(REG_DEVICE=\)#\1"'$ROOT_DEV'"#' ${DEST}/usr/sbin/rupdate
 sudo cp $RCHROOT_FILE ${DEST}/usr/sbin/
 sudo chown root:root ${DEST}/usr/sbin/rchroot
 sudo chmod 755 ${DEST}/usr/sbin/rchroot
-#Add root and boot devices to rchroot script
-sudo sed -i 's#\(ROOT_DEVICE=\)#\1"'$ROOT_DEV'"#' $DEST/usr/sbin/rchroot
-sudo sed -i 's#\(BOOT_DEVICE=\)#\1"'$BOOT_DEV'"#' $DEST/usr/sbin/rchroot
+#Note: rupdate can now read this info from /var/lib/ram_booster/conf
+#	Add root and boot devices to rchroot script
+#	sudo sed -i 's#\(ROOT_DEVICE=\)#\1"'$ROOT_DEV'"#' $DEST/usr/sbin/rchroot
+#	sudo sed -i 's#\(BOOT_DEVICE=\)#\1"'$BOOT_DEV'"#' $DEST/usr/sbin/rchroot
 
 ##################################
 # Write some useful info to $LOG #
