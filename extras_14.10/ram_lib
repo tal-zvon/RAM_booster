@@ -156,7 +156,7 @@ Uninstall_RAM_Booster() {
 		echo
 		echo "Removing /var/lib/ram_booster/conf..."
 		sudo rm -f /var/lib/ram_booster/conf &&
-		suro rmdir /var/lib/ram_booster
+		sudo rmdir /var/lib/ram_booster
 	fi
 
 	#Delete /live
