@@ -12,6 +12,18 @@ ps ax | grep $$ | grep bash > /dev/null ||
 	exit 1
 }
 
+############################
+# Only run if user is root #
+############################
+
+uid=$(/usr/bin/id -u) && [ "$uid" = "0" ] || 
+{
+	clear
+	echo "You must be root to run $0."
+	echo "Try again with the command 'sudo $0'"
+	exit 1
+} 
+
 ####################
 # Global Variables #
 ####################
@@ -69,18 +81,6 @@ DEST=/var/squashfs/
 #	the partition that the RAM Session will be using as /home
 #false if it should not
 SHARE_HOME=true
-
-############################
-# Only run if user is root #
-############################
-
-uid=$(/usr/bin/id -u) && [ "$uid" = "0" ] || 
-{
-	clear
-	echo "You must be root to run $0."
-	echo "Try again with the command 'sudo $0'"
-	exit 1
-} 
 
 ##########################################################
 # Source the file with all the functions for this script #
