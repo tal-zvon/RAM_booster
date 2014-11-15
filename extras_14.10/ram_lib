@@ -209,13 +209,16 @@ Uninstall_RAM_Booster() {
 	sudo update-grub &>/dev/null
 
 	#Purge live-boot
-	echo
-	echo "Purging live-boot..."
-	sudo apt-get -y purge live-boot &>/dev/null
-
-	if [[ "$?" != "0" ]]
+	if sudo dpkg -l live-boot &>/dev/null
 	then
-		echo "Failed to purge live-boot"
+		echo
+		echo "Purging live-boot..."
+		sudo apt-get -y purge live-boot &>/dev/null
+
+		if [[ "$?" != "0" ]]
+		then
+			echo "Failed to purge live-boot"
+		fi
 	fi
 
 	#Tell user /home may not have been restored
