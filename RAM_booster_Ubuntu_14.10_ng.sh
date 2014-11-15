@@ -226,6 +226,47 @@ LOGGER "$(echo "fdisk -l:"; sudo fdisk -l)"
 #blkid which shows the UUIDs that fstab uses
 LOGGER "$(echo -e "blkid:\n"; sudo blkid)"
 
+#################################################################
+# If the user hits Ctrl+C at any point, have the script cleanup #
+#################################################################
+
+trap CtrlC SIGINT
+
+#################################################################
+# Write down some global variables to /var/lib/ram_booster/conf #
+#         which rupdate, rchroot and the Uninstall_RAM_Booster  #
+#         function can use                                      #
+# Note: Must be after section that checks args, or              #
+#         /var/lib/ram_booster/conf will get created even if    #
+#         script is called with --uninstall                     #
+#################################################################
+
+#Create the folder
+sudo mkdir /var/lib/ram_booster 2>/dev/null
+
+#Set permissions on the folder
+sudo chown root:root /var/lib/ram_booster 2>/dev/null
+sudo chmod 755 /var/lib/ram_booster 2>/dev/null
+
+#Create /var/lib/ram_booster/conf
+sudo touch /var/lib/ram_booster/conf &>/dev/null
+
+#Check exit status
+if [[ "$?" != "0" ]]
+then
+	echo
+	echo "Failed to create /var/lib/ram_booster/conf"
+	echo "Exiting..."
+	exit 1
+fi
+
+#Set permissions on the file
+sudo chown root:root /var/lib/ram_booster/conf 2>/dev/null
+sudo chmod 644 /var/lib/ram_booster/conf 2>/dev/null
+
+#Write $DEST to /var/lib/ram_booster/conf
+echo "DEST=$DEST" | sudo tee /var/lib/ram_booster/conf &>/dev/null
+
 #################################################
 # Find out what the user wants to do with /home # 
 #################################################
@@ -313,6 +354,12 @@ then
 				;;
 			*)
 				SHARE_HOME=true
+
+				#Write $SHARE_HOME to /var/lib/ram_booster/conf
+				#This is used by Uninstall_RAM_Booster to see if user should be warned
+				#that this will NOT be undone automatically
+				echo "SHARE_HOME=$SHARE_HOME" | sudo tee /var/lib/ram_booster/conf &>/dev/null
+
 				echo
 				ECHO "Your /etc/fstab will be modified to mount $HOME_DEV as your /home at boot"
 				sleep 4
@@ -320,47 +367,6 @@ then
 		esac
 	fi
 fi
-
-#################################################################
-# If the user hits Ctrl+C at any point, have the script cleanup #
-#################################################################
-
-trap CtrlC SIGINT
-
-#################################################################
-# Write down some global variables to /var/lib/ram_booster/conf #
-#         which rupdate, rchroot and the Uninstall_RAM_Booster  #
-#         function can use                                      #
-# Note: Must be after section that checks args, or              #
-#         /var/lib/ram_booster/conf will get created even if    #
-#         script is called with --uninstall                     #
-#################################################################
-
-#Create the folder
-sudo mkdir /var/lib/ram_booster 2>/dev/null
-
-#Set permissions on the folder
-sudo chown root:root /var/lib/ram_booster 2>/dev/null
-sudo chmod 755 /var/lib/ram_booster 2>/dev/null
-
-#Create /var/lib/ram_booster/conf
-sudo touch /var/lib/ram_booster/conf &>/dev/null
-
-#Check exit status
-if [[ "$?" != "0" ]]
-then
-	echo
-	echo "Failed to create /var/lib/ram_booster/conf"
-	echo "Exiting..."
-	exit 1
-fi
-
-#Set permissions on the file
-sudo chown root:root /var/lib/ram_booster/conf 2>/dev/null
-sudo chmod 644 /var/lib/ram_booster/conf 2>/dev/null
-
-#Write $DEST to /var/lib/ram_booster/conf
-echo "DEST=$DEST" | sudo tee /var/lib/ram_booster/conf &>/dev/null
 
 ###################################
 # Install some essential packages #

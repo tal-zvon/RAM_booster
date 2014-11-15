@@ -100,7 +100,14 @@ Uninstall_Prompt() {
 
 #Actually uninstalls the RAM Session
 Uninstall_RAM_Booster() {
-	#Note: At this point, global variables like $DEST are already set
+	#Note: At this point, some global variables like $DEST are already set
+	#	(the ones that didn't require asking the user questions)
+
+	#Check if user chose to let the script modify the Original OS's /etc/fstab by mounting a new /home
+	#$SHARE_HOME is used below to warn the user that this will NOT be undone
+	#if $SHARE_HOME is true, user did choose to use a new partition as their /home on the Original OS
+	#if $SHARE_HOME is false, the user did not
+	SHARE_HOME=$([[ -e /var/lib/ram_booster/conf ]] && { cat /var/lib/ram_booster/conf | grep -q 'SHARE_HOME=.*true.*' && echo true; } || echo false)
 
 	#Check if the script is running from within the RAM Session
         if [[ -e /RAM_Session ]]
@@ -221,9 +228,12 @@ Uninstall_RAM_Booster() {
 		fi
 	fi
 
-	#Tell user /home may not have been restored
-	echo
-	ECHO "If you chose to have your Original OS's /home use a separate partition during install, this will NOT be undone. /etc/fstab will still mount that partition as /home. If you want this undone, you can do so manually by modifying /etc/fstab."
+	#Tell user if /home was not restored in /etc/fstab
+	if $SHARE_HOME
+	then
+		echo
+		ECHO "You chose to have your Original OS's /home use a separate partition during install. This will NOT be undone. /etc/fstab will still mount that partition as /home. If you want this undone, you can do so manually by modifying /etc/fstab."
+	fi
 
 	#Done
 	echo
