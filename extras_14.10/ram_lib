@@ -204,16 +204,19 @@ Uninstall_RAM_Booster() {
 	fi
 
 	#Fix grub menu
-	echo
-	echo "Restoring grub menu..."
-	sudo sed -i 's/#\(GRUB_HIDDEN_TIMEOUT=0\)/\1/g' /etc/default/grub
+	if grep -q '#GRUB_HIDDEN_TIMEOUT=0' /etc/default/grub
+	then
+		echo
+		echo "Restoring grub menu..."
+		sudo sed -i 's/#\(GRUB_HIDDEN_TIMEOUT=0\)/\1/g' /etc/default/grub
 
-	#Fix /etc/grub.d/10_linux
+		#Fix /etc/grub.d/10_linux
 
-	#Update grub
-	echo
-	echo "Updating grub..."
-	sudo update-grub &>/dev/null
+		#Update grub
+		echo
+		echo "Updating grub..."
+		sudo update-grub &>/dev/null
+	fi
 
 	#Purge live-boot
 	if sudo dpkg -l live-boot &>/dev/null
