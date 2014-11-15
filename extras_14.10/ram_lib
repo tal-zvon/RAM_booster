@@ -176,7 +176,7 @@ Uninstall_RAM_Booster() {
 	then
 		echo
 		echo "Removing /etc/grub/06_RAMSESS..."
-		sudo rm -f /etc/grub/06_RAMSESS
+		sudo rm -f /etc/grub.d/06_RAMSESS
 	fi
 
 	#Delete log file
@@ -205,7 +205,7 @@ Uninstall_RAM_Booster() {
 	#Update grub
 	echo
 	echo "Updating grub..."
-	sudo update-grub >/dev/null
+	sudo update-grub &>/dev/null
 
 	#Purge live-boot
 	echo
