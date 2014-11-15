@@ -171,31 +171,6 @@ case "$1" in
 		;;
 esac
 
-################################################################
-# Write down some global variables to /var/run/ram_booster     #
-#         which rupdate, rchroot and the Uninstall_RAM_Booster #
-#         function can use                                     #
-# Note: Must be after section that checks args, or             #
-#         /var/run/ram_booster will get created even if        #
-#         script is called with --uninstall                    #
-################################################################
-
-#Create /var/run/ram_booster
-sudo touch /var/run/ram_booster &>/dev/null
-if [[ "$?" != "0" ]]
-then
-	echo "Failed to create /var/run/ram_booster"
-	echo "Exiting..."
-	exit 1
-fi
-
-#Set permissions on it
-sudo chown root:root /var/run/ram_booster
-sudo chmod 644 /var/run/ram_booster
-
-#Write $DEST to /var/run/ram_booster
-echo "DEST=$DEST" | sudo tee /var/run/ram_booster &>/dev/null
-
 ############################
 # Check if OS is supported #
 ############################
@@ -618,6 +593,38 @@ else
 	sleep 4
 fi
 
+####################
+# Clear the screen #
+####################
+clear
+
+################################################################
+# Write down some global variables to /var/run/ram_booster     #
+#         which rupdate, rchroot and the Uninstall_RAM_Booster #
+#         function can use                                     #
+# Note: Must be after section that checks args, or             #
+#         /var/run/ram_booster will get created even if        #
+#         script is called with --uninstall                    #
+################################################################
+
+#Create /var/run/ram_booster
+sudo touch /var/run/ram_booster &>/dev/null
+if [[ "$?" != "0" ]]
+then
+	echo
+	echo "WARNING: Failed to create /var/run/ram_booster"
+	ECHO "While your RAM Session should still work, your rupdate and rchroot scripts will not run properly"
+	echo "Please report this problem on my thread at Ubuntu Forums"
+	echo
+fi
+
+#Set permissions on it
+sudo chown root:root /var/run/ram_booster
+sudo chmod 644 /var/run/ram_booster
+
+#Write $DEST to /var/run/ram_booster
+echo "DEST=$DEST" | sudo tee /var/run/ram_booster &>/dev/null
+
 ###########################################
 # Tell user how much RAM they should have #
 ###########################################
@@ -626,7 +633,6 @@ fi
 Image_Size=$(sudo du -h /live/filesystem.squashfs | awk '{ print $1 }')
 
 #Tell user how much RAM they should have
-clear
 ECHO "The size of the image is $Image_Size. This MUST fit in your total RAM, with room to spare. If it does not, you either need to buy more RAM, or manually remove unimportant packages from your OS until the image fits."
 echo
 
