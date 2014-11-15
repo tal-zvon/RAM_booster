@@ -621,8 +621,7 @@ sudo touch /var/lib/ram_booster/conf &>/dev/null
 if [[ "$?" != "0" ]]
 then
 	echo "WARNING: Failed to create /var/lib/ram_booster/conf"
-	ECHO "While your RAM Session should still work, your rupdate and rchroot scripts will not run properly"
-	echo "Please report this problem on my thread at Ubuntu Forums"
+	ECHO "While your RAM Session should still work, your rupdate and rchroot scripts will not run properly. Please report this problem on my thread at Ubuntu Forums."
 	echo
 fi
 
