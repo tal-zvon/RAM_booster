@@ -100,7 +100,71 @@ Uninstall_Prompt() {
 
 #Actually uninstalls the RAM Session
 Uninstall_RAM_Booster() {
-	echo Uninstalling...
+	#Check if the script is running from within the RAM Session
+        if [[ -e /RAM_Session ]]
+        then
+                ECHO "You can only uninstall the RAM Session from within the Original OS."
+                exit 0
+        fi
+
+        echo "Uninstalling..."
+
+	#Load global variables from /etc/ram_booster.conf
+	if [[ -e /etc/ram_booster.conf ]]
+	then
+		DEST=$(cat /etc/ram_booster.conf | grep DEST= | sed 's/DEST=//g')
+	else
+		#If /etc/ram_booster.conf doesn't exist, assume $DEST is /var/squashfs (the default)
+		#just in case. We will check if it exists or not later anyways
+		DEST=/var/squashfs
+	fi
+
+        #Delete /mnt/tmp
+        if [[ -d /mnt/tmp ]]
+	then 
+		#Check if directory is a mountpoint
+		if $(mountpoint -q /mnt/tmp)
+		then
+			echo
+			echo "Unmounting /mnt/tmp..."
+			sudo umount /mnt/tmp &>/dev/null
+
+			#Check how unmount operation went
+			if [[ "$?" != "0" ]]
+			then
+				echo "/mnt/tmp failed to unmount. Is it in use?"
+			else
+				echo "Removing /mnt/tmp..."
+				sudo rmdir /mnt/tmp
+			fi
+		else
+			echo
+			echo "Removing /mnt/tmp..."
+			sudo rmdir /mnt/tmp
+		fi
+        fi
+
+        #Delete $DEST
+        if [[ -d $DEST ]]; then 
+		echo
+                echo "Removing ${DEST}..."
+                sudo rm -rf "${DEST}" &>/dev/null
+
+		#Check how unmount operation went
+		if [[ "$?" != "0" ]]
+		then
+			echo "Failed to remove ${DEST}"
+		fi
+        fi
+
+	#Delete /etc/ram_booster.conf
+	if [[ -e /etc/ram_booster.conf ]]
+	then
+		echo
+		echo "Removing /etc/ram_booster.conf..."
+		sudo rm -f /etc/ram_booster.conf
+	fi
+
 }
 
 #Allows usage of "ECHO" instead of "echo"
