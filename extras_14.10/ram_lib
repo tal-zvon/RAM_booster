@@ -100,6 +100,8 @@ Uninstall_Prompt() {
 
 #Actually uninstalls the RAM Session
 Uninstall_RAM_Booster() {
+	#Note: At this point, global variables like $DEST are already set
+
 	#Check if the script is running from within the RAM Session
         if [[ -e /RAM_Session ]]
         then
@@ -108,16 +110,6 @@ Uninstall_RAM_Booster() {
         fi
 
         echo "Uninstalling..."
-
-	#Load global variables from /etc/ram_booster.conf
-	if [[ -e /etc/ram_booster.conf ]]
-	then
-		DEST=$(cat /etc/ram_booster.conf | grep DEST= | sed 's/DEST=//g')
-	else
-		#If /etc/ram_booster.conf doesn't exist, assume $DEST is /var/squashfs (the default)
-		#just in case. We will check if it exists or not later anyways
-		DEST=/var/squashfs
-	fi
 
         #Delete /mnt/tmp
         if [[ -d /mnt/tmp ]]
@@ -145,7 +137,7 @@ Uninstall_RAM_Booster() {
         fi
 
         #Delete $DEST
-        if [[ -d $DEST ]]; then 
+        if [[ -d "$DEST" ]]; then 
 		echo
                 echo "Removing ${DEST}..."
                 sudo rm -rf "${DEST}" &>/dev/null
