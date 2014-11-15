@@ -344,7 +344,7 @@ sudo chown root:root /var/lib/ram_booster 2>/dev/null
 sudo chmod 755 /var/lib/ram_booster 2>/dev/null
 
 #Create /var/lib/ram_booster/conf
-sudo touch /var/libX/ram_booster/conf &>/dev/null
+sudo touch /var/lib/ram_booster/conf &>/dev/null
 
 #Check exit status
 if [[ "$?" != "0" ]]
