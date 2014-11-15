@@ -109,6 +109,7 @@ Uninstall_RAM_Booster() {
                 exit 0
         fi
 
+	clear
         echo "Uninstalling..."
 
         #Delete /mnt/tmp
@@ -203,8 +204,8 @@ Uninstall_RAM_Booster() {
 
 	#Update grub
 	echo
-	echo "Updating grub:"
-	sudo update-grub
+	echo "Updating grub..."
+	sudo update-grub >/dev/null
 
 	#Purge live-boot
 	echo
@@ -221,6 +222,7 @@ Uninstall_RAM_Booster() {
 	ECHO "If you chose to have your Original OS's /home use a separate partition during install, this will NOT be undone. /etc/fstab will still mount that partition as /home. If you want this undone, you can do so manually by modifying /etc/fstab."
 
 	#Done
+	echo
 	echo "Uninstall Complete!"
 	exit 0
 }
