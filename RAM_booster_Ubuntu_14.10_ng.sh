@@ -576,13 +576,13 @@ sudo find ${DEST}/var/run ${DEST}/var/crash ${DEST}/var/mail ${DEST}/var/spool $
 #Delete only OLD log files
 echo
 echo "Deleting old log files:"
-sudo find ${DEST}/var/log -type f -iregex '.*\.[0-9].*' -exec rm -v {} \;
-sudo find ${DEST}/var/log -type f -iname '*.gz' -exec rm -v {} \;
+sudo find ${DEST%/}/var/log -type f -iregex '.*\.[0-9].*' -exec rm -v {} \;
+sudo find ${DEST%/}/var/log -type f -iname '*.gz' -exec rm -v {} \;
 
 #Clean current log files
 echo
 echo "Cleaning recent log files:"
-sudo find ${DEST}/var/log -type f | while read file; do echo "emptied '$file'"; echo -n '' | sudo tee $file; done 
+sudo find ${DEST%/}/var/log -type f | while read file; do echo "emptied '$file'"; echo -n '' | sudo tee $file; done 
 
 #####################################
 # Add rupdate script to RAM Session #

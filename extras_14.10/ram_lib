@@ -455,7 +455,7 @@ GrubEntry()
 	fi
 
 	#Replace DEST with $DEST in /etc/grub.d/06_RAMSESS
-	sudo sed -i "s|DEST|${DEST}|g" /etc/grub.d/06_RAMSESS
+	sudo sed -i "s|DEST|${DEST%/}|g" /etc/grub.d/06_RAMSESS
 
 	#Replace BOOT_UUID and ROOT_UUID above with actual values
 	sudo sed -i 's/ROOT_UUID/'$ROOT_UUID'/' /etc/grub.d/06_RAMSESS
