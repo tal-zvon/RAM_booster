@@ -598,31 +598,40 @@ fi
 ####################
 clear
 
-################################################################
-# Write down some global variables to /var/run/ram_booster     #
-#         which rupdate, rchroot and the Uninstall_RAM_Booster #
-#         function can use                                     #
-# Note: Must be after section that checks args, or             #
-#         /var/run/ram_booster will get created even if        #
-#         script is called with --uninstall                    #
-################################################################
+#################################################################
+# Write down some global variables to /var/lib/ram_booster/conf #
+#         which rupdate, rchroot and the Uninstall_RAM_Booster  #
+#         function can use                                      #
+# Note: Must be after section that checks args, or              #
+#         /var/lib/ram_booster/conf will get created even if    #
+#         script is called with --uninstall                     #
+#################################################################
 
-#Create /var/run/ram_booster
-sudo touch /var/run/ram_booster &>/dev/null
+#Create the folder
+sudo mkdir /var/lib/ram_booster 2>/dev/null
+
+#Set permissions on the folder
+sudo chown root:root /var/lib/ram_booster 2>/dev/null
+sudo chmod 755 /var/lib/ram_booster 2>/dev/null
+
+#Create /var/lib/ram_booster/conf
+sudo touch /var/lib/ram_booster/conf &>/dev/null
+
+#Check exit status
 if [[ "$?" != "0" ]]
 then
-	echo "WARNING: Failed to create /var/run/ram_booster"
+	echo "WARNING: Failed to create /var/lib/ram_booster/conf"
 	ECHO "While your RAM Session should still work, your rupdate and rchroot scripts will not run properly"
 	echo "Please report this problem on my thread at Ubuntu Forums"
 	echo
 fi
 
-#Set permissions on it
-sudo chown root:root /var/run/ram_booster 2>/dev/null
-sudo chmod 644 /var/run/ram_booster 2>/dev/null
+#Set permissions on the file
+sudo chown root:root /var/lib/ram_booster/conf 2>/dev/null
+sudo chmod 644 /var/lib/ram_booster/conf 2>/dev/null
 
-#Write $DEST to /var/run/ram_booster
-echo "DEST=$DEST" | sudo tee /var/run/ram_booster &>/dev/null
+#Write $DEST to /var/lib/ram_booster/conf
+echo "DEST=$DEST" | sudo tee /var/lib/ram_booster/conf &>/dev/null
 
 ###########################################
 # Tell user how much RAM they should have #
