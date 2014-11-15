@@ -637,4 +637,5 @@ echo
 
 ECHO "Note: Do NOT format your original OS that you made the RAM Session out of, as the squashfs image still resides there. So does /var/squashfs, the folder the image gets recreated from everytime you make any changes to the RAM Session through the update scripts. You should be able to shrink the partition with your original OS however in order to save space."
 
+echo
 ECHO "Also, if you switch between your original OS and your RAM Session a lot, and forget which one you are in, do an 'ls /'. If you see the /Original_OS file, you are in the original OS. If you see the /RAM_Session file, you are in the RAM Session."
