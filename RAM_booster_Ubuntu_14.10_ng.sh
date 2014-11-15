@@ -24,6 +24,17 @@ uid=$(/usr/bin/id -u) && [ "$uid" = "0" ] ||
 	exit 1
 } 
 
+##############################################################################
+# Check if the user is trying to run this script from within the RAM Session #
+##############################################################################
+
+if [ -e /RAM_Session ]
+then
+	clear
+	echo "This script cannot be run from inside the RAM Session."
+	exit 0
+fi
+
 ####################
 # Global Variables #
 ####################
@@ -95,37 +106,23 @@ else
 	exit 1
 fi
 
-####################################################################
-# Overwrite old logfile, and check if we can write to $LOG at all, #
-# drawing a line on top to start the border of the first command   #
-####################################################################
+############################
+# Check if OS is supported #
+############################
 
-echo '================================================================================' | sudo tee $LOG &>/dev/null ||
-{
+OS_NAME=$(cat /etc/os-release | grep PRETTY_NAME | grep -o "\"[^\"]*\"" | tr -d '"')
+OS_VERSION=$(cat /etc/os-release | grep VERSION_ID | grep -o "\"[^\"]*\"" | tr -d '"')
+
+if [[ "$OS_VERSION" != "$UBUNTU_VERSION" ]]
+then
 	clear
-	echo "Failed to write to '$LOG' log file"
-	echo "Exiting..."
-	exit 1
-}
-
-##################################
-# Write some useful info to $LOG #
-##################################
-
-#/etc/fstab
-LOGGER "$(echo -e "/etc/fstab:\n"; cat /etc/fstab)"
-
-#/etc/lsb-release
-LOGGER "$(echo -e "/etc/lsb-release:\n"; cat /etc/lsb-release)"
-
-#Some git info
-LOGGER "$(echo "Git:"; echo -en "\tCurrent Branch:\n\t\t"; git branch | grep '[*]'; echo -en "\tLatest Commit:\n\t\t"; git log --oneline -1 | cut -d ' ' -f 1)"
-
-#fdisk
-LOGGER "$(echo "fdisk -l:"; sudo fdisk -l)"
-
-#blkid which shows the UUIDs that fstab uses
-LOGGER "$(echo -e "blkid:\n"; sudo blkid)"
+	ECHO "This script was written to work with Ubuntu ${UBUNTU_VERSION}. You are running ${OS_NAME}. This means the script has NOT been tested for your OS."
+	echo
+	echo "Run this at your own risk."
+	echo 
+	echo "Press enter to continue or Ctrl+C to exit"
+	read key
+fi
 
 ############################
 # Check for rupdate script #
@@ -171,24 +168,6 @@ case "$1" in
 		;;
 esac
 
-############################
-# Check if OS is supported #
-############################
-
-OS_NAME=$(cat /etc/os-release | grep PRETTY_NAME | grep -o "\"[^\"]*\"" | tr -d '"')
-OS_VERSION=$(cat /etc/os-release | grep VERSION_ID | grep -o "\"[^\"]*\"" | tr -d '"')
-
-if [[ "$OS_VERSION" != "$UBUNTU_VERSION" ]]
-then
-	clear
-	ECHO "This script was written to work with Ubuntu ${UBUNTU_VERSION}. You are running ${OS_NAME}. This means the script has NOT been tested for your OS."
-	echo
-	echo "Run this at your own risk."
-	echo 
-	echo "Press enter to continue or Ctrl+C to exit"
-	read key
-fi
-
 ########################################################
 # Check if RAM_booster has already run on this machine #
 ########################################################
@@ -215,16 +194,37 @@ then
 	esac
 fi
 
-##############################################################################
-# Check if the user is trying to run this script from within the RAM Session #
-##############################################################################
+####################################################################
+# Overwrite old logfile, and check if we can write to $LOG at all, #
+# drawing a line on top to start the border of the first command   #
+####################################################################
 
-if [ -e /RAM_Session ]
-then
+echo '================================================================================' | sudo tee $LOG &>/dev/null ||
+{
 	clear
-	echo "This script cannot be run from inside the RAM Session."
-	exit 0
-fi
+	echo "Failed to write to '$LOG' log file"
+	echo "Exiting..."
+	exit 1
+}
+
+##################################
+# Write some useful info to $LOG #
+##################################
+
+#/etc/fstab
+LOGGER "$(echo -e "/etc/fstab:\n"; cat /etc/fstab)"
+
+#/etc/lsb-release
+LOGGER "$(echo -e "/etc/lsb-release:\n"; cat /etc/lsb-release)"
+
+#Some git info
+LOGGER "$(echo "Git:"; echo -en "\tCurrent Branch:\n\t\t"; git branch | grep '[*]'; echo -en "\tLatest Commit:\n\t\t"; git log --oneline -1 | cut -d ' ' -f 1)"
+
+#fdisk
+LOGGER "$(echo "fdisk -l:"; sudo fdisk -l)"
+
+#blkid which shows the UUIDs that fstab uses
+LOGGER "$(echo -e "blkid:\n"; sudo blkid)"
 
 #################################################
 # Find out what the user wants to do with /home # 
