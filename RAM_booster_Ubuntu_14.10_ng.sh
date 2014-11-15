@@ -611,7 +611,6 @@ clear
 sudo touch /var/run/ram_booster &>/dev/null
 if [[ "$?" != "0" ]]
 then
-	echo
 	echo "WARNING: Failed to create /var/run/ram_booster"
 	ECHO "While your RAM Session should still work, your rupdate and rchroot scripts will not run properly"
 	echo "Please report this problem on my thread at Ubuntu Forums"
@@ -619,8 +618,8 @@ then
 fi
 
 #Set permissions on it
-sudo chown root:root /var/run/ram_booster
-sudo chmod 644 /var/run/ram_booster
+sudo chown root:root /var/run/ram_booster 2>/dev/null
+sudo chmod 644 /var/run/ram_booster 2>/dev/null
 
 #Write $DEST to /var/run/ram_booster
 echo "DEST=$DEST" | sudo tee /var/run/ram_booster &>/dev/null
