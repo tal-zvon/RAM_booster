@@ -57,6 +57,8 @@ Rewrite Notes:
 
 				Note: My idea of restoring lines one at a time seems way more difficult than the other 2 options.
 
+			If I need to, add the code that restores /etc/grub.d/10_linux
+
 		When LVM is used, make sure the LOGGER gets info about how the volume groups and logical volumes are organized, so I can duplicate it
 
 		I skipped the "Hardlink bug" fix - I couldn't remember what it fixes
