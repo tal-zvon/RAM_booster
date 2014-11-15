@@ -76,13 +76,19 @@ Rewrite Notes:
 				b)
 					See if github can already do the counting
 
+	Stop using sed to directly edit rupdate and rchroot - let them use /etc/ram_booster.conf to figure stuff out
+
 	rupdate script:
 		do NOT include 'rupdate -O'. It's unnecessary (as the
 			user can just boot the Original OS) and
 			complicates the code a lot
 
+		use /etc/ram_booster.conf to find out the root device
+
 	rchroot script:
 		make sure rchroot does NOT require manual running of "rupdate -f"
+
+		use /etc/ram_booster.conf to find out the root and boot devices
 
 	Other:
 		add a way to automatically download new rupdate and rchroot
