@@ -142,7 +142,7 @@ Uninstall_RAM_Booster() {
                 echo "Removing ${DEST}..."
                 sudo rm -rf "${DEST}" &>/dev/null
 
-		#Check how unmount operation went
+		#Check how delete operation went
 		if [[ "$?" != "0" ]]
 		then
 			echo "Failed to remove ${DEST}"
