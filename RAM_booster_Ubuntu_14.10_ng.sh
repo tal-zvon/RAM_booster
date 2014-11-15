@@ -100,7 +100,7 @@ fi
 # drawing a line on top to start the border of the first command   #
 ####################################################################
 
-echo '================================================================================' | sudo tee $LOG 2>/dev/null ||
+echo '================================================================================' | sudo tee $LOG &>/dev/null ||
 {
 	clear
 	echo "Failed to write to '$LOG' log file"
