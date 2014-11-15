@@ -50,13 +50,6 @@ Rewrite Notes:
 			next line
 
 		Uninstall function
-			Restore the files I changed with sed. I can either:
-				Purge the live-boot and other software that I installed, in order to delete the files I changed under /lib/live/boot
-				OR
-				Create a backup of the 2 files I change under /lib/live/boot, and have the Uninstall Function restore it
-
-				Note: My idea of restoring lines one at a time seems way more difficult than the other 2 options.
-
 			If I need to, add the code that restores /etc/grub.d/10_linux
 
 		When LVM is used, make sure the LOGGER gets info about how the volume groups and logical volumes are organized, so I can duplicate it
@@ -78,19 +71,19 @@ Rewrite Notes:
 				b)
 					See if github can already do the counting
 
-	Stop using sed to directly edit rupdate and rchroot - let them use /etc/ram_booster.conf to figure stuff out
+	Stop using sed to directly edit rupdate and rchroot - let them use /var/lib/ram_booster/conf to figure stuff out
 
 	rupdate script:
 		do NOT include 'rupdate -O'. It's unnecessary (as the
 			user can just boot the Original OS) and
 			complicates the code a lot
 
-		use /etc/ram_booster.conf to find out the root device
+		use /var/lib/ram_booster/conf to find out the root device
 
 	rchroot script:
 		make sure rchroot does NOT require manual running of "rupdate -f"
 
-		use /etc/ram_booster.conf to find out the root and boot devices
+		use /var/lib/ram_booster/conf to find out the root and boot devices
 
 	Other:
 		add a way to automatically download new rupdate and rchroot
