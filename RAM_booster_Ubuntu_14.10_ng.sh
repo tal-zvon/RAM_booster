@@ -58,6 +58,9 @@ RUPDATE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rupdate"
 #Path to the rchroot script
 RCHROOT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rchroot"
 
+#Path to the rlib library
+RLIB_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rlib"
+
 #True if home is already on another partition. False otherwise
 HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo false)
 
@@ -143,6 +146,17 @@ if [[ ! -e $RCHROOT_FILE ]]
 then
 	clear
 	echo "\"$RCHROOT_FILE\" not found!"
+	exit 1
+fi
+
+##########################
+# Check for RLIB library #
+##########################
+
+if [[ ! -e $RLIB_FILE ]]
+then
+	clear
+	echo "\"$RLIB_FILE\" not found!"
 	exit 1
 fi
 
@@ -234,8 +248,8 @@ trap CtrlC SIGINT
 
 #################################################################
 # Write down some global variables to /var/lib/ram_booster/conf #
-#         which rupdate, rchroot and the Uninstall_RAM_Booster  #
-#         function can use                                      #
+#         which rlib, rupdate, rchroot and the                  #
+#         Uninstall_RAM_Booster function can use                #
 # Note: Must be after section that checks args, or              #
 #         /var/lib/ram_booster/conf will get created even if    #
 #         script is called with --uninstall                     #
@@ -266,6 +280,17 @@ sudo chmod 644 /var/lib/ram_booster/conf 2>/dev/null
 
 #Write $DEST to /var/lib/ram_booster/conf
 echo "DEST=$DEST" | sudo tee /var/lib/ram_booster/conf &>/dev/null
+
+#####################################
+# Add rlib to /var/lib/ram_booster/ #
+#####################################
+
+#Copy the script
+sudo cp $RLIB_FILE /var/lib/ram_booster/
+
+#Set permissions
+sudo chown root:root /var/lib/ram_booster/rlib 2>/dev/null
+sudo chmod 644 /var/lib/ram_booster/rlib 2>/dev/null
 
 #################################################
 # Find out what the user wants to do with /home # 
