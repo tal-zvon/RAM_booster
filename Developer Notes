@@ -32,6 +32,8 @@ Speed up rsync filesystem copy to /var/squashfs during testing:
 Rewrite Notes:
 
 	RAM_booster script itself:
+		Add a header like my original script has with author name, date, etc
+
 		For now, I skipped the part that asks if we should add
 			a cron job for updates (CronAsk) since it's hard
 			to test without a working RAM Session
