@@ -1,0 +1,11 @@
+#Mount $DEST (RAM Session)
+MOUNT_RS()
+{
+
+}
+
+#Unmount $DEST (RAM Session)
+UMOUNT_RS()
+{
+
+}
