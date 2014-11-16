@@ -1,3 +1,27 @@
+working on rupdate and rchroot:
+
+	If you want to work on rupdate and rchroot from within the RAM
+	Session, it is best not to spend your time copying the scripts
+	between the repo and /usr/sbin/. The best way to do this is to:
+
+	$ sudo rm -v /usr/sbin/rchroot /usr/sbin/rupdate
+	$ sudo ln -s RAM_Booster/extras_14.10/rupdate /usr/sbin/rupdate
+	$ sudo ln -s RAM_Booster/extras_14.10/rchroot /usr/sbin/rchroot
+	$ cd RAM_Booster
+	$ git config core.fileMode false
+	$ chmod a+x extra_14.10/rupdate
+	$ chmod a+x extra_14.10/rchroot
+
+	In case it's not obvious, this creates symlinks to the files
+	directly in the git repo, and tells git to not care about the
+	execute bit of the scripts.
+
+	Note: "Not care" means keep whatever the script files had set for
+	execute bits the last time git cared, which in this case was unset
+
+	Note 2: This core.fileMode setting is NOT uploaded during pushes
+	to the remote repo
+
 rsync stdout can be hidden at boot by doing the following:
 
 	Edit script
