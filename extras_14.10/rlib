@@ -6,6 +6,8 @@
 ROOT_UUID=$(cat /var/lib/ram_booster/conf | grep ROOT_UUID= | sed 's/ROOT_UUID=//g')
 BOOT_UUID=$(cat /var/lib/ram_booster/conf | grep BOOT_UUID= | sed 's/BOOT_UUID=//g')
 DEST=$(cat /var/lib/ram_booster/conf | grep DEST= | sed 's/DEST=//g')
+#Remove leading slash from $DEST
+DEST="${DEST#/}"
 Orig_OS='/mnt/Original_OS'
 
 #Mount $DEST (RAM Session)
@@ -46,6 +48,37 @@ MOUNT_RS()
 		return 1
 	}
 	
+	#Bind /proc
+	sudo mount -o bind /proc "$Orig_OS/$DEST/proc" ||
+	{
+		echo "Failed to bind /proc to ${Orig_OS%/}/${DEST%/}/proc"
+		UMOUNT_RS
+		return 1
+	}
+
+	#Bind /dev
+	sudo mount -o bind /dev "$Orig_OS/$DEST/dev" ||
+	{
+		echo "Failed to bind /dev to ${Orig_OS%/}/${DEST%/}/dev"
+		UMOUNT_RS
+		return 1
+	}
+
+	#Bind /dev/pts
+	sudo mount -o bind /dev/pts "$Orig_OS/$DEST/dev/pts" ||
+	{
+		echo "Failed to bind /dev/pts to ${Orig_OS%/}/${DEST%/}/dev/pts"
+		UMOUNT_RS
+		return 1
+	}
+
+	#Bind /sys
+	sudo mount -o bind /sys "$Orig_OS/$DEST/sys" ||
+	{
+		echo "Failed to bind /sys to ${Orig_OS%/}/${DEST%/}/sys"
+		UMOUNT_RS
+		return 1
+	}
 }
 
 #Unmount $DEST (RAM Session)
