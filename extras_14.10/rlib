@@ -5,6 +5,7 @@
 #/boot and / of the Original OS
 ROOT_UUID=$(cat /var/lib/ram_booster/conf | grep ROOT_UUID= | sed 's/ROOT_UUID=//g')
 BOOT_UUID=$(cat /var/lib/ram_booster/conf | grep BOOT_UUID= | sed 's/BOOT_UUID=//g')
+HOME_UUID=$(cat /var/lib/ram_booster/conf | grep HOME_UUID= | sed 's/HOME_UUID=//g')
 DEST=$(cat /var/lib/ram_booster/conf | grep DEST= | sed 's/DEST=//g')
 #Remove leading slash from $DEST
 DEST="${DEST#/}"
@@ -88,8 +89,16 @@ MOUNT_RS()
 		return 1
 	}
 	
-	#Bind /home
-
+	#Bind /home, if it's not on the same partition as /
+	if [[ -n $HOME_UUID ]]
+	then
+		sudo mount --uuid $HOME_UUID "$Orig_OS/$DEST/run" ||
+		{
+			echo "Failed to mount $HOME_UUID to ${Orig_OS%/}/${DEST%/}/home"
+			UMOUNT_RS
+			return 1
+		}
+	fi
 }
 
 #Unmount $DEST (RAM Session)
@@ -102,5 +111,6 @@ UMOUNT_RS()
 	sudo umount -v Original_OS/var/squashfs/dev
 	sudo umount -v Original_OS/var/squashfs/run
 	sudo umount -v Original_OS/var/squashfs/sys
+	sudo umount -v Original_OS/home
 	sudo umount -v Original_OS/
 }
