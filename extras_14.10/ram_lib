@@ -528,9 +528,6 @@ CopyFileSystem() {
 			#the current system wasn't doing it already, modify
 			#${DEST}/etc/fstab
 
-			#First, figure out the UUID for the new /home
-			HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
-
 			#Change ${DEST}/etc/fstab
 			sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> '${DEST}'/etc/fstab'
 
