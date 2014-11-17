@@ -55,6 +55,9 @@ RAM_LIB="$SCRIPT_DIR/extras_$UBUNTU_VERSION/ram_lib"
 #Path to the rupdate script
 RUPDATE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rupdate"
 
+#Path to the rupgrade script
+RUPGRADE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rupgrade"
+
 #Path to the rchroot script
 RCHROOT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rchroot"
 
@@ -148,6 +151,17 @@ if [[ ! -e $RUPDATE_FILE ]]
 then
 	clear
 	echo "\"$RUPDATE_FILE\" was not found!"
+	exit 1
+fi
+
+#############################
+# Check for rupgrade script #
+#############################
+
+if [[ ! -e $RUPGRADE_FILE ]]
+then
+	clear
+	echo "\"$RUPGRADE_FILE\" was not found!"
 	exit 1
 fi
 
@@ -657,6 +671,14 @@ sudo chmod 755 ${DEST}/usr/sbin/rupdate
 #Note: rupdate can now read this info from /var/lib/ram_booster/conf
 #	Add the root device to the rupdate script
 #	sudo sed -i 's#\(REG_DEVICE=\)#\1"'$ROOT_DEV'"#' ${DEST}/usr/sbin/rupdate
+
+######################################
+# Add rupgrade script to RAM Session #
+######################################
+
+sudo cp $RUPGRADE_FILE ${DEST}/usr/sbin/
+sudo chown root:root ${DEST}/usr/sbin/rupgrade
+sudo chmod 755 ${DEST}/usr/sbin/rupgrade
 
 #####################################
 # Add rchroot script to RAM Session #
