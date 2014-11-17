@@ -79,6 +79,17 @@ MOUNT_RS()
 		UMOUNT_RS
 		return 1
 	}
+
+	#Bind /run
+	sudo mount -o bind /run "$Orig_OS/$DEST/run" ||
+	{
+		echo "Failed to bind /run to ${Orig_OS%/}/${DEST%/}/run"
+		UMOUNT_RS
+		return 1
+	}
+	
+	#Bind /home
+
 }
 
 #Unmount $DEST (RAM Session)
