@@ -72,7 +72,7 @@ COPY_HOME=true
 #The new location of /home
 #Note: Here, we check the old location of /home, but later we can change it
 #to reflect the new location
-HOME_DEV=$(readlink -f `df /home | tail -1 | grep '/home' | cut -d ' ' -f 1` 2>/dev/null)
+HOME_DEV=$(readlink -f `df /home | grep -o '/dev/[^ ]*'`)
 
 #The device of the root partition
 ROOT_DEV=$(readlink -f `df / | grep -o '/dev/[^ ]*'`)
