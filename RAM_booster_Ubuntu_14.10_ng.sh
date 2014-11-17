@@ -413,11 +413,6 @@ then
 			*)
 				SHARE_HOME=true
 
-				#Write $SHARE_HOME to /var/lib/ram_booster/conf
-				#This is used by Uninstall_RAM_Booster to see if user should be warned
-				#that this will NOT be undone automatically
-				echo "SHARE_HOME=$SHARE_HOME" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-
 				echo
 				ECHO "Your /etc/fstab will be modified to mount $HOME_DEV as your /home at boot"
 				sleep 4
@@ -434,6 +429,7 @@ fi
 HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
 
 echo "DEST=$DEST" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "SHARE_HOME=$SHARE_HOME" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "ROOT_DEV=$ROOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "ROOT_UUID=$ROOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "BOOT_DEV=$BOOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
