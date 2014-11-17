@@ -356,6 +356,10 @@ case $answer in
 			#Note: This function sets the global variable $HOME_DEV
 			Ask_User_About_Home
 
+			#Ask_User_About_Home clears the CtrlC trap,
+			#so here, we reset it
+			trap CtrlC SIGINT
+
 			#Figure out the UUID of the home partition
 			HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
 
