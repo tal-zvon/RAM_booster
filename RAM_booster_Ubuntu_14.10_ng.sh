@@ -310,16 +310,6 @@ fi
 sudo chown root:root /var/lib/ram_booster/conf 2>/dev/null
 sudo chmod 644 /var/lib/ram_booster/conf 2>/dev/null
 
-############################################################
-# Write some global variables to /var/lib/ram_booster/conf #
-############################################################
-
-echo "DEST=$DEST" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-echo "ROOT_DEV=$ROOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-echo "ROOT_UUID=$ROOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-echo "BOOT_DEV=$BOOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-echo "BOOT_UUID=$BOOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-
 #####################################
 # Add rlib to /var/lib/ram_booster/ #
 #####################################
@@ -374,15 +364,6 @@ case $answer in
 			#so here, we reset it
 			trap CtrlC SIGINT
 		fi
-
-		#Figure out the UUID of the home partition
-		HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
-
-		#Write $HOME_DEV to /var/lib/ram_booster/conf
-		echo "HOME_DEV=$HOME_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-		#Write $HOME_UUID to /var/lib/ram_booster/conf
-		echo "HOME_UUID=$HOME_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-
 		;;  
 	c|copy)  
 		COPY_HOME=true
@@ -444,6 +425,21 @@ then
 		esac
 	fi
 fi
+
+############################################################
+# Write some global variables to /var/lib/ram_booster/conf #
+############################################################
+
+#Figure out the UUID of the home partition
+HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
+
+echo "DEST=$DEST" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "ROOT_DEV=$ROOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "ROOT_UUID=$ROOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "BOOT_DEV=$BOOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "BOOT_UUID=$BOOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "HOME_DEV=$HOME_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "HOME_UUID=$HOME_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 
 ###################################
 # Install some essential packages #

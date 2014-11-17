@@ -90,9 +90,9 @@ MOUNT_RS()
 	}
 	
 	#Bind /home, if it's not on the same partition as /
-	if [[ -n $HOME_UUID ]]
+	if [[ "$HOME_UUID" != "$ROOT_UUID" ]]
 	then
-		sudo mount --uuid $HOME_UUID "$Orig_OS/$DEST/run" ||
+		sudo mount --uuid $HOME_UUID "$Orig_OS/$DEST/home" ||
 		{
 			echo "Failed to mount $HOME_UUID to ${Orig_OS%/}/${DEST%/}/home"
 			UMOUNT_RS
