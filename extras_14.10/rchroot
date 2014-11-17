@@ -1,2 +1,49 @@
 #!/bin/bash
-echo "This is the rchroot script"
+
+############################
+# Only run if user is root #
+############################
+
+uid=$(/usr/bin/id -u) && [ "$uid" = "0" ] || 
+{
+	clear
+	echo "You must be root to run $0."
+	echo "Try again with the command 'sudo $0'"
+	exit 1
+} 
+
+##################################################################################
+# Check if the user is trying to run this script from outside of the RAM Session #
+##################################################################################
+
+if [ ! -e /RAM_Session ]
+then
+	clear
+	echo "This script cannot be run from outside of the RAM Session."
+	exit 0
+fi
+
+####################
+# Global Variables #
+####################
+
+#Path to the file that contains all the functions for this script
+RLIB=/var/lib/ram_booster/rlib
+
+#/boot and / of the Original OS
+BOOT_DEVICE=
+ROOT_DEVICE=
+
+##########################################################
+# Source the file with all the functions for this script #
+##########################################################
+
+if [[ -e $RLIB ]]
+then
+        . $RLIB
+else
+        clear
+        echo "The library that comes with RAM Booster ($RLIB) was not found!"
+        exit 1
+fi
+
