@@ -37,6 +37,15 @@ RLIB=/var/lib/ram_booster/rlib
 if [[ -e $RLIB ]]
 then
         . $RLIB
+
+	#Check if there was a problem
+	if [[ "$?" != "0" ]]
+	then
+		echo
+		echo "The library that comes with RAM Booster ($RLIB) failed to be sourced"
+		echo "Is it broken?"
+		exit 1
+	fi
 else
         clear
         echo "The library that comes with RAM Booster ($RLIB) was not found!"

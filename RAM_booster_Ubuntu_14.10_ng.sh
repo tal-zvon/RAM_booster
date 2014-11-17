@@ -103,6 +103,15 @@ SHARE_HOME=true
 if [[ -e $RAM_LIB ]]
 then
 	. $RAM_LIB
+
+	#Check if there was a problem
+	if [[ "$?" != "0" ]]
+	then
+		echo
+		echo "The library that comes with RAM Booster ($RAM_LIB) failed to be sourced"
+		echo "Is it broken?"
+		exit 1
+	fi
 else
 	clear
 	echo "The library that comes with RAM Booster ($RAM_LIB) was not found!"
