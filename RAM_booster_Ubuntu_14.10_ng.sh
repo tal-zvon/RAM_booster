@@ -359,15 +359,16 @@ case $answer in
 			#Ask_User_About_Home clears the CtrlC trap,
 			#so here, we reset it
 			trap CtrlC SIGINT
-
-			#Figure out the UUID of the home partition
-			HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
-
-			#Write $HOME_DEV to /var/lib/ram_booster/conf
-			echo "HOME_DEV=$HOME_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-			#Write $HOME_UUID to /var/lib/ram_booster/conf
-			echo "HOME_UUID=$HOME_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 		fi
+
+		#Figure out the UUID of the home partition
+		HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
+
+		#Write $HOME_DEV to /var/lib/ram_booster/conf
+		echo "HOME_DEV=$HOME_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+		#Write $HOME_UUID to /var/lib/ram_booster/conf
+		echo "HOME_UUID=$HOME_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+
 		;;  
 	c|copy)  
 		COPY_HOME=true
