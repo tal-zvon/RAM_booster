@@ -1,11 +1,55 @@
+####################
+# Global Variables #
+####################
+
+#/boot and / of the Original OS
+ROOT_UUID=$(cat /var/lib/ram_booster/conf | grep ROOT_UUID= | sed 's/ROOT_UUID=//g')
+BOOT_UUID=$(cat /var/lib/ram_booster/conf | grep BOOT_UUID= | sed 's/BOOT_UUID=//g')
+DEST=$(cat /var/lib/ram_booster/conf | grep DEST= | sed 's/DEST=//g')
+Orig_OS='/mnt/Original_OS'
+
 #Mount $DEST (RAM Session)
 MOUNT_RS()
 {
+	#If the $Orig_OS folder exists, check if
+	#anything is using it as a mount point
+	if [[ -d "$Orig_OS" ]]
+	then
+		#If something is mounted, return with an error
+		if mountpoint -q "$Orig_OS"
+		then
+			echo "Failed to mount RAM Session. Is it already mounted?"
+			return 1
+		fi
 
+		#Try to remove the $Orig_OS
+		sudo rmdir "$Orig_OS" &>/dev/null
+
+		#If removing the $Orig_OS folder fails, like if it's
+		#not empty, return with an error
+		if [[ "$?" != "0" ]]
+		then
+			echo "Failed to remove old $Orig_OS folder."
+			echo "Does it have files in it?"
+			return 1
+		fi
+	fi
+
+	#Make Orig_OS folder
+	sudo mkdir -p "$Orig_OS"
+
+	#Try to mount $ROOT_UUID to $Orig_OS
+	sudo mount --uuid $ROOT_UUID "$Orig_OS" &>/dev/null ||
+	{
+		echo "Failed to mount $ROOT_UUID $Orig_OS"
+		UMOUNT_RS
+		return 1
+	}
+	
 }
 
 #Unmount $DEST (RAM Session)
 UMOUNT_RS()
 {
-
+	echo "Unmounting"
 }
