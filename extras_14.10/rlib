@@ -96,4 +96,11 @@ MOUNT_RS()
 UMOUNT_RS()
 {
 	echo "Unmounting"
+	#THIS CODE IS FOR TESTING PURPOSES ONLY
+	sudo umount -v Original_OS/var/squashfs/proc
+	sudo umount -v Original_OS/var/squashfs/dev/pts
+	sudo umount -v Original_OS/var/squashfs/dev
+	sudo umount -v Original_OS/var/squashfs/run
+	sudo umount -v Original_OS/var/squashfs/sys
+	sudo umount -v Original_OS/
 }
