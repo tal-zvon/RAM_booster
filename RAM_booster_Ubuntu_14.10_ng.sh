@@ -80,9 +80,9 @@ ROOT_DEV=$(readlink -f `df / | grep -o '/dev/[^ ]*'`)
 #The device of the boot partition
 BOOT_DEV=$(readlink -f `df /boot | grep -o '/dev/[^ ]*'`)
 
-#The UUID of the home partition, if one exists
-[[ -n $HOME_DEV ]] &&
-HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
+#The UUID of the home partition
+#Gets set later
+HOME_UUID=''
 
 #The UUID of the root partition
 ROOT_UUID=$(sudo blkid -o value -s UUID $ROOT_DEV)
@@ -301,12 +301,6 @@ sudo chmod 644 /var/lib/ram_booster/conf 2>/dev/null
 ############################################################
 
 echo "DEST=$DEST" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-#Only write $HOME_DEV if it's not empty
-[[ -n "$HOME_DEV" ]] &&
-echo "HOME_DEV=$HOME_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-#Only write $HOME_UUID if it's not empty
-[[ -n "$HOME_UUID" ]] &&
-echo "HOME_UUID=$HOME_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "ROOT_DEV=$ROOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "ROOT_UUID=$ROOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "BOOT_DEV=$BOOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
@@ -361,6 +355,14 @@ case $answer in
 			#Ask user what he wants to use as /home
 			#Note: This function sets the global variable $HOME_DEV
 			Ask_User_About_Home
+
+			#Figure out the UUID of the home partition
+			HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
+
+			#Write $HOME_DEV to /var/lib/ram_booster/conf
+			echo "HOME_DEV=$HOME_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+			#Write $HOME_UUID to /var/lib/ram_booster/conf
+			echo "HOME_UUID=$HOME_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 		fi
 		;;  
 	c|copy)  
