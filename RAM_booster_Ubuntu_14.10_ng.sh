@@ -247,13 +247,18 @@ LOGGER "$(echo -e "blkid:\n"; sudo blkid)"
 trap CtrlC SIGINT
 
 #################################################################
-# Write down some global variables to /var/lib/ram_booster/conf #
-#         which rlib, rupdate, rchroot and the                  #
-#         Uninstall_RAM_Booster function can use                #
+# Create /var/lib/ram_booster/conf which rlib, rupdate, rchroot #
+#         and the Uninstall_RAM_Booster function can use        #
 # Note: Must be after section that checks args, or              #
 #         /var/lib/ram_booster/conf will get created even if    #
 #         script is called with --uninstall                     #
 #################################################################
+
+#If the folder already exists (wasn't cleaned up on last run), delete it
+if [[ -d /var/lib/ram_booster ]]
+then
+	sudo rm -rf /var/lib/ram_booster
+fi
 
 #Create the folder
 sudo mkdir /var/lib/ram_booster 2>/dev/null
@@ -278,8 +283,15 @@ fi
 sudo chown root:root /var/lib/ram_booster/conf 2>/dev/null
 sudo chmod 644 /var/lib/ram_booster/conf 2>/dev/null
 
-#Write $DEST to /var/lib/ram_booster/conf
-echo "DEST=$DEST" | sudo tee /var/lib/ram_booster/conf &>/dev/null
+############################################################
+# Write some global variables to /var/lib/ram_booster/conf #
+############################################################
+
+echo "DEST=$DEST" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "ROOT_DEV=$ROOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "ROOT_UUID=$ROOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "BOOT_DEV=$BOOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "BOOT_UUID=$BOOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 
 #####################################
 # Add rlib to /var/lib/ram_booster/ #
