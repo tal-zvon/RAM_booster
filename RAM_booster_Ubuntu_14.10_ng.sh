@@ -83,6 +83,9 @@ ROOT_DEV=$(readlink -f `df / | grep -o '/dev/[^ ]*'`)
 #The device of the boot partition
 BOOT_DEV=$(readlink -f `df /boot | grep -o '/dev/[^ ]*'`)
 
+#The device of /boot/efi, if it exists
+EFI_DEV=$(readlink -f `df /boot/efi 2>/dev/null | grep -o '/dev/[^ ]*'` 2>/dev/null || echo None)
+
 #The UUID of the home partition
 #Gets set later
 HOME_UUID=''
@@ -92,6 +95,9 @@ ROOT_UUID=$(sudo blkid -o value -s UUID $ROOT_DEV)
 
 #The UUID of the boot partition
 BOOT_UUID=$(sudo blkid -o value -s UUID $BOOT_DEV)
+
+#The UUID of the /boot/efi partition, if it exists
+EFI_UUID=$([[ "$EFI_DEV" != "None" ]] && sudo blkid -o value -s UUID $EFI_DEV || echo None)
 
 #The folder where the RAM Session will be stored
 DEST=/var/squashfs/
@@ -455,6 +461,8 @@ echo "#The \$HOME_DEV and \$HOME_UUID variables reflect what the RAM Session sho
 echo "#The Original OS may be using something else for /home" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "HOME_DEV=$HOME_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "HOME_UUID=$HOME_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "EFI_DEV=$EFI_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "EFI_UUID=$EFI_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 
 ###################################
 # Install some essential packages #
@@ -649,6 +657,10 @@ echo "This is NOT the real /boot. This is a temporary /boot that software you in
 #update is going to be made just seems like the cleanest alternative.
 sudo sed -i '/^UUID=[-0-9a-zA-Z]*[ \t]*\/boot[ \t]/d' $DEST/etc/fstab
 sudo sed -i '/^\/dev\/...[0-9][ \t]*\/boot[ \t]/d' $DEST/etc/fstab
+
+#Also remove /boot/efi if it's there
+sudo sed -i '/^UUID=[-0-9a-zA-Z]*[ \t]*\/boot\/efi[ \t]/d' $DEST/etc/fstab
+sudo sed -i '/^\/dev\/...[0-9][ \t]*\/boot\/efi[ \t]/d' $DEST/etc/fstab
 
 #################
 # Cleanup Tasks #

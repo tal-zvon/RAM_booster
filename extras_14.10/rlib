@@ -6,6 +6,7 @@
 ROOT_UUID=$(cat /var/lib/ram_booster/conf | grep ROOT_UUID= | sed 's/ROOT_UUID=//g')
 BOOT_UUID=$(cat /var/lib/ram_booster/conf | grep BOOT_UUID= | sed 's/BOOT_UUID=//g')
 HOME_UUID=$(cat /var/lib/ram_booster/conf | grep HOME_UUID= | sed 's/HOME_UUID=//g')
+EFI_UUID=$(cat /var/lib/ram_booster/conf | grep EFI_UUID= | sed 's/EFI_UUID=//g')
 DEST=$(cat /var/lib/ram_booster/conf | grep DEST= | sed 's/DEST=//g')
 #Remove leading slash from $DEST
 DEST="${DEST#/}"
@@ -95,6 +96,17 @@ MOUNT_RS()
 		sudo mount --uuid $BOOT_UUID "$Orig_OS/$DEST/boot" ||
 		{
 			echo "Failed to mount $BOOT_UUID to ${Orig_OS%/}/${DEST%/}/boot"
+			UMOUNT_RS
+			return 1
+		}
+	fi
+
+	#Mount /boot/efi, if we are running an efi system
+	if [[ -d /sys/firmware/efi ]]
+	then
+		sudo mount --uuid $EFI_UUID "$Orig_OS/$DEST/boot/efi" ||
+		{
+			echo "Failed to mount $EFI_UUID to ${Orig_OS%/}/${DEST%/}/boot/efi"
 			UMOUNT_RS
 			return 1
 		}
