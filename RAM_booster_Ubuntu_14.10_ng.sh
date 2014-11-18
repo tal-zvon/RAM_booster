@@ -101,7 +101,7 @@ DEST=/var/squashfs/
 #true if the Original OS's /etc/fstab should be modified to also use
 #	the partition that the RAM Session will be using as /home
 #false if it should not
-SHARE_HOME=true
+SHARE_HOME=false
 
 ##########################################################
 # Source the file with all the functions for this script #
