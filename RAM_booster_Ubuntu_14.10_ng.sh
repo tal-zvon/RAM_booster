@@ -442,6 +442,8 @@ fi
 #Figure out the UUID of the home partition
 HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
 
+echo "#These variables reflect the state of the RAM Session" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "#The Original OS may be using different partitions" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "DEST=$DEST" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "SHARE_HOME=$SHARE_HOME" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "HOME_ALREADY_MOUNTED=$HOME_ALREADY_MOUNTED" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
