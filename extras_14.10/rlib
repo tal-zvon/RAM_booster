@@ -88,8 +88,19 @@ MOUNT_RS()
 		UMOUNT_RS
 		return 1
 	}
+
+	#Mount /boot, if it's not on the same partition as /
+	if [[ "$BOOT_UUID" != "$ROOT_UUID" ]]
+	then
+		sudo mount --uuid $BOOT_UUID "$Orig_OS/$DEST/boot" ||
+		{
+			echo "Failed to mount $BOOT_UUID to ${Orig_OS%/}/${DEST%/}/boot"
+			UMOUNT_RS
+			return 1
+		}
+	fi
 	
-	#Bind /home, if it's not on the same partition as /
+	#Mount /home, if it's not on the same partition as /
 	if [[ "$HOME_UUID" != "$ROOT_UUID" ]]
 	then
 		sudo mount --uuid $HOME_UUID "$Orig_OS/$DEST/home" ||
