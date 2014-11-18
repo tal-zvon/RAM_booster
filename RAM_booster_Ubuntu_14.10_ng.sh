@@ -368,6 +368,15 @@ case $answer in
 	c|copy)  
 		COPY_HOME=true
 
+		#If the Original OS was already using some partition
+		#as /home, and you chose to copy /home to RAM_Session
+		#instead of use that partition, force HOME_DEV to be the
+		#same as ROOT_DEV
+		if $HOME_ALREADY_MOUNTED
+		then
+			HOME_DEV="$ROOT_DEV"
+		fi
+
 		echo
 		ECHO "You chose to copy /home as is. I hope you read carefully and know what that means..."
 		sleep 4
