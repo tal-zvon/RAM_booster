@@ -108,6 +108,7 @@ Uninstall_RAM_Booster() {
 	#if $SHARE_HOME is true, user did choose to use a new partition as their /home on the Original OS
 	#if $SHARE_HOME is false, the user did not
 	SHARE_HOME=$([[ -e /var/lib/ram_booster/conf ]] && { cat /var/lib/ram_booster/conf | grep -q 'SHARE_HOME=.*true.*' && echo true; } || echo false)
+	HOME_ALREADY_MOUNTED=$([[ -e /var/lib/ram_booster/conf ]] && { cat /var/lib/ram_booster/conf | grep -q 'HOME_ALREADY_MOUNTED=.*true.*' && echo true; } || echo false)
 
 	#Check if the script is running from within the RAM Session
         if [[ -e /RAM_Session ]]
@@ -231,7 +232,7 @@ Uninstall_RAM_Booster() {
 	fi
 
 	#Tell user if /home was not restored in /etc/fstab
-	if $SHARE_HOME
+	if $SHARE_HOME && ! $HOME_ALREADY_MOUNTED
 	then
 		echo
 		ECHO "You chose to have your Original OS's /home use a separate partition during install. This will NOT be undone. /etc/fstab will still mount that partition as /home. If you want this undone, you can do so manually by modifying /etc/fstab."

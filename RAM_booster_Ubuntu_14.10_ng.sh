@@ -435,6 +435,7 @@ HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
 
 echo "DEST=$DEST" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "SHARE_HOME=$SHARE_HOME" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "HOME_ALREADY_MOUNTED=$HOME_ALREADY_MOUNTED" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "ROOT_DEV=$ROOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "ROOT_UUID=$ROOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "BOOT_DEV=$BOOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
