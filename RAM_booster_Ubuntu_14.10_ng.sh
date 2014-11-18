@@ -418,6 +418,11 @@ then
 				sleep 4
 				;;
 		esac
+	else
+		#If user chose to use a separate partition for /home,
+		#and the Original OS was already doing this, we are still
+		#sharing /home
+		SHARE_HOME=true
 	fi
 fi
 
