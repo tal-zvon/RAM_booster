@@ -688,8 +688,8 @@ sudo chmod 755 ${DEST}/usr/sbin/rchroot
 # Write some useful info to $LOG #
 ##################################
 
-#/var/squashfs/etc/fstab
-LOGGER "$(echo -e "/var/squashfs/etc/fstab:\n"; cat /var/squashfs/etc/fstab)"
+#$DEST/etc/fstab
+LOGGER "$(echo -e "${DEST%/}/etc/fstab:\n"; cat $DEST/etc/fstab)"
 
 #######################
 # Make squashfs image #
@@ -729,7 +729,7 @@ Image_Size=$(sudo du -h /live/filesystem.squashfs | awk '{ print $1 }')
 ECHO "The size of the image is $Image_Size. This MUST fit in your total RAM, with room to spare. If it does not, you either need to buy more RAM, or manually remove unimportant packages from your OS until the image fits."
 echo
 
-ECHO "Note: Do NOT format your original OS that you made the RAM Session out of, as the squashfs image still resides there. So does /var/squashfs, the folder the image gets recreated from everytime you make any changes to the RAM Session through the update scripts. You should be able to shrink the partition with your original OS however in order to save space."
+ECHO "Note: Do NOT format your original OS that you made the RAM Session out of, as the squashfs image still resides there. So does $DEST, the folder the image gets recreated from everytime you make any changes to the RAM Session through the update scripts. You should be able to shrink the partition with your original OS however in order to save space."
 
 echo
 ECHO "Also, if you switch between your original OS and your RAM Session a lot, and forget which one you are in, do an 'ls /'. If you see the /Original_OS file, you are in the original OS. If you see the /RAM_Session file, you are in the RAM Session."
