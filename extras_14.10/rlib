@@ -102,7 +102,7 @@ MOUNT_RS()
 	fi
 
 	#Mount /boot/efi, if we are running an efi system
-	if [[ -d /sys/firmware/efi ]]
+	if [[ -d /sys/firmware/efi ]] && [[ "$EFI_UUID" != "None" ]]
 	then
 		sudo mount --uuid $EFI_UUID "$Orig_OS/$DEST/boot/efi" ||
 		{
