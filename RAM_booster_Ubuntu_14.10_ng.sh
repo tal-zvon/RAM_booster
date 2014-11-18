@@ -449,7 +449,9 @@ echo "ROOT_DEV=$ROOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "ROOT_UUID=$ROOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "BOOT_DEV=$BOOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "BOOT_UUID=$BOOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-echo "#The \$HOME_DEV and \$HOME_UUID variables reflect what RAM_Session should be using." | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+#Blank line
+echo "" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "#The \$HOME_DEV and \$HOME_UUID variables reflect what the RAM Session should be using" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "#The Original OS may be using something else for /home" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "HOME_DEV=$HOME_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "HOME_UUID=$HOME_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
