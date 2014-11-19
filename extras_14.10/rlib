@@ -147,8 +147,6 @@ UMOUNT_RS()
 
 	CHROOT=${Orig_OS%/}/${DEST#/}
 
-	echo "Unmounting..."
-
 	#Find processes who's root folder is actually the chroot
 	for ROOT in $(find /proc/*/root)
 	do
