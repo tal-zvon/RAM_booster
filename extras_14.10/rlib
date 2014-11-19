@@ -176,3 +176,9 @@ UMOUNT_RS()
 	#Remove the temp folder
 	sudo rmdir $Orig_OS
 }
+
+#Convert input to lowercase
+toLower() 
+{
+	echo $@ | tr "[:upper:]" "[:lower:]" 
+}

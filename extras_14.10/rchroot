@@ -70,3 +70,35 @@ fi
 sudo chroot $Orig_OS/$DEST/ /bin/bash
 
 UMOUNT_RS
+
+#If there was a problem unmounting stuff, tell user what to do
+if [[ "$?" != "0" ]]
+then
+	clear
+	echo "There was an error unmounting ${Orig_OS%/}/${DEST#/}"
+	echo "A reboot should fix that"
+	echo "After the reboot, if you need to save your changes by recreating"
+	echo "the squashfs image, just run \"sudo rchroot\" and exit it"
+	exit 1
+fi
+
+clear
+echo "Would you like to save your changes by recreating the squashfs image?"
+echo "This may take some time to complete"
+echo "You may surf the web, or do whatever else you want during this"
+echo "process - you will NOT disrupt it"
+echo
+read -p "Your choice [y/N]: " answer
+
+#Convert answer to lowercase
+answer=$(toLower $answer)
+
+case $answer in
+	y|yes)  
+		echo "Creating squashfs image"
+		;;
+	*)
+		echo "NOT creating squashfs image"
+		echo "If you change your mind, run 'sudo rchroot' again, and exit it"
+		;;
+esac
