@@ -13,6 +13,8 @@ DEST="${DEST#/}"
 Orig_OS='/mnt/Original_OS/'
 
 #Mount $DEST (RAM Session)
+#If function is passed "root_only" as arg, only mount $ROOT_UUID to
+#$Orig_OS and nothing else
 MOUNT_RS()
 {
 	#If the $Orig_OS folder exists, check if
@@ -49,6 +51,12 @@ MOUNT_RS()
 		UMOUNT_RS
 		return 1
 	}
+
+	#If this function was passed the arg "root_only", exit here
+	if [[ "$1" == "root_only" ]]
+	then
+		return 0
+	fi
 	
 	#Bind /proc
 	sudo mount -o bind /proc "$Orig_OS/$DEST/proc" ||

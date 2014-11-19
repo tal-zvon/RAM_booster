@@ -106,7 +106,7 @@ esac
 
 echo "Creating squashfs image"
 #Create squashfs image
-MOUNT_RS || exit 1
+MOUNT_RS root_only || exit 1
 
 sudo mksquashfs ${Orig_OS%/}/${DEST#/} ${Orig_OS%/}/live/filesystem.squashfs.new -noappend -always-use-fragments
 
