@@ -56,6 +56,72 @@ else
         exit 1
 fi
 
+#####################
+# The usage message #
+#####################
+
+Usage()
+{
+	echo "Usage:"
+	echo "$0 -s, --squashfs"
+	echo "	Skip chroot and recreate the squashfs image"
+	echo "$0 -h, --help"
+	echo "	This help message"
+}
+
+###############################
+# Check args passed to script #
+###############################
+
+if [[ "$#" -gt 1 ]]
+then
+	echo 'Invalid number of args'
+	Usage
+	exit 1
+fi
+
+case "$1" in
+	-s|--squashfs)
+		#Ask user if he wants to recreate filesystem.squashfs
+		clear
+		echo "Are you sure you want to recreate the squashfs image?"
+		echo "This may take some time to complete"
+		echo "You may use the computer normally during this process - you will NOT disrupt it"
+		echo
+		read -p "Your choice [y/N]: " answer
+		clear
+
+		#Convert answer to lowercase
+		answer=$(toLower $answer)
+
+		case $answer in
+			y|yes)  
+				#Create squashfs image
+				CreateSquashfs
+				;;
+			*)
+				echo "You chose to NOT recreate the squashfs image"
+				exit 0
+				;;
+		esac
+
+		exit 0
+		;;
+	-h|--help)
+		Usage
+		exit 0
+		;;
+	"")
+		#No args is fine
+		;;
+	*)
+		echo "'$1' is not a valid argument"
+		Usage
+		exit 1
+		;;
+esac
+		
+
 ################################
 # Try to mount the RAM Session #
 ################################
@@ -98,7 +164,7 @@ case $answer in
 		;;
 	*)
 		echo "You chose to NOT recreate the squashfs image"
-		echo "If you change your mind, run 'sudo rchroot' again, and exit it"
+		echo "If you change your mind, run 'sudo rchroot -s'"
 		exit 0
 		;;
 esac
