@@ -127,14 +127,43 @@ MOUNT_RS()
 #Unmount $DEST (RAM Session)
 UMOUNT_RS()
 {
-	echo "Unmounting"
-	#THIS CODE IS FOR TESTING PURPOSES ONLY
-	sudo umount -v /mnt/Original_OS/var/squashfs/proc
-	sudo umount -v /mnt/Original_OS/var/squashfs/dev/pts
-	sudo umount -v /mnt/Original_OS/var/squashfs/dev
-	sudo umount -v /mnt/Original_OS/var/squashfs/run
-	sudo umount -v /mnt/Original_OS/var/squashfs/sys
-	sudo umount -v /mnt/Original_OS/home
-	sudo umount -v /mnt/Original_OS/
+	[[ -z $DEST ]] && { echo "\$DEST cannot be empty"; exit 1; }	
+
+	CHROOT=/mnt/Original_OS/${DEST#/}
+	echo "Unmounting..."
+
+	for ROOT in $(find /proc/*/root)
+	do
+		LINK=$(readlink -f $ROOT)
+		if echo $LINK | grep -q ${CHROOT%/}
+		then
+			PID=$(basename $(dirname "$ROOT"))
+
+			#Try to kill it nicely
+			kill -0 $PID &>/dev/null && kill -15 $PID
+
+			#Check every second for 5 seconds to see if $PID is dead
+			WAIT_TIME=5
+
+			#Do a quick check to see if it's still running
+			#It usually takes a second, so this often doesn't help
+			kill -0 $PID &>/dev/null &&
+			for SEC in $(seq 1 $WAIT_TIME)
+			do
+				sleep 1
+
+				if [[ "$SEC" != $WAIT_TIME ]]
+				then
+					#If it's dead, exit
+					kill -0 $PID &>/dev/null || break
+				else
+					#If time's up, kill it
+					kill -0 $PID &>/dev/null && kill -9 $PID
+				fi  
+			done
+		fi
+	done
+
+	sudo umount -R /mnt/Original_OS
 	sudo rmdir /mnt/Original_OS
 }
