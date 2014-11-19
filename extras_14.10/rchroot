@@ -89,6 +89,7 @@ echo "You may surf the web, or do whatever else you want during this"
 echo "process - you will NOT disrupt it"
 echo
 read -p "Your choice [y/N]: " answer
+clear
 
 #Convert answer to lowercase
 answer=$(toLower $answer)
