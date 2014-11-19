@@ -122,6 +122,9 @@ MOUNT_RS()
 			return 1
 		}
 	fi
+
+	#Setup mtab
+	sudo chroot "$Orig_OS/$DEST/" /bin/bash -c "grep -v rootfs /proc/mounts > /etc/mtab"
 }
 
 #Unmount $DEST (RAM Session)
