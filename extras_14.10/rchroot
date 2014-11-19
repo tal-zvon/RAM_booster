@@ -95,10 +95,32 @@ answer=$(toLower $answer)
 
 case $answer in
 	y|yes)  
-		echo "Creating squashfs image"
+		#Falls through to the part that creates the squashfs image
 		;;
 	*)
 		echo "NOT creating squashfs image"
 		echo "If you change your mind, run 'sudo rchroot' again, and exit it"
+		exit 0
 		;;
 esac
+
+echo "Creating squashfs image"
+#Create squashfs image
+MOUNT_RS || exit 1
+
+sudo mksquashfs ${Orig_OS%/}/${DEST#/} ${Orig_OS%/}/live/filesystem.squashfs.new -noappend -always-use-fragments
+
+if [[ "$?" != "0" ]]
+then
+	echo "Failed to create ${Orig_OS%/}/live/filesystem.squashfs"
+	UMOUNT_RS
+	exit 1
+fi
+
+sudo mv ${Orig_OS%/}/live/filesystem.squashfs.new ${Orig_OS%/}/live/filesystem.squashfs
+
+if [[ "$?" == "0" ]]
+then
+	echo "mksquashfs created successfully"
+	UMOUNT_RS
+fi
