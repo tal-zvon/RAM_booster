@@ -61,7 +61,7 @@ fi
 ################################
 
 #Mount the RAM Session, and bind all the pseudo filesystems to it
-MOUNT_RS || exit 1
+MOUNT_RS
 
 #Let user into the chroot
 sudo chroot $Orig_OS/$DEST/ /bin/bash
@@ -103,23 +103,5 @@ case $answer in
 		;;
 esac
 
-echo "Creating squashfs image"
 #Create squashfs image
-MOUNT_RS root_only || exit 1
-
-sudo mksquashfs ${Orig_OS%/}/${DEST#/} ${Orig_OS%/}/live/filesystem.squashfs.new -noappend -always-use-fragments
-
-if [[ "$?" != "0" ]]
-then
-	echo "Failed to create ${Orig_OS%/}/live/filesystem.squashfs"
-	UMOUNT_RS
-	exit 1
-fi
-
-sudo mv ${Orig_OS%/}/live/filesystem.squashfs.new ${Orig_OS%/}/live/filesystem.squashfs
-
-if [[ "$?" == "0" ]]
-then
-	echo "mksquashfs created successfully"
-	UMOUNT_RS
-fi
+CreateSquashfs
