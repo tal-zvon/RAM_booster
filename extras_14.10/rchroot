@@ -60,18 +60,16 @@ fi
 # Try to mount the RAM Session #
 ################################
 
-MOUNT_RS
+#Mount the RAM Session, and bind all the pseudo filesystems to it
+MOUNT_RS || exit 1
 
-if [[ "$?" != "0" ]]
-then
-	exit 1
-fi
-
+#Let user into the chroot
 sudo chroot $Orig_OS/$DEST/ /bin/bash
 
+#Unmount everything
 UMOUNT_RS
 
-#If there was a problem unmounting stuff, tell user what to do
+#If there was a problem unmounting stuff, tell user to reboot
 if [[ "$?" != "0" ]]
 then
 	clear
@@ -82,11 +80,11 @@ then
 	exit 1
 fi
 
+#Ask user if he wants to recreate filesystem.squashfs
 clear
 echo "Would you like to save your changes by recreating the squashfs image?"
 echo "This may take some time to complete"
-echo "You may surf the web, or do whatever else you want during this"
-echo "process - you will NOT disrupt it"
+echo "You may use the computer normally during this process - you will NOT disrupt it"
 echo
 read -p "Your choice [y/N]: " answer
 clear
@@ -99,7 +97,7 @@ case $answer in
 		#Falls through to the part that creates the squashfs image
 		;;
 	*)
-		echo "NOT creating squashfs image"
+		echo "You chose to NOT recreate the squashfs image"
 		echo "If you change your mind, run 'sudo rchroot' again, and exit it"
 		exit 0
 		;;
