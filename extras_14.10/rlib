@@ -52,10 +52,10 @@ MOUNT_RS()
 		exit 1
 	}
 
-	#If this function was passed the arg "root_only", exit here
+	#If this function was passed the arg "root_only", return here
 	if [[ "$1" == "root_only" ]]
 	then
-		exit 0
+		return 0
 	fi
 	
 	#Bind /proc
