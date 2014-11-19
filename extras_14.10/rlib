@@ -127,11 +127,15 @@ MOUNT_RS()
 #Unmount $DEST (RAM Session)
 UMOUNT_RS()
 {
+	#On the off chance whatever script runs UMOUNT_RS hasn't set
+	#$DEST, error out instead of killing whatever half-matches
 	[[ -z $DEST ]] && { echo "\$DEST cannot be empty"; exit 1; }	
 
 	CHROOT=/mnt/Original_OS/${DEST#/}
+
 	echo "Unmounting..."
 
+	#Find processes who's root folder is actually the chroot
 	for ROOT in $(find /proc/*/root)
 	do
 		LINK=$(readlink -f $ROOT)
@@ -164,6 +168,8 @@ UMOUNT_RS()
 		fi
 	done
 
+	#Unmount all filesystems under /mnt/Original_OS recursively
 	sudo umount -R /mnt/Original_OS
+	#Remove the temp folder
 	sudo rmdir /mnt/Original_OS
 }
