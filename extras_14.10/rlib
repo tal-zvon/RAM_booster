@@ -135,7 +135,7 @@ MOUNT_RS()
 	sudo chroot "$Orig_OS/$DEST/" /bin/bash -c "grep -v rootfs /proc/mounts > /etc/mtab"
 
 	#Enable X
-	xhost +local:
+	xhost +local: >/dev/null
 }
 
 #Unmount $DEST (RAM Session)
