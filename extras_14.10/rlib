@@ -10,7 +10,7 @@ EFI_UUID=$(cat /var/lib/ram_booster/conf | grep EFI_UUID= | sed 's/EFI_UUID=//g'
 DEST=$(cat /var/lib/ram_booster/conf | grep DEST= | sed 's/DEST=//g')
 #Remove leading slash from $DEST
 DEST="${DEST#/}"
-Orig_OS='/mnt/Original_OS'
+Orig_OS='/mnt/Original_OS/'
 
 #Mount $DEST (RAM Session)
 MOUNT_RS()
@@ -134,7 +134,7 @@ UMOUNT_RS()
 	#$DEST, error out instead of killing whatever half-matches
 	[[ -z $DEST ]] && { echo "\$DEST cannot be empty"; exit 1; }	
 
-	CHROOT=/mnt/Original_OS/${DEST#/}
+	CHROOT=$Orig_OS/${DEST#/}
 
 	echo "Unmounting..."
 
@@ -171,8 +171,8 @@ UMOUNT_RS()
 		fi
 	done
 
-	#Unmount all filesystems under /mnt/Original_OS recursively
-	sudo umount -R /mnt/Original_OS
+	#Unmount all filesystems under $Orig_OS recursively
+	sudo umount -R $Orig_OS
 	#Remove the temp folder
-	sudo rmdir /mnt/Original_OS
+	sudo rmdir $Orig_OS
 }

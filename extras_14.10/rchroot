@@ -31,6 +31,8 @@ fi
 RLIB=/var/lib/ram_booster/rlib
 #Figure out $DEST
 DEST=$(cat /var/lib/ram_booster/conf | grep DEST= | sed 's/DEST=//g')
+#Must be the same as the one in rlib
+Orig_OS='/mnt/Original_OS/'
 
 ##########################################################
 # Source the file with all the functions for this script #
@@ -65,6 +67,6 @@ then
 	exit 1
 fi
 
-sudo chroot /mnt/Original_OS/$DEST/ /bin/bash
+sudo chroot $Orig_OS/$DEST/ /bin/bash
 
 UMOUNT_RS
