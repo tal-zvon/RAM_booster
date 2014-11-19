@@ -134,7 +134,7 @@ UMOUNT_RS()
 	#$DEST, error out instead of killing whatever half-matches
 	[[ -z $DEST ]] && { echo "\$DEST cannot be empty"; exit 1; }	
 
-	CHROOT=$Orig_OS/${DEST#/}
+	CHROOT=${Orig_OS%/}/${DEST#/}
 
 	echo "Unmounting..."
 
