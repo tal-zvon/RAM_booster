@@ -178,29 +178,7 @@ UMOUNT_RS()
 		if echo $LINK | grep -q ${CHROOT%/}
 		then
 			PID=$(basename $(dirname "$ROOT"))
-
-			#Try to kill it nicely
-			kill -0 $PID &>/dev/null && kill -15 $PID
-
-			#Check every second for 5 seconds to see if $PID is dead
-			WAIT_TIME=5
-
-			#Do a quick check to see if it's still running
-			#It usually takes a second, so this often doesn't help
-			kill -0 $PID &>/dev/null &&
-			for SEC in $(seq 1 $WAIT_TIME)
-			do
-				sleep 1
-
-				if [[ "$SEC" != $WAIT_TIME ]]
-				then
-					#If it's dead, exit
-					kill -0 $PID &>/dev/null || break
-				else
-					#If time's up, kill it
-					kill -0 $PID &>/dev/null && kill -9 $PID
-				fi  
-			done
+			KILL_PID $PID
 		fi
 	done
 
@@ -252,31 +230,9 @@ UMOUNT_RS()
 			;;
 		*)
 			#Kill all PIDs holding up unmounting $Orig_OS
-
 			for PID in $PID_LIST
 			do
-				#Try to kill it nicely
-				kill -0 $PID &>/dev/null && kill -15 $PID
-
-				#Check every second for 5 seconds to see if $PID is dead
-				WAIT_TIME=5
-
-				#Do a quick check to see if it's still running
-				#It usually takes a second, so this often doesn't help
-				kill -0 $PID &>/dev/null &&
-				for SEC in $(seq 1 $WAIT_TIME)
-				do
-					sleep 1
-
-					if [[ "$SEC" != $WAIT_TIME ]]
-					then
-						#If it's dead, exit
-						kill -0 $PID &>/dev/null || break
-					else
-						#If time's up, kill it
-						kill -0 $PID &>/dev/null && kill -9 $PID
-					fi  
-				done
+				KILL_PID $PID
 			done
 
 			#Try unmounting again:
@@ -308,6 +264,44 @@ UMOUNT_RS()
 toLower() 
 {
 	echo $@ | tr "[:upper:]" "[:lower:]" 
+}
+
+#Kills any PID passed to it
+#At first it tries nicely with SIGTERM
+#After a timeout, it uses SIGKILL
+KILL_PID()
+{
+	PROC_TO_KILL=$1
+
+	#Make sure we never have no args
+	if [[ "$PROC_TO_KILL" == "" ]]
+	then
+		echo "KILL_PID: \$1 cannot be empty"
+		exit 1
+	fi
+
+	#Try to kill it nicely
+	kill -0 $PROC_TO_KILL &>/dev/null && kill -15 $PROC_TO_KILL
+
+	#Check every second for 5 seconds to see if $PROC_TO_KILL is dead
+	WAIT_TIME=5
+
+	#Do a quick check to see if it's still running
+	#It usually takes a second, so this often doesn't help
+	kill -0 $PROC_TO_KILL &>/dev/null &&
+	for SEC in $(seq 1 $WAIT_TIME)
+	do
+		sleep 1
+
+		if [[ "$SEC" != $WAIT_TIME ]]
+		then
+			#If it's dead, exit
+			kill -0 $PROC_TO_KILL &>/dev/null || break
+		else
+			#If time's up, kill it
+			kill -0 $PROC_TO_KILL &>/dev/null && kill -9 $PROC_TO_KILL
+		fi  
+	done
 }
 
 #Create squashfs image
