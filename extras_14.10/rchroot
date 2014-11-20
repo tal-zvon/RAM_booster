@@ -41,7 +41,7 @@ fi
 RLIB=/var/lib/ram_booster/rlib
 #Figure out $DEST
 DEST=$(cat /var/lib/ram_booster/conf | grep DEST= | sed 's/DEST=//g')
-#Must be the same as the one in rlib
+#The mountpoint of the Original OS device
 Orig_OS='/mnt/Original_OS/'
 
 ##########################################################
@@ -85,7 +85,7 @@ Usage()
 
 if [[ "$#" -gt 1 ]]
 then
-	echo 'Invalid number of args'
+	echo 'Invalid number of arguments'
 	Usage
 	exit 1
 fi
@@ -93,6 +93,7 @@ fi
 case "$1" in
 	-s|--squashfs)
 		#Ask user if he wants to recreate filesystem.squashfs
+		#This basically just provides a user to skip entering the chroot
 		clear
 		echo "Are you sure you want to recreate the squashfs image?"
 		echo "This may take some time to complete"
@@ -133,7 +134,7 @@ esac
 		
 
 ################################
-# Try to mount the RAM Session #
+# Mount FS and let user use it #
 ################################
 
 #Mount the RAM Session, and bind all the pseudo filesystems to it
@@ -156,6 +157,10 @@ then
 	exit 1
 fi
 
+#################################
+# Recreating the SquashFS Image #
+#################################
+
 #Ask user if he wants to recreate filesystem.squashfs
 clear
 echo "Would you like to save your changes by recreating the squashfs image?"
@@ -170,7 +175,8 @@ answer=$(toLower $answer)
 
 case $answer in
 	y|yes)  
-		#Falls through to the part that creates the squashfs image
+		#Create squashfs image
+		CreateSquashfs
 		;;
 	*)
 		echo "You chose to NOT recreate the squashfs image"
@@ -179,5 +185,3 @@ case $answer in
 		;;
 esac
 
-#Create squashfs image
-CreateSquashfs
