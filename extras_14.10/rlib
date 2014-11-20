@@ -10,13 +10,20 @@ EFI_UUID=$(cat /var/lib/ram_booster/conf | grep EFI_UUID= | sed 's/EFI_UUID=//g'
 DEST=$(cat /var/lib/ram_booster/conf | grep DEST= | sed 's/DEST=//g')
 #Remove leading slash from $DEST
 DEST="${DEST#/}"
-Orig_OS='/mnt/Original_OS/'
 
 #Mount $DEST (RAM Session)
 #If function is passed "root_only" as arg, only mount $ROOT_UUID to
 #$Orig_OS and nothing else
 MOUNT_RS()
 {
+	#Mostly for debugging purposes
+	#Makes sure Orig_OS was set before we got here
+	[[ -z "$Orig_OS" ]] &&
+	{
+		echo "\$Orig_OS must be set by whatever script is sourcing rlib"
+		exit 1
+	}
+
 	#If the $Orig_OS folder exists, check if
 	#anything is using it as a mount point
 	if [[ -d "$Orig_OS" ]]
@@ -141,9 +148,21 @@ MOUNT_RS()
 #Unmount $DEST (RAM Session)
 UMOUNT_RS()
 {
+	#Mostly for debugging purposes
+	#Makes sure Orig_OS was set before we got here
+	[[ -z "$Orig_OS" ]] &&
+	{
+		echo "\$Orig_OS must be set by whatever script is sourcing rlib"
+		exit 1
+	}
+
 	#On the off chance whatever script runs UMOUNT_RS hasn't set
 	#$DEST, error out instead of killing whatever half-matches
-	[[ -z $DEST ]] && { echo "\$DEST cannot be empty"; exit 1; }	
+	[[ -z $DEST ]] &&
+	{
+		echo "\$DEST cannot be empty"
+		exit 1
+	}
 
 	CHROOT=${Orig_OS%/}/${DEST#/}
 
@@ -195,6 +214,14 @@ toLower()
 #Create squashfs image
 CreateSquashfs()
 {
+	#Mostly for debugging purposes
+	#Makes sure Orig_OS was set before we got here
+	[[ -z "$Orig_OS" ]] &&
+	{
+		echo "\$Orig_OS must be set by whatever script is sourcing rlib"
+		exit 1
+	}
+
 	echo "Creating squashfs image"
 	echo
 
