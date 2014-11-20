@@ -7,9 +7,6 @@ ROOT_UUID=$(cat /var/lib/ram_booster/conf | grep ROOT_UUID= | sed 's/ROOT_UUID=/
 BOOT_UUID=$(cat /var/lib/ram_booster/conf | grep BOOT_UUID= | sed 's/BOOT_UUID=//g')
 HOME_UUID=$(cat /var/lib/ram_booster/conf | grep HOME_UUID= | sed 's/HOME_UUID=//g')
 EFI_UUID=$(cat /var/lib/ram_booster/conf | grep EFI_UUID= | sed 's/EFI_UUID=//g')
-DEST=$(cat /var/lib/ram_booster/conf | grep DEST= | sed 's/DEST=//g')
-#Remove leading slash from $DEST
-DEST="${DEST#/}"
 
 #Mount $DEST (RAM Session)
 #If function is passed "root_only" as arg, only mount $ROOT_UUID to
@@ -21,6 +18,14 @@ MOUNT_RS()
 	[[ -z "$Orig_OS" ]] &&
 	{
 		echo "\$Orig_OS must be set by whatever script is sourcing rlib"
+		exit 1
+	}
+
+	#On the off chance whatever script runs UMOUNT_RS hasn't set
+	#$DEST, error out instead of killing whatever half-matches
+	[[ -z $DEST ]] &&
+	{
+		echo "\$DEST must be set by whatever script is sourcing rlib"
 		exit 1
 	}
 
@@ -160,7 +165,7 @@ UMOUNT_RS()
 	#$DEST, error out instead of killing whatever half-matches
 	[[ -z $DEST ]] &&
 	{
-		echo "\$DEST cannot be empty"
+		echo "\$DEST must be set by whatever script is sourcing rlib"
 		exit 1
 	}
 
@@ -219,6 +224,14 @@ CreateSquashfs()
 	[[ -z "$Orig_OS" ]] &&
 	{
 		echo "\$Orig_OS must be set by whatever script is sourcing rlib"
+		exit 1
+	}
+
+	#On the off chance whatever script runs UMOUNT_RS hasn't set
+	#$DEST, error out instead of killing whatever half-matches
+	[[ -z $DEST ]] &&
+	{
+		echo "\$DEST must be set by whatever script is sourcing rlib"
 		exit 1
 	}
 
