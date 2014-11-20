@@ -204,10 +204,104 @@ UMOUNT_RS()
 		fi
 	done
 
+	#Find processes that are doing anything with the chroot (processes
+	#outside of the chroot can still use files under $Orig_OS/$DEST,
+	#which could prevent the chroot from unmounting)
+	#sudo lsof | grep ${Orig_OS}
+	#sudo lsof | grep Original
+
 	#Unmount all filesystems under $Orig_OS recursively
-	sudo umount -R $Orig_OS
-	#Remove the temp folder
-	sudo rmdir $Orig_OS
+	sudo umount -R $Orig_OS 2>/dev/null
+
+	#Check how it went
+	if [[ "$?" == 0 ]]
+	then
+		#Remove the temp folder
+		sudo rmdir $Orig_OS
+		return $?
+	fi
+
+	#Failed to unmount - use lsof to figure out what's holding it up:
+
+	clear
+	echo "Failed to unmount chroot"
+	echo "Scanning for processes holding it up..."
+
+	#Get a list of PIDs that are using $Orig_OS for anything
+	PID_LIST=$(sudo lsof +D $Orig_OS 2>/dev/null | tail -n+2 | tr -s ' ' | cut -d ' ' -f 2 | sort -nu)
+
+	echo
+	echo "These are the processes preventing $Orig_OS from unmounting:"
+	echo
+
+	for PID in $PID_LIST
+	do
+		PROCESS_NAME=$(ps -p $PID -o comm=)
+		echo $PROCESS_NAME
+	done
+
+	echo
+	read -p "Would you like to kill them and try unmounting again? [Y\n]: " answer
+
+	#Convert answer to lowercase
+	answer=$(toLower $answer)
+
+	case $answer in
+		n|no)  
+			return 1
+			;;
+		*)
+			#Kill all PIDs holding up unmounting $Orig_OS
+
+			for PID in $PID_LIST
+			do
+				#Try to kill it nicely
+				kill -0 $PID &>/dev/null && kill -15 $PID
+
+				#Check every second for 5 seconds to see if $PID is dead
+				WAIT_TIME=5
+
+				#Do a quick check to see if it's still running
+				#It usually takes a second, so this often doesn't help
+				kill -0 $PID &>/dev/null &&
+				for SEC in $(seq 1 $WAIT_TIME)
+				do
+					sleep 1
+
+					if [[ "$SEC" != $WAIT_TIME ]]
+					then
+						#If it's dead, exit
+						kill -0 $PID &>/dev/null || break
+					else
+						#If time's up, kill it
+						kill -0 $PID &>/dev/null && kill -9 $PID
+					fi  
+				done
+			done
+
+			#Try unmounting again:
+
+			#Unmount all filesystems under $Orig_OS recursively
+			sudo umount -R $Orig_OS 2>/dev/null
+
+			if [[ "$?" == "0" ]]
+			then
+				#Give user message
+				echo "Processes terminated, and $Orig_OS unmounted successfully"
+				sleep 4
+
+				#Remove the folder
+				sudo rmdir $Orig_OS 2>/dev/null ||
+				echo "Failed to remove $Orig_OS - are there files in it?"
+				sleep 4
+
+				return 0
+			else
+				#Still failed
+				return 1
+			fi
+			;;
+	esac
 }
 
 #Convert input to lowercase
