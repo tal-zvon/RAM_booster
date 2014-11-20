@@ -23,6 +23,16 @@ then
 	exit 0
 fi
 
+##########################################################################
+# Check if the user is trying to run this script from inside of a chroot #
+##########################################################################
+
+if [[ "$(ls -di / | cut -d ' ' -f 1)" != 2 ]]
+then
+	echo "This script cannot be run from inside of a chroot"
+	exit 0
+fi
+
 ####################
 # Global Variables #
 ####################
