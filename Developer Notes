@@ -136,6 +136,9 @@ Rewrite Notes:
 			pretty easy
 
 	Do a video:
+		Show that GUI apps can be run from rchroot
+			Become a regular user, start up a GUI app, and change its settings to show you can do that
+				Test it first - I don't actually know if it will work
 
 	Thread on UF.org:
 		Probably create a new thread
