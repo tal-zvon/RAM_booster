@@ -143,10 +143,10 @@ MOUNT_RS()
 		}
 	fi
 
-	#Setup mtab
+	#Setup mtab. Some programs (like df) use it to read partition table data
 	sudo chroot "$Orig_OS/$DEST/" /bin/bash -c "grep -v rootfs /proc/mounts > /etc/mtab"
 
-	#Enable X
+	#Enable X (GUI programs)
 	xhost +local: >/dev/null
 }
 
