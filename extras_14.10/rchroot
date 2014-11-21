@@ -102,7 +102,6 @@ case "$1" in
 		echo "You may use the computer normally during this process - you will NOT disrupt it"
 		echo
 		read -p "Your choice [y/N]: " answer
-		clear
 
 		#Convert answer to lowercase
 		answer=$(toLower $answer)
@@ -110,9 +109,11 @@ case "$1" in
 		case $answer in
 			y|yes)  
 				#Create squashfs image
+				clear
 				CreateSquashfs
 				;;
 			*)
+				echo
 				echo "You chose to NOT recreate the squashfs image"
 				exit 0
 				;;
@@ -170,7 +171,6 @@ echo "This may take some time to complete"
 echo "You may use the computer normally during this process - you will NOT disrupt it"
 echo
 read -p "Your choice [y/N]: " answer
-clear
 
 #Convert answer to lowercase
 answer=$(toLower $answer)
@@ -178,9 +178,11 @@ answer=$(toLower $answer)
 case $answer in
 	y|yes)  
 		#Create squashfs image
+		clear
 		CreateSquashfs
 		;;
 	*)
+		echo
 		echo "You chose to NOT recreate the squashfs image"
 		echo "If you change your mind, run 'sudo rchroot -s'"
 		exit 0
