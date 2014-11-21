@@ -97,6 +97,8 @@ Rewrite Notes:
 				b)
 					See if github can already do the counting
 
+		Disable RAM Session updates?
+
 	Stop using sed to directly edit rupdate and rchroot - let them use /var/lib/ram_booster/conf to figure stuff out
 
 	rupdate script:
