@@ -231,6 +231,19 @@ Uninstall_RAM_Booster() {
 		fi
 	fi
 
+	#Purge live-tools
+	if sudo dpkg -l live-tools &>/dev/null
+	then
+		echo
+		echo "Purging live-tools..."
+		sudo apt-get -y purge live-tools &>/dev/null
+
+		if [[ "$?" != "0" ]]
+		then
+			echo "Failed to purge live-tools"
+		fi
+	fi
+
 	#Tell user if /home was not restored in /etc/fstab
 	if $SHARE_HOME && ! $HOME_ALREADY_MOUNTED
 	then
