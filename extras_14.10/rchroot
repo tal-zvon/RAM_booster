@@ -152,7 +152,7 @@ UMOUNT_RS
 if [[ "$?" != "0" ]]
 then
 	clear
-	echo "There was an error unmounting ${Orig_OS%/}/${DEST#/}"
+	echo "There was an error unmounting ${Orig_OS}"
 	echo "A reboot should fix that"
 	echo "After the reboot, if you need to save your changes by recreating"
 	echo "the squashfs image, just run \"sudo rchroot\" and exit it"
