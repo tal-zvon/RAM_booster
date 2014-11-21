@@ -69,6 +69,12 @@ else
         exit 1
 fi
 
+#################
+# Create a trap #
+#################
+
+trap 'UMOUNT_RS' SIGINT
+
 ############
 # Mount FS #
 ############
@@ -81,6 +87,7 @@ MOUNT_RS
 
 
 #Do the update
+sudo chroot $Orig_OS/$DEST/ /bin/bash -c "apt-get update; apt-get -y dist-upgrade; apt-get -y autoremove"
 
 
 
