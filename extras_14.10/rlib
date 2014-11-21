@@ -182,12 +182,6 @@ UMOUNT_RS()
 		fi
 	done
 
-	#Find processes that are doing anything with the chroot (processes
-	#outside of the chroot can still use files under $Orig_OS/$DEST,
-	#which could prevent the chroot from unmounting)
-	#sudo lsof | grep ${Orig_OS}
-	#sudo lsof | grep Original
-
 	#Unmount all filesystems under $Orig_OS recursively
 	sudo umount -R $Orig_OS 2>/dev/null
 
