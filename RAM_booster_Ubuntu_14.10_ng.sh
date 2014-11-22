@@ -246,6 +246,20 @@ fi
 # since it fails when it runs there                                 #
 #####################################################################
 
+#Check if there is a backup of the original script
+if [[ ! -e /usr/sbin/update-grub.orig ]]
+then
+	#If the script is unmodded, make one
+	if ! grep -q 'RAM_Session' /usr/sbin/update-grub
+	then
+		sudo cp -a /usr/sbin/update-grub /usr/sbin/update-grub.orig
+	fi
+fi
+
+#Only do this if it hasn't already been done
+#Outside of the if statement above in case there was already a backup,
+#but the original file was never modded
+! grep -q 'RAM_Session' /usr/sbin/update-grub &&
 sudo sed -i '$i\
 if [ -e /RAM_Session ]\
 then\
