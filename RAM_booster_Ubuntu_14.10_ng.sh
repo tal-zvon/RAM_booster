@@ -241,6 +241,20 @@ then
 	esac
 fi
 
+#####################################################################
+# Block update-grub from running in the RAM Session without rupdate #
+# since it fails when it runs there                                 #
+#####################################################################
+
+sudo sed -i '$iif [ -e /RAM_Session ]' /usr/sbin/update-grub
+sudo sed -i '$ithen' /usr/sbin/update-grub
+sudo sed -i '$i\\tif [ "$(ls -di / | cut -d " " -f 1)" = 2 ] || [ "$(ls -di / | cut -d " " -f 1)" = 128 ]' /usr/sbin/update-grub
+sudo sed -i '$i\\tthen' /usr/sbin/update-grub
+sudo sed -i '$i\\t\techo "update-grub cannot be run from RAM Session. Ignoring grub-update request"' /usr/sbin/update-grub
+sudo sed -i '$i\\t\texit 0' /usr/sbin/update-grub
+sudo sed -i '$i\\tfi' /usr/sbin/update-grub
+sudo sed -i '$ifi' /usr/sbin/update-grub
+
 ####################################################################
 # Overwrite old logfile, and check if we can write to $LOG at all, #
 # drawing a line on top to start the border of the first command   #
