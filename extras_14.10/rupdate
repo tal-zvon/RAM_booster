@@ -73,7 +73,7 @@ fi
 # Create a trap #
 #################
 
-trap 'UMOUNT_RS' SIGINT
+trap 'UMOUNT_RS; exit 1' SIGINT
 
 ############
 # Mount FS #
