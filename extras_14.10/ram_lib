@@ -210,6 +210,14 @@ Uninstall_RAM_Booster() {
 		sudo rm -f /Original_OS
 	fi
 
+	#Delete version_check file
+	if [[ -e /etc/kernel/postinst.d/version_check ]]
+	then
+		$QUIET || echo
+		$QUIET || echo "Removing /etc/kernel/postinst.d/version_check..."
+		sudo rm -f /etc/kernel/postinst.d/version_check
+	fi
+
 	#Fix grub menu
 	if grep -q '#GRUB_HIDDEN_TIMEOUT=0' /etc/default/grub
 	then
