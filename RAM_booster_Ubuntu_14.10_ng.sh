@@ -262,6 +262,7 @@ echo '==========================================================================
 	clear
 	echo "Failed to write to '$LOG' log file"
 	echo "Exiting..."
+	Uninstall_RAM_Booster quiet
 	exit 1
 }
 
@@ -314,6 +315,7 @@ then
 	echo
 	echo "Failed to create /var/lib/ram_booster/conf"
 	echo "Exiting..."
+	Uninstall_RAM_Booster quiet
 	exit 1
 fi
 
@@ -403,6 +405,7 @@ case $answer in
 		echo
 		echo "Invalid answer"
 		echo "Exiting..."
+		Uninstall_RAM_Booster quiet
 		exit 1
 		;;
 esac
@@ -496,6 +499,7 @@ echo "Installing squashfs-tools..."
 COMMAND sudo apt-get -y --force-yes install squashfs-tools ||
 {
 	ECHO "squashfs-tools failed to install. You'll have to download and install it manually..."
+	Uninstall_RAM_Booster quiet
 	exit 1
 }
 
@@ -503,12 +507,14 @@ echo "Installing live-boot-initramfs-tools..."
 COMMAND sudo apt-get -y --force-yes install live-boot-initramfs-tools ||
 {
 	ECHO "live-boot-initramfs-tools failed to install. You'll have to download and install it manually..."
+	Uninstall_RAM_Booster quiet
 	exit 1
 }
 
 COMMAND sudo apt-get -y --force-yes install live-boot ||
 {
 	ECHO "live-boot failed to install. You'll have to download and install it manually..."
+	Uninstall_RAM_Booster quiet
 	exit 1
 }
 
@@ -601,6 +607,7 @@ then
         echo "Kernel module dependencies failed to update."
 	echo
         echo "Exiting..."
+	Uninstall_RAM_Booster quiet
         exit 1
 else
         echo "Kernel module dependencies updated successfully."
@@ -619,6 +626,7 @@ then
         echo "Initramfs failed to update."
 	echo
         echo "Exiting..."
+	Uninstall_RAM_Booster quiet
         exit 1
 else
         echo "Initramfs updated successfully."
