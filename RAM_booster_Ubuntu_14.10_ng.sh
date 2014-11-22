@@ -64,6 +64,9 @@ RCHROOT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rchroot"
 #Path to the rlib library
 RLIB_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rlib"
 
+#Path to the version_check kernel postinst script
+VER_CHECK="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/version_check"
+
 #True if home is already on another partition. False otherwise
 HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo false)
 
@@ -746,6 +749,13 @@ sudo chmod 755 ${DEST}/usr/sbin/rchroot
 #	Add root and boot devices to rchroot script
 #	sudo sed -i 's#\(ROOT_DEVICE=\)#\1"'$ROOT_DEV'"#' $DEST/usr/sbin/rchroot
 #	sudo sed -i 's#\(BOOT_DEVICE=\)#\1"'$BOOT_DEV'"#' $DEST/usr/sbin/rchroot
+
+###########################################################
+# Add version_check kernel postinst script to RAM Session #
+###########################################################
+sudo cp $VER_CHECK ${DEST}/etc/kernel/postinst.d/
+sudo chown root:root ${DEST}/etc/kernel/postinst.d/version_check
+sudo chmod 755 ${DEST}/etc/kernel/postinst.d/version_check
 
 ##################################
 # Write some useful info to $LOG #
