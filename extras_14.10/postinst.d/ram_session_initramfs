@@ -1,0 +1,6 @@
+#!/bin/bash
+
+version="$1"
+
+#Generate an initramfs image 
+mkinitramfs -o /boot/initrd.img-$version $version
