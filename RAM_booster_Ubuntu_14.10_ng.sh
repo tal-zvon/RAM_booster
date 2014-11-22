@@ -241,35 +241,6 @@ then
 	esac
 fi
 
-#####################################################################
-# Block update-grub from running in the RAM Session without rupdate #
-# since it fails when it runs there                                 #
-#####################################################################
-
-#Check if there is a backup of the original script
-if [[ ! -e /usr/sbin/update-grub.orig ]]
-then
-	#If the script is unmodded, make one
-	if ! grep -q 'RAM_Session' /usr/sbin/update-grub
-	then
-		sudo cp -a /usr/sbin/update-grub /usr/sbin/update-grub.orig
-	fi
-fi
-
-#Only do this if it hasn't already been done
-#Outside of the if statement above in case there was already a backup,
-#but the original file was never modded
-! grep -q 'RAM_Session' /usr/sbin/update-grub &&
-sudo sed -i '$i\
-if [ -e /RAM_Session ]\
-then\
-	if [ "$(ls -di / | cut -d " " -f 1)" = 2 ] || [ "$(ls -di / | cut -d " " -f 1)" = 128 ]\
-	then\
-		echo "update-grub cannot be run from RAM Session. Ignoring grub-update request"\
-		exit 0\
-	fi\
-fi' /usr/sbin/update-grub
-
 ####################################################################
 # Overwrite old logfile, and check if we can write to $LOG at all, #
 # drawing a line on top to start the border of the first command   #
@@ -668,6 +639,37 @@ sudo sed -i 's@\(if grub_file_is_not_garbage\)@MOD_PREFIX=$([ -e /RAM_Session ] 
 ########################
 
 CopyFileSystem
+
+#####################################################################
+# Block update-grub from running in the RAM Session without rupdate #
+# since it fails when it runs there                                 #
+# Note: Since we never modify the Original OS, this is removed when #
+#         /var/squashfs is with the uninstall function              #
+#####################################################################
+
+#Check if there is a backup of the original script
+if [[ ! -e ${DEST}/usr/sbin/update-grub.orig ]]
+then
+	#If the script is unmodded, make one
+	if ! grep -q 'RAM_Session' ${DEST}/usr/sbin/update-grub
+	then
+		sudo cp -a ${DEST}/usr/sbin/update-grub ${DEST}/usr/sbin/update-grub.orig
+	fi
+fi
+
+#Only do this if it hasn't already been done
+#Outside of the if statement above in case there was already a backup,
+#but the original file was never modded
+! grep -q 'RAM_Session' ${DEST}/usr/sbin/update-grub &&
+sudo sed -i '$i\
+if [ -e /RAM_Session ]\
+then\
+	if [ "$(ls -di / | cut -d " " -f 1)" = 2 ] || [ "$(ls -di / | cut -d " " -f 1)" = 128 ]\
+	then\
+		echo "update-grub cannot be run from RAM Session. Ignoring grub-update request"\
+		exit 0\
+	fi\
+fi' ${DEST}/usr/sbin/update-grub
 
 ###############
 # Update Grub #
