@@ -558,6 +558,18 @@ COMMAND sudo sed -i 's#\(rsync -a -h --progress .*\)#\1\
 #Appears on Ubuntu 14.10
 sudo sed -i 's|^\(\t\t\)\(echo.*/root/etc/fstab.d/live$\)|\1[ -d /root/etc/fstab.d ] \&\& \2|g' /lib/live/boot/9990-fstab.sh
 
+############################################################################
+# Tell /bin/live-update-initramfs not to worry about creating an initramfs #
+# image when a new kernel is installed - we'll be doing this ourselves     #
+############################################################################
+
+#Note: /bin/live-update-initramfs tries to write to
+#/lib/live/mount/medium/live without checking it if exists, which it does
+#not. All we do here is tell it to check first, which has the desired
+#effect of it not messing with the initramfs image apt-get installs
+#in /boot
+sudo sed -i 's|\(/proc/mounts\)$|\1 \&\& [ -d /lib/live/mount/medium/live/ ]|g' /bin/live-update-initramfs
+
 #########################################
 # Update the kernel module dependencies #
 #########################################
@@ -627,6 +639,26 @@ sudo sed -i 's@\(if grub_file_is_not_garbage\)@MOD_PREFIX=$([ -e /RAM_Session ] 
 ########################
 
 CopyFileSystem
+
+#####################################################################
+# Block update-grub from running in the RAM Session without rupdate #
+# since it fails when it runs there, and it's unnecessary           #
+# Note: Since we never modify the Original OS, we do not need to    #
+# have our Uninstall function remove this explicitly - it gets      #
+# removed with /var/squashfs                                        #
+#####################################################################
+
+#Modify $DEST/usr/sbin/update-grub
+sudo sed -i '$i\
+if [ -e /RAM_Session ]\
+then\
+	if [ "$(ls -di / | cut -d " " -f 1)" = 2 ] || [ "$(ls -di / | cut -d " " -f 1)" = 128 ]\
+	then\
+		echo "update-grub cannot be run from RAM Session unless you are using rchroot"\
+		echo "Ignoring grub-update request"\
+		exit 0\
+	fi\
+fi' ${DEST}/usr/sbin/update-grub
 
 ###############
 # Update Grub #

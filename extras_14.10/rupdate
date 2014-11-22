@@ -27,7 +27,7 @@ fi
 # Check if the user is trying to run this script from inside of a chroot #
 ##########################################################################
 
-if [[ "$(ls -di / | cut -d ' ' -f 1)" != 2 ]]
+if [[ "$(ls -di / | cut -d ' ' -f 1)" != 2 ]] && [[ "$(ls -di / | cut -d ' ' -f 1)" != 128 ]]
 then
 	echo "This script cannot be run from inside of a chroot"
 	exit 0
@@ -73,7 +73,7 @@ fi
 # Create a trap #
 #################
 
-trap 'UMOUNT_RS' SIGINT
+trap 'UMOUNT_RS; echo; exit 1' SIGINT
 
 ############
 # Mount FS #
