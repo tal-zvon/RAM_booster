@@ -202,6 +202,15 @@ UMOUNT_RS()
 	#Get a list of PIDs that are using $Orig_OS for anything
 	PID_LIST=$(sudo lsof +D $Orig_OS 2>/dev/null | tail -n+2 | tr -s ' ' | cut -d ' ' -f 2 | sort -nu)
 
+	#If there are none, give message and exit
+	if [[ -z "$PID_LIST" ]]
+	then
+		echo
+		echo "None found"
+		sleep 4
+		return 1
+	fi
+
 	echo
 	echo "These are the processes preventing $Orig_OS from unmounting:"
 	echo
