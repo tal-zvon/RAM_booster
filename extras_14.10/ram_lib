@@ -99,6 +99,8 @@ Uninstall_Prompt() {
 }
 
 #Actually uninstalls the RAM Session
+#Outputs nothing to the screen if the first arg passed to function is 'quiet'
+#	Note: Still outputs error messages
 Uninstall_RAM_Booster() {
 	#Note: At this point, some global variables like $DEST are already set
 	#	(the ones that didn't require asking the user questions)
@@ -110,6 +112,11 @@ Uninstall_RAM_Booster() {
 	SHARE_HOME=$([[ -e /var/lib/ram_booster/conf ]] && { cat /var/lib/ram_booster/conf | grep -q 'SHARE_HOME=.*true.*' && echo true; } || echo false)
 	HOME_ALREADY_MOUNTED=$([[ -e /var/lib/ram_booster/conf ]] && { cat /var/lib/ram_booster/conf | grep -q 'HOME_ALREADY_MOUNTED=.*true.*' && echo true; } || echo false)
 
+	#This function can uninstall quietly if asked
+	QUIET=''
+	arg1_lcase=$(toLower $1)
+	[[ $arg1_lcase == "quiet" ]] && QUIET=true || QUIET=false
+
 	#Check if the script is running from within the RAM Session
         if [[ -e /RAM_Session ]]
         then
@@ -118,7 +125,7 @@ Uninstall_RAM_Booster() {
         fi
 
 	clear
-        echo "Uninstalling..."
+        $QUIET || echo "Uninstalling..."
 
         #Delete /mnt/tmp
         if [[ -d /mnt/tmp ]]
@@ -126,8 +133,8 @@ Uninstall_RAM_Booster() {
 		#Check if directory is a mountpoint
 		if $(mountpoint -q /mnt/tmp)
 		then
-			echo
-			echo "Unmounting /mnt/tmp..."
+			$QUIET || echo
+			$QUIET || echo "Unmounting /mnt/tmp..."
 			sudo umount /mnt/tmp &>/dev/null
 
 			#Check how unmount operation went
@@ -135,20 +142,20 @@ Uninstall_RAM_Booster() {
 			then
 				echo "/mnt/tmp failed to unmount. Is it in use?"
 			else
-				echo "Removing /mnt/tmp..."
+				$QUIET || echo "Removing /mnt/tmp..."
 				sudo rmdir /mnt/tmp
 			fi
 		else
-			echo
-			echo "Removing /mnt/tmp..."
+			$QUIET || echo
+			$QUIET || echo "Removing /mnt/tmp..."
 			sudo rmdir /mnt/tmp
 		fi
         fi
 
         #Delete $DEST
         if [[ -d "$DEST" ]]; then 
-		echo
-                echo "Removing ${DEST}..."
+		$QUIET || echo
+                $QUIET || echo "Removing ${DEST}..."
                 sudo rm -rf "${DEST}" &>/dev/null
 
 		#Check how delete operation went
@@ -161,15 +168,15 @@ Uninstall_RAM_Booster() {
 	#Delete /var/lib/ram_booster/
 	if [[ -d /var/lib/ram_booster ]]
 	then
-		echo
-		echo "Removing /var/lib/ram_booster..."
+		$QUIET || echo
+		$QUIET || echo "Removing /var/lib/ram_booster..."
 		sudo rm -rf /var/lib/ram_booster
 	fi
 
 	#Delete /live
         if [[ -d /live ]]; then 
-		echo
-                echo "Removing /live..."
+		$QUIET || echo
+                $QUIET || echo "Removing /live..."
                 sudo rm -rf /live &>/dev/null
 
 		#Check how delete operation went
@@ -182,47 +189,47 @@ Uninstall_RAM_Booster() {
 	#Delete /etc/grub.d/06_RAMSESS
 	if [[ -e /etc/grub.d/06_RAMSESS ]]
 	then
-		echo
-		echo "Removing /etc/grub/06_RAMSESS..."
+		$QUIET || echo
+		$QUIET || echo "Removing /etc/grub/06_RAMSESS..."
 		sudo rm -f /etc/grub.d/06_RAMSESS
 	fi
 
 	#Delete log file
 	if [[ -e $LOG ]]
 	then
-		echo
-		echo "Removing $LOG..."
+		$QUIET || echo
+		$QUIET || echo "Removing $LOG..."
 		sudo rm -f "$LOG"
 	fi
 
 	#Delete /Original_OS
 	if [[ -e /Original_OS ]]
 	then
-		echo
-		echo "Removing /Original_OS..."
+		$QUIET || echo
+		$QUIET || echo "Removing /Original_OS..."
 		sudo rm -f /Original_OS
 	fi
 
 	#Fix grub menu
 	if grep -q '#GRUB_HIDDEN_TIMEOUT=0' /etc/default/grub
 	then
-		echo
-		echo "Restoring grub menu..."
+		$QUIET || echo
+		$QUIET || echo "Restoring grub menu..."
 		sudo sed -i 's/#\(GRUB_HIDDEN_TIMEOUT=0\)/\1/g' /etc/default/grub
 
 		#Fix /etc/grub.d/10_linux
 
 		#Update grub
-		echo
-		echo "Updating grub..."
-		sudo update-grub &>/dev/null
+		$QUIET || echo
+		$QUIET || echo "Updating grub..."
+		$QUIET || sudo update-grub &>/dev/null
 	fi
 
 	#Purge live-boot
 	if sudo dpkg -l live-boot &>/dev/null
 	then
-		echo
-		echo "Purging live-boot..."
+		$QUIET || echo
+		$QUIET || echo "Purging live-boot..."
 		sudo apt-get -y purge live-boot &>/dev/null
 
 		if [[ "$?" != "0" ]]
@@ -234,8 +241,8 @@ Uninstall_RAM_Booster() {
 	#Purge live-tools
 	if sudo dpkg -l live-tools &>/dev/null
 	then
-		echo
-		echo "Purging live-tools..."
+		$QUIET || echo
+		$QUIET || echo "Purging live-tools..."
 		sudo apt-get -y purge live-tools &>/dev/null
 
 		if [[ "$?" != "0" ]]
@@ -247,13 +254,13 @@ Uninstall_RAM_Booster() {
 	#Tell user if /home was not restored in /etc/fstab
 	if $SHARE_HOME && ! $HOME_ALREADY_MOUNTED
 	then
-		echo
-		ECHO "You chose to have your Original OS's /home use a separate partition during install. This will NOT be undone. /etc/fstab will still mount that partition as /home. If you want this undone, you can do so manually by modifying /etc/fstab."
+		$QUIET || echo
+		$QUIET || ECHO "You chose to have your Original OS's /home use a separate partition during install. This will NOT be undone. /etc/fstab will still mount that partition as /home. If you want this undone, you can do so manually by modifying /etc/fstab."
 	fi
 
 	#Done
-	echo
-	echo "Uninstall Complete!"
+	$QUIET || echo
+	$QUIET || echo "Uninstall Complete!"
 	exit 0
 }
 
