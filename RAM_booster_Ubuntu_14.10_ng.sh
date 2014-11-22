@@ -332,6 +332,13 @@ sudo cp $RLIB_FILE /var/lib/ram_booster/
 sudo chown root:root /var/lib/ram_booster/rlib 2>/dev/null
 sudo chmod 644 /var/lib/ram_booster/rlib 2>/dev/null
 
+######################################################################
+# Add version_check kernel postinst script to /etc/kernel/postinst.d #
+######################################################################
+sudo cp $VER_CHECK /etc/kernel/postinst.d/
+sudo chown root:root /etc/kernel/postinst.d/version_check 2>/dev/null
+sudo chmod 755 /etc/kernel/postinst.d/version_check 2>/dev/null
+
 #################################################
 # Find out what the user wants to do with /home # 
 #################################################
@@ -757,13 +764,6 @@ sudo chmod 755 ${DEST}/usr/sbin/rchroot
 #	Add root and boot devices to rchroot script
 #	sudo sed -i 's#\(ROOT_DEVICE=\)#\1"'$ROOT_DEV'"#' $DEST/usr/sbin/rchroot
 #	sudo sed -i 's#\(BOOT_DEVICE=\)#\1"'$BOOT_DEV'"#' $DEST/usr/sbin/rchroot
-
-###########################################################
-# Add version_check kernel postinst script to RAM Session #
-###########################################################
-sudo cp $VER_CHECK ${DEST}/etc/kernel/postinst.d/
-sudo chown root:root ${DEST}/etc/kernel/postinst.d/version_check
-sudo chmod 755 ${DEST}/etc/kernel/postinst.d/version_check
 
 ##################################
 # Write some useful info to $LOG #
