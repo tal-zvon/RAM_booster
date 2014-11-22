@@ -244,6 +244,14 @@ then
 	esac
 fi
 
+############################################################################
+# If at any point the user hits Ctrl+C, quietly clean up any files we      #
+# may have created.                                                        #
+# Note: If the user hits Ctrl+C AFTER we start copying the filesystem to   #
+# $DEST, a different trap will be activated which will be a lot less quiet #
+############################################################################
+trap 'echo; Uninstall_RAM_Booster quiet; exit 1' SIGINT
+
 ####################################################################
 # Overwrite old logfile, and check if we can write to $LOG at all, #
 # drawing a line on top to start the border of the first command   #
@@ -275,12 +283,6 @@ LOGGER "$(echo "fdisk -l:"; sudo fdisk -l)"
 
 #blkid which shows the UUIDs that fstab uses
 LOGGER "$(echo -e "blkid:\n"; sudo blkid)"
-
-#################################################################
-# If the user hits Ctrl+C at any point, have the script cleanup #
-#################################################################
-
-trap CtrlC SIGINT
 
 #################################################################
 # Create /var/lib/ram_booster/conf which rlib, rupdate, rchroot #
@@ -466,6 +468,12 @@ echo "HOME_DEV=$HOME_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "HOME_UUID=$HOME_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "EFI_DEV=$EFI_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "EFI_UUID=$EFI_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+
+########################################################################
+# If the user hits Ctrl+C at any point, have the script ask to cleanup #
+########################################################################
+
+trap CtrlC SIGINT
 
 ###################################
 # Install some essential packages #
