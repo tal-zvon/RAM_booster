@@ -124,7 +124,7 @@ Uninstall_RAM_Booster() {
                 exit 0
         fi
 
-	clear
+	$QUIET || clear
         $QUIET || echo "Uninstalling..."
 
         #Delete /mnt/tmp
