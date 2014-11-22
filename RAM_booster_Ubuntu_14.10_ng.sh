@@ -642,25 +642,13 @@ CopyFileSystem
 
 #####################################################################
 # Block update-grub from running in the RAM Session without rupdate #
-# since it fails when it runs there                                 #
-# Note: Since we never modify the Original OS, this is removed when #
-#         /var/squashfs is with the uninstall function              #
+# since it fails when it runs there, and it's unnecessary           #
+# Note: Since we never modify the Original OS, we do not need to    #
+# have our Uninstall function remove this explicitly - it gets      #
+# removed with /var/squashfs                                        #
 #####################################################################
 
-#Check if there is a backup of the original script
-if [[ ! -e ${DEST}/usr/sbin/update-grub.orig ]]
-then
-	#If the script is unmodded, make one
-	if ! grep -q 'RAM_Session' ${DEST}/usr/sbin/update-grub
-	then
-		sudo cp -a ${DEST}/usr/sbin/update-grub ${DEST}/usr/sbin/update-grub.orig
-	fi
-fi
-
-#Only do this if it hasn't already been done
-#Outside of the if statement above in case there was already a backup,
-#but the original file was never modded
-! grep -q 'RAM_Session' ${DEST}/usr/sbin/update-grub &&
+#Modify $DEST/usr/sbin/update-grub
 sudo sed -i '$i\
 if [ -e /RAM_Session ]\
 then\
