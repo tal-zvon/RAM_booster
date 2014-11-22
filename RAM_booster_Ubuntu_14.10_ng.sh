@@ -654,7 +654,8 @@ if [ -e /RAM_Session ]\
 then\
 	if [ "$(ls -di / | cut -d " " -f 1)" = 2 ] || [ "$(ls -di / | cut -d " " -f 1)" = 128 ]\
 	then\
-		echo "update-grub cannot be run from RAM Session. Ignoring grub-update request"\
+		echo "update-grub cannot be run from RAM Session unless you are using rchroot"\
+		echo "Ignoring grub-update request"\
 		exit 0\
 	fi\
 fi' ${DEST}/usr/sbin/update-grub
