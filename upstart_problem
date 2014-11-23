@@ -1,0 +1,52 @@
+Installing ssh fails in the chroot
+	/var/lib/dpkg/info/openssh-server.postinst is what fails
+	dpkg --configure openssh-server
+		is the mimimum required command that fails
+	Update:
+		I can echo stuff to the terminal from the openssh-server.postinst file if I redirect it to stderr
+			echo "SOME_VAR=$SOME_VAR" >&2
+		The place it dies is the invoke line
+		The inkoke command itself that fails is:
+			invoke-rc.d ssh start
+		The command runs "/etc/init.d/ssh start", which also fails at line 25 when it tries to source /lib/lsb/init-functions
+		/lib/lsb/init-functions dies at the for loop on line 444 when it tries to source /lib/lsb/init-functions.d/01-upstart-lsb
+		/lib/lsb/init-functions.d/01-upstart-lsb dies on the if statement at line 11, which matches, and the script exits
+
+	Note: If ssh is installed before you run the RAM_Booster script, it works perfect. Why?
+	Note 2: After installing ssh in rchroot, I did this and it worked perfect:
+		dpkg --configure openssh-server
+		dpkg --configure ssh
+		Note: This was after I installed it in the RAM Session
+
+	Note 3: I changed this and it worked:
+		$ vim /lib/lsb/init-functions:
+			init_is_upstart()
+			{
+				if [ -x ... ] && ...; then
+					return 0 --> return 1
+				fi
+				return 1
+			}
+
+		This function (init_is_upstart) is called by /etc/init.d/ssh in the check_for_upstart() function
+
+		What I want to know is: Why does that if statement fail when ssh has already been installed on the RAM Session?
+			It doesn't. It probably just doesn't get to that point
+
+		Note: Even though changing this one line works, it has a problem:
+			After creating a squashfs image using this change, Ubuntu takes forever to try to bring the network up during boot and fails
+			When it finally does boot, the eth0 interface is down, but a simple "sudo dhclient eth0" makes everything work, including ssh
+
+		Note: The same problem does NOT appear when I first
+			install ssh on the RAM Session, and then install
+			it in the chroot, letting it recreate the squashfs
+			image, and reboot
+
+	Idea:
+		Put echo statements everywhere along the path of all the scripts
+		Run either "apt-get install ssh" or "dpkg --configure openssh-server" BEFORE and AFTER you install ssh on the RAM Session to see what diverts the path
+
+	Note: For testing, after I purge ssh and openssh-server from RAM Session, do this in rchroot "dpkg-reconfigure openssh-server" and it will break again
+
+	Note: '$ status ssh' in the chroot can tell if ssh is running outside of the chroot for some reason. This is NOT a huge problem though as far as I can tell -
+		the only thing this appears to cause the chroot to do is try to shut down ssh if it's running

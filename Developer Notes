@@ -55,6 +55,60 @@ Speed up rsync filesystem copy to /var/squashfs during testing:
 
 Rewrite Notes:
 
+	Generic:
+
+		Finish writing postinst.d scripts
+			Need code in postinst.d that:
+				if only RAM Session supports a kernel, move it to a subfolder under /boot
+				if both the Original OS and RAM Session support a kernel, move it to /boot and update grub
+				if only Original OS supports a kernel, 06_RAMSESS will take care of it - the kernel stays in /boot
+
+		Don't forget to remove all postinst scripts when uninstalling RAM Session
+
+		Use apt-cacher-ng to speed stuff up
+
+		I need a postinst script that moves /boot/*$1* to a new folder under /boot
+			It can probably work in both Original OS and the RAM Session
+
+		Delete the extra files and folders in the git repo
+			Old 14.10 script
+			dev_script.sh
+			upstart_problem
+			test
+
+		Test my new script on Ubuntu 14.04
+
+		Test everything with efi, XFS, and BTRFS (at least warn people if it doesn't work)
+			Especially test if other filesystems (is reiserfs still around?) can run rchroot within rchroot because of the way I test for chroot
+
+		Read all the messages I wrote to the user on screen - maybe I should reword some
+
+		When user chooses to share home, should I warn them that until they reboot, /home will not be mounted, so none of that will be shared?
+
+		Check that time is accurate
+
+		Check that internet is available
+
+		Is there anything else that needs to be logged?
+			Check again when I'm done everything
+			chroot and rupdate probably need a log too
+
+		Write down the purpose of all my scripts and files so it's easier to understand
+
+		What happens when /etc/fstab and the current FS is inconsistent?
+			Ex:
+				The RAM_Booster script just ran, and created a new entry for /home in /etc/fstab
+				Immediately after, you uninstall, and run again
+				At this point, you still haven't reboot, so the running system isn't using /dev/sdb1 as /home, but /etc/fstab is
+
+		I still don't like the wording in the /var/lib/ram_booster/conf file
+			It implies that the RAM Session should be using /dev/sda1 as it's home, when it's not - it just means the root partition should be the same as home
+
+		Also, if /boot on the Original OS is NOT the same as /, it will be forced to be (which is good), but the /var/lib/ram_booster/conf file will show it as 
+		/dev/sdb1 when in fact, the RAM Session will be using a fake boot
+			FUNCTIONALLY, this works, and is exactly the way I designed it
+			I just need the conf file to be clear about what the devices are referring to
+
 	RAM_booster script itself:
 		Add a header like my original script has with author name, date, etc
 
