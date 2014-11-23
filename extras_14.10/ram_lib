@@ -218,6 +218,22 @@ Uninstall_RAM_Booster() {
 		sudo rm -f /etc/kernel/postinst.d/version_check
 	fi
 
+	#Delete /boot/Orig
+	if [[ -e /boot/Orig ]]
+	then
+		$QUIET || echo
+		$QUIET || echo "Removing /boot/Orig..."
+		sudo rm -f /boot/Orig
+	fi
+
+	#Delete /boot/RAM_Sess
+	if [[ -e /boot/RAM_Sess ]]
+	then
+		$QUIET || echo
+		$QUIET || echo "Removing /boot/RAM_Sess..."
+		sudo rm -f /boot/RAM_Sess
+	fi
+
 	#Fix grub menu
 	if grep -q '#GRUB_HIDDEN_TIMEOUT=0' /etc/default/grub
 	then
