@@ -648,6 +648,17 @@ sudo mkdir -p ${DEST}
 sudo bash -c 'echo "This is the RAM Session. Your OS is running from within RAM." > '${DEST}'/RAM_Session'
 sudo bash -c 'echo "This is your Original OS. You are NOT inside the RAM Session." > /Original_OS'
 
+############################################
+# Run /etc/kernel/postinst.d/version_check #
+############################################
+
+#Create list of kernels the Original OS supports
+sudo $VER_CHECK
+
+#The list of kernels the Original OS supports is
+#exactly the same while the RAM Session is being installed
+sudo cp -a /boot/Orig /boot/RAM_Sess
+
 ###########################
 # Add Grub2 entry to menu #
 ###########################
