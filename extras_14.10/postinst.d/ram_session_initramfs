@@ -2,5 +2,9 @@
 
 version="$1"
 
-#Generate an initramfs image 
-mkinitramfs -o /boot/initrd.img-$version $version
+if [[ -e /RAM_Session ]]
+then
+	echo "ram_session_initramfs: Generating initramfs image"
+	#Generate an initramfs image 
+	mkinitramfs -o /boot/initrd.img-$version $version
+fi
