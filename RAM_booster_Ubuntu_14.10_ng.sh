@@ -653,7 +653,7 @@ sudo bash -c 'echo "This is your Original OS. You are NOT inside the RAM Session
 ############################################
 
 #Create list of kernels the Original OS supports
-sudo $VER_CHECK
+sudo /etc/kernel/postinst.d/version_check
 
 #The list of kernels the Original OS supports is
 #exactly the same while the RAM Session is being installed
