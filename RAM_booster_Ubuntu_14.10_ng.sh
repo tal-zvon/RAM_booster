@@ -70,6 +70,9 @@ VER_CHECK="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/version_check"
 #Path to the ram_session_initramfs kernel postinst script
 INITRAMFS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/ram_session_initramfs"
 
+#Path to the za-sort-kernels kernel postinst script
+ZA_SORT_KERNELS="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/za-sort-kernels"
+
 #True if home is already on another partition. False otherwise
 HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo false)
 
@@ -343,6 +346,13 @@ sudo chmod 644 /var/lib/ram_booster/rlib 2>/dev/null
 sudo cp $VER_CHECK /etc/kernel/postinst.d/
 sudo chown root:root /etc/kernel/postinst.d/version_check 2>/dev/null
 sudo chmod 755 /etc/kernel/postinst.d/version_check 2>/dev/null
+
+########################################################################
+# Add za-sort-kernels kernel postinst script to /etc/kernel/postinst.d #
+########################################################################
+sudo cp -v $ZA_SORT_KERNELS /etc/kernel/postinst.d/
+sudo chown -v root:root /etc/kernel/postinst.d/za-sort-kernels 
+sudo chmod -v 755 /etc/kernel/postinst.d/za-sort-kernels 
 
 #################################################
 # Find out what the user wants to do with /home # 
