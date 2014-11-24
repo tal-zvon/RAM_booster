@@ -33,7 +33,8 @@ do
 	if ! grep -qx $KERNEL_VERSION /boot/Orig
 	then
 		echo "Moving $KERNEL_VERSION to /boot/RS_KERNELS/"
-		mv -v /boot/*$KERNEL_VERSION* /boot/RS_KERNELS/
+		mv -v /boot/vmlinuz-$KERNEL_VERSION* /boot/RS_KERNELS/
+		mv -v /boot/initrd*-$KERNEL_VERSION* /boot/RS_KERNELS/
 	fi
 done
 
