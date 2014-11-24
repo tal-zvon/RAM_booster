@@ -210,20 +210,20 @@ Uninstall_RAM_Booster() {
 		sudo rm -f /Original_OS
 	fi
 
-	#Delete version_check file
-	if [[ -e /etc/kernel/postinst.d/version_check ]]
+	#Delete zb_version_check file
+	if [[ -e /etc/kernel/postinst.d/zb_version_check ]]
 	then
 		$QUIET || echo
-		$QUIET || echo "Removing /etc/kernel/postinst.d/version_check..."
-		sudo rm -f /etc/kernel/postinst.d/version_check
+		$QUIET || echo "Removing /etc/kernel/postinst.d/zb_version_check..."
+		sudo rm -f /etc/kernel/postinst.d/zb_version_check
 	fi
 
-	#Delete /etc/kernel/postinst.d/za-sort-kernels
-	if [[ -e /etc/kernel/postinst.d/za-sort-kernels ]]
+	#Delete /etc/kernel/postinst.d/zc_sort_kernels
+	if [[ -e /etc/kernel/postinst.d/zc_sort_kernels ]]
 	then
 		$QUIET || echo
-		$QUIET || echo "Removing /etc/kernel/postinst.d/za-sort-kernels..."
-		sudo rm -f /etc/kernel/postinst.d/za-sort-kernels
+		$QUIET || echo "Removing /etc/kernel/postinst.d/zc_sort_kernels..."
+		sudo rm -f /etc/kernel/postinst.d/zc_sort_kernels
 	fi
 
 	#Delete /boot/Orig

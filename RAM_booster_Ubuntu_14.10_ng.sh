@@ -64,14 +64,14 @@ RCHROOT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rchroot"
 #Path to the rlib library
 RLIB_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rlib"
 
-#Path to the version_check kernel postinst script
-VER_CHECK="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/version_check"
+#Path to the za_ram_session_initramfs kernel postinst script
+INITRAMFS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/za_ram_session_initramfs"
 
-#Path to the ram_session_initramfs kernel postinst script
-INITRAMFS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/ram_session_initramfs"
+#Path to the zb_version_check kernel postinst script
+VER_CHECK_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/zb_version_check"
 
-#Path to the za-sort-kernels kernel postinst script
-ZA_SORT_KERNELS="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/za-sort-kernels"
+#Path to the zc_sort_kernels kernel postinst script
+SORT_KERNELS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/zc_sort_kernels"
 
 #True if home is already on another partition. False otherwise
 HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo false)
@@ -340,19 +340,23 @@ sudo cp $RLIB_FILE /var/lib/ram_booster/
 sudo chown root:root /var/lib/ram_booster/rlib 2>/dev/null
 sudo chmod 644 /var/lib/ram_booster/rlib 2>/dev/null
 
-######################################################################
-# Add version_check kernel postinst script to /etc/kernel/postinst.d #
-######################################################################
-sudo cp $VER_CHECK /etc/kernel/postinst.d/
-sudo chown root:root /etc/kernel/postinst.d/version_check 2>/dev/null
-sudo chmod 755 /etc/kernel/postinst.d/version_check 2>/dev/null
+#########################################################################
+# Add zb_version_check kernel postinst script to /etc/kernel/postinst.d #
+#########################################################################
+SCRIPT_FILE_NAME=$(basename $VER_CHECK_SCRIPT)
+
+sudo cp $VER_CHECK_SCRIPT /etc/kernel/postinst.d/
+sudo chown root:root /etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
+sudo chmod 755 /etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
 
 ########################################################################
-# Add za-sort-kernels kernel postinst script to /etc/kernel/postinst.d #
+# Add zc_sort_kernels kernel postinst script to /etc/kernel/postinst.d #
 ########################################################################
-sudo cp $ZA_SORT_KERNELS /etc/kernel/postinst.d/
-sudo chown root:root /etc/kernel/postinst.d/za-sort-kernels 2>/dev/null
-sudo chmod 755 /etc/kernel/postinst.d/za-sort-kernels 2>/dev/null
+SCRIPT_FILE_NAME=$(basename $SORT_KERNELS_SCRIPT)
+
+sudo cp $SORT_KERNELS_SCRIPT /etc/kernel/postinst.d/
+sudo chown root:root /etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
+sudo chmod 755 /etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
 
 #################################################
 # Find out what the user wants to do with /home # 
@@ -662,8 +666,10 @@ sudo bash -c 'echo "This is your Original OS. You are NOT inside the RAM Session
 # Run /etc/kernel/postinst.d/version_check #
 ############################################
 
+SCRIPT_FILE_NAME=$(basename $VER_CHECK_SCRIPT)
+
 #Create list of kernels the Original OS supports
-sudo /etc/kernel/postinst.d/version_check
+sudo /etc/kernel/postinst.d/$SCRIPT_FILE_NAME
 
 #The list of kernels the Original OS supports is
 #exactly the same while the RAM Session is being installed
@@ -797,13 +803,15 @@ sudo chmod 755 ${DEST}/usr/sbin/rchroot
 #	sudo sed -i 's#\(ROOT_DEVICE=\)#\1"'$ROOT_DEV'"#' $DEST/usr/sbin/rchroot
 #	sudo sed -i 's#\(BOOT_DEVICE=\)#\1"'$BOOT_DEV'"#' $DEST/usr/sbin/rchroot
 
-###################################################
-# Add ram_session_initramfs script to RAM Session #
-###################################################
+######################################################
+# Add za_ram_session_initramfs script to RAM Session #
+######################################################
+
+SCRIPT_FILE_NAME=$(basename $INITRAMFS_SCRIPT)
 
 sudo cp $INITRAMFS_SCRIPT ${DEST}/etc/kernel/postinst.d/
-sudo chown root:root ${DEST}/etc/kernel/postinst.d/ram_session_initramfs 2>/dev/null
-sudo chmod 755 ${DEST}/etc/kernel/postinst.d/ram_session_initramfs 2>/dev/null
+sudo chown root:root ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
+sudo chmod 755 ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
 
 ##################################
 # Write some useful info to $LOG #
