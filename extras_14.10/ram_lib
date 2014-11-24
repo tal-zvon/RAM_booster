@@ -218,6 +218,14 @@ Uninstall_RAM_Booster() {
 		sudo rm -f /etc/kernel/postinst.d/version_check
 	fi
 
+	#Delete /etc/kernel/postinst.d/za-sort-kernels
+	if [[ -e /etc/kernel/postinst.d/za-sort-kernels ]]
+	then
+		$QUIET || echo
+		$QUIET || echo "Removing /etc/kernel/postinst.d/za-sort-kernels..."
+		sudo rm -f /etc/kernel/postinst.d/za-sort-kernels
+	fi
+
 	#Delete /boot/Orig
 	if [[ -e /boot/Orig ]]
 	then
