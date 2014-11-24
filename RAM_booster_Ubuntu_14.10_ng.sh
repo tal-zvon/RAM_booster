@@ -681,15 +681,6 @@ sudo cp -a /boot/Orig /boot/RAM_Sess
 
 GrubEntry
 
-#################################################################
-# Modify /etc/grub.d/10_linux so grub doesn't make menu entries #
-# for kernels that can't run                                    #
-#################################################################
-
-#grep makes sure the fix isn't already applied
-#grep -q 'MOD_PREFIX' /etc/grub.d/10_linux ||
-#sudo sed -i 's@\(if grub_file_is_not_garbage\)@MOD_PREFIX=$([ -e /RAM_Session ] \&\& echo "/mnt/" || echo "")\n                  [ -d $MOD_PREFIX/lib/modules/${i#/boot/vmlinuz-} ] || continue\n                  \1@g' /etc/grub.d/10_linux
-
 ########################
 # Copy the OS to $DEST #
 ########################
@@ -779,9 +770,6 @@ sudo find ${DEST%/}/var/log -type f | while read file; do echo "emptied '$file'"
 sudo cp $RUPDATE_FILE ${DEST}/usr/sbin/
 sudo chown root:root ${DEST}/usr/sbin/rupdate
 sudo chmod 755 ${DEST}/usr/sbin/rupdate
-#Note: rupdate can now read this info from /var/lib/ram_booster/conf
-#	Add the root device to the rupdate script
-#	sudo sed -i 's#\(REG_DEVICE=\)#\1"'$ROOT_DEV'"#' ${DEST}/usr/sbin/rupdate
 
 ######################################
 # Add rupgrade script to RAM Session #
@@ -798,10 +786,6 @@ sudo chmod 755 ${DEST}/usr/sbin/rupgrade
 sudo cp $RCHROOT_FILE ${DEST}/usr/sbin/
 sudo chown root:root ${DEST}/usr/sbin/rchroot
 sudo chmod 755 ${DEST}/usr/sbin/rchroot
-#Note: rupdate can now read this info from /var/lib/ram_booster/conf
-#	Add root and boot devices to rchroot script
-#	sudo sed -i 's#\(ROOT_DEVICE=\)#\1"'$ROOT_DEV'"#' $DEST/usr/sbin/rchroot
-#	sudo sed -i 's#\(BOOT_DEVICE=\)#\1"'$BOOT_DEV'"#' $DEST/usr/sbin/rchroot
 
 ######################################################
 # Add za_ram_session_initramfs script to RAM Session #
