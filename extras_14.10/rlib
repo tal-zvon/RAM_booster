@@ -119,6 +119,13 @@ MOUNT_RS()
 			UMOUNT_RS
 			exit 1
 		}
+	else
+		sudo mount -o bind "$Orig_OS/boot" "$Orig_OS/$DEST/boot" ||
+		{
+			echo "Failed to bind ${Orig_OS%/}/boot to ${Orig_OS%/}/${DEST%/}/boot"
+			UMOUNT_RS
+			exit 1
+		}
 	fi
 
 	#Mount /boot/efi, if we are running an efi system
