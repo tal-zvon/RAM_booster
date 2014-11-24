@@ -350,9 +350,9 @@ sudo chmod 755 /etc/kernel/postinst.d/version_check 2>/dev/null
 ########################################################################
 # Add za-sort-kernels kernel postinst script to /etc/kernel/postinst.d #
 ########################################################################
-sudo cp -v $ZA_SORT_KERNELS /etc/kernel/postinst.d/
-sudo chown -v root:root /etc/kernel/postinst.d/za-sort-kernels 
-sudo chmod -v 755 /etc/kernel/postinst.d/za-sort-kernels 
+sudo cp $ZA_SORT_KERNELS /etc/kernel/postinst.d/
+sudo chown root:root /etc/kernel/postinst.d/za-sort-kernels 2>/dev/null
+sudo chmod 755 /etc/kernel/postinst.d/za-sort-kernels 2>/dev/null
 
 #################################################
 # Find out what the user wants to do with /home # 
