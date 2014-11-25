@@ -17,9 +17,13 @@ PATH_TO_KERNEL=''
 
 #Root UUID
 ROOT_UUID=$(cat /var/lib/ram_booster/conf | grep ROOT_UUID= | sed 's/ROOT_UUID=//g')
+#Remove leading/trailing double/single quotes
+ROOT_UUID=$(echo $ROOT_UUID | tr -d '"' | tr -d "'")
 
 #Boot UUID
 BOOT_UUID=$(cat /var/lib/ram_booster/conf | grep BOOT_UUID= | sed 's/BOOT_UUID=//g')
+#Remove leading/trailing double/single quotes
+BOOT_UUID=$(echo $BOOT_UUID | tr -d '"' | tr -d "'")
 
 #Create a list of installed kernels (vmlinuz-* files found on the system) 
 #Note: The list only contains filenames - not paths
