@@ -693,7 +693,7 @@ cp $GRUB_06_RAMSESS_SCRIPT /etc/grub.d/
 
 #Set permissions
 sudo chown root:root /etc/grub.d/$SCRIPT_FILE_NAME 2>/dev/null
-sudo chmod 755 /var/lib/ram_booster/$SCRIPT_FILE_NAME 2>/dev/null
+sudo chmod 755 /etc/grub.d/$SCRIPT_FILE_NAME 2>/dev/null
 
 #Unhide grub menu by uncommenting line in /etc/default/grub
 sudo sed -i 's/\(GRUB_HIDDEN_TIMEOUT=0\)/#\1/g' /etc/default/grub
