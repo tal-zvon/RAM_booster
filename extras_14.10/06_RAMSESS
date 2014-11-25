@@ -51,8 +51,6 @@ do
 	fi
 done
 
-echo "Found RAM Session Kernel: $LATEST_SUPPORTED_KERNEL" >&2
-
 #Figure out the path for the kernel we found
 if [ -e /boot/vmlinuz-$LATEST_SUPPORTED_KERNEL ]
 then
@@ -69,7 +67,7 @@ else
 	exit 1
 fi
 
-#echo "Latest kernel file: $PATH_TO_KERNEL" #DEBUG
+echo "Found RAM Session Image: /boot/${PATH_TO_KERNEL}vmlinuz-$LATEST_SUPPORTED_KERNEL" >&2
 
 #########################
 # Create the menu entry #
