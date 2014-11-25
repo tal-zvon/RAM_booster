@@ -67,7 +67,7 @@ else
 	exit 1
 fi
 
-echo "Found RAM Session Image: /boot/${PATH_TO_KERNEL}vmlinuz-$LATEST_SUPPORTED_KERNEL" >&2
+echo "Found ram session image: /boot/${PATH_TO_KERNEL}vmlinuz-$LATEST_SUPPORTED_KERNEL" >&2
 
 #########################
 # Create the menu entry #
