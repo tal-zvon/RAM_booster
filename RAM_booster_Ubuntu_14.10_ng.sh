@@ -65,7 +65,7 @@ RCHROOT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rchroot"
 RLIB_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rlib"
 
 #Path to the 06_RAMSESS
-06_RAMSESS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/06_RAMSESS"
+GRUB_06_RAMSESS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/06_RAMSESS"
 
 #Path to the za_ram_session_initramfs kernel postinst script
 INITRAMFS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/za_ram_session_initramfs"
@@ -682,14 +682,14 @@ sudo cp -a /boot/Orig /boot/RAM_Sess
 # Add Grub2 entry to menu #
 ###########################
 
-SCRIPT_FILE_NAME=$(basename $06_RAMSESS_SCRIPT)
+SCRIPT_FILE_NAME=$(basename $GRUB_06_RAMSESS_SCRIPT)
 
 #Adding entry to Grub2 menu
 echo
 echo "Adding entry to Grub2 menu"
 
 #Copy 06_RAMSESS to grub folder
-cp $06_RAMSESS_SCRIPT /etc/grub.d/
+cp $GRUB_06_RAMSESS_SCRIPT /etc/grub.d/
 
 #Set permissions
 sudo chown root:root /etc/grub.d/$SCRIPT_FILE_NAME 2>/dev/null
