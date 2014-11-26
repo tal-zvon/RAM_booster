@@ -165,8 +165,22 @@ fi
 # Recreating the SquashFS Image #
 #################################
 
-#Ask user if he wants to recreate filesystem.squashfs
 clear
+
+#Check if /etc/kernel/postinst.d/zd_warn has set a flag that shows that
+#a kernel update occurred. If it has, the user should get a warning
+if [[ -e $Orig_OS/$DEST/WARN ]]
+then
+	echo "WARNING: A KERNEL UPDATE JUST OCCURRED, AND THE RAM SESSION GRUB ENTRY"
+	echo "HAS BEEN MODIFIED TO USE THE NEW KERNEL. YOU MUST RECREATE THE SQUASHFS"
+	echo "IMAGE BEFORE YOU REBOOT OR YOUR RAM SESSION WILL NOT HAVE THE MODULES"
+	echo "TO USE THE NEW KERNEL, AND MAY FAIL TO BOOT!"
+	rm $Orig_OS/$DEST/WARN
+	echo
+fi
+
+#Ask user if he wants to recreate filesystem.squashfs
+echo
 echo "Would you like to save your changes by recreating the squashfs image?"
 echo "This may take some time to complete"
 echo "You may use the computer normally during this process - you will NOT disrupt it"

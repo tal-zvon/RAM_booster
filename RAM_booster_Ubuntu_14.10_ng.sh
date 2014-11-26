@@ -76,6 +76,9 @@ VER_CHECK_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/zb_version_check
 #Path to the zc_sort_kernels kernel postinst script
 SORT_KERNELS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/zc_sort_kernels"
 
+#Path to the zd_warn kernel postinst script
+WARN_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/zd_warn"
+
 #True if home is already on another partition. False otherwise
 HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo false)
 
@@ -814,6 +817,16 @@ sudo chmod 755 ${DEST}/usr/sbin/rchroot
 SCRIPT_FILE_NAME=$(basename $INITRAMFS_SCRIPT)
 
 sudo cp $INITRAMFS_SCRIPT ${DEST}/etc/kernel/postinst.d/
+sudo chown root:root ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
+sudo chmod 755 ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
+
+#####################################
+# Add zd_warn script to RAM Session #
+#####################################
+
+SCRIPT_FILE_NAME=$(basename $WARN_SCRIPT)
+
+sudo cp $WARN_SCRIPT ${DEST}/etc/kernel/postinst.d/
 sudo chown root:root ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
 sudo chmod 755 ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
 
