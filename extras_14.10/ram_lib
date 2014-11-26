@@ -194,14 +194,6 @@ Uninstall_RAM_Booster() {
 		sudo rm -f /etc/grub.d/06_RAMSESS
 	fi
 
-	#Delete log file
-	if [[ -e $LOG ]]
-	then
-		$QUIET || echo
-		$QUIET || echo "Removing $LOG..."
-		sudo rm -f "$LOG"
-	fi
-
 	#Delete /Original_OS
 	if [[ -e /Original_OS ]]
 	then
