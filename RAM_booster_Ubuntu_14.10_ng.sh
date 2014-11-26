@@ -286,7 +286,7 @@ LOGGER "$(echo -e "/etc/fstab:\n"; cat /etc/fstab)"
 LOGGER "$(echo -e "/etc/lsb-release:\n"; cat /etc/lsb-release)"
 
 #Some git info
-LOGGER "$(echo "Git:"; echo -en "\tCurrent Branch:\n\t\t"; git branch | grep '[*]'; echo -en "\tLatest Commit:\n\t\t"; git log --oneline -1 | cut -d ' ' -f 1)"
+LOGGER "$(echo "Git:"; echo -en "\tCurrent Branch:\n\t\t"; (cd $SCRIPT_DIR; git branch | grep '[*]'); echo -en "\tLatest Commit:\n\t\t"; (cd $SCRIPT_DIR; git log --oneline -1 | cut -d ' ' -f 1))"
 
 #fdisk
 LOGGER "$(echo "fdisk -l:"; sudo fdisk -l)"
