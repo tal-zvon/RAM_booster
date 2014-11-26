@@ -383,7 +383,7 @@ then
 fi
 
 echo
-read -p "What would you like to do?: [(S)eparate/(c)opy as is]: " answer
+read -p "What would you like to do?: [(s)eparate/(c)opy as is]: " answer
 
 #Convert answer to lowercase
 answer=$(toLower $answer)
