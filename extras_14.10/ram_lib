@@ -315,6 +315,7 @@ Ask_User_About_Home() {
 		echo
 		ECHO "\"$HOME_DEV\" is not a valid device. Please rerun the script and specify the device name of a partition or logical volume."
 		echo "Exiting..."
+		Uninstall_RAM_Booster quiet
 		exit 1
 	fi
 
@@ -324,6 +325,7 @@ Ask_User_About_Home() {
 		echo
 		ECHO "\"$HOME_DEV\" is neither a partition, nor a logical volume. Please rerun the script and specify the device name of a partition or logical volume."
 		echo "Exiting..."
+		Uninstall_RAM_Booster quiet
 		exit 1
 	fi
 
@@ -334,6 +336,7 @@ Ask_User_About_Home() {
 		echo "Unable to mount $HOME_DEV to /mnt/tmp"
 		echo "Is something already using /mnt as a mountpoint?"
 		echo "Exiting..."
+		Uninstall_RAM_Booster quiet
 		exit 1
 	fi
 
@@ -358,11 +361,12 @@ Ask_User_About_Home() {
 		echo
 		echo "Exiting..."
 		sudo rmdir /mnt/tmp
+		Uninstall_RAM_Booster quiet
 		exit 1
 	fi
 
 	#If user hits Ctrl+C, unmount /mnt/tmp
-	trap 'COMMAND sudo umount /mnt/tmp && sudo rmdir /mnt/tmp; echo; exit 1' SIGINT
+	trap 'COMMAND sudo umount /mnt/tmp && sudo rmdir /mnt/tmp; echo; Uninstall_RAM_Booster quiet; exit 1' SIGINT
 
 	#Count how many files are on the newly mounted device
 	FILE_COUNT=`sudo ls -lR /mnt/tmp | grep ^- | wc -l`
@@ -396,6 +400,7 @@ Ask_User_About_Home() {
 			else
 				echo "Exiting..."
 				sudo umount /mnt/tmp && sudo rmdir /mnt/tmp
+				Uninstall_RAM_Booster quiet
 				exit 1
 			fi
 		elif [[ "$answer" == "i am sure" ]]
@@ -405,6 +410,7 @@ Ask_User_About_Home() {
 			echo "$answer is an invalid choice"
 			echo "Exiting..."
 			sudo umount /mnt/tmp && sudo rmdir /mnt/tmp
+			Uninstall_RAM_Booster quiet
 			exit 1
 		fi
 	else
@@ -428,6 +434,7 @@ Ask_User_About_Home() {
 		echo
 		echo "Formatting $HOME_DEV failed."
 		echo "Exiting..."
+		Uninstall_RAM_Booster quiet
 		exit 1
 	else
 		echo "$HOME_DEV formatted successfully"
