@@ -57,19 +57,6 @@ Rewrite Notes:
 
 	Generic:
 
-		Finish writing postinst.d scripts
-			Need code in postinst.d that:
-				if only RAM Session supports a kernel, move it to a subfolder under /boot
-				if both the Original OS and RAM Session support a kernel, move it to /boot and update grub
-				if only Original OS supports a kernel, 06_RAMSESS will take care of it - the kernel stays in /boot
-
-		Don't forget to remove all postinst scripts when uninstalling RAM Session
-
-		Use apt-cacher-ng to speed stuff up
-
-		I need a postinst script that moves /boot/*$1* to a new folder under /boot
-			It can probably work in both Original OS and the RAM Session
-
 		Delete the extra files and folders in the git repo
 			Old 14.10 script
 			dev_script.sh
@@ -116,21 +103,10 @@ Rewrite Notes:
 			a cron job for updates (CronAsk) since it's hard
 			to test without a working RAM Session
 
-		I made almost no changes to the grub2 menu entry, except to make it work when indented
-			1. Make sure it works
-			2. Is there a way to simplify it, while still having it work in both the RAM Session and the Original OS?
-
-		Instead of messing with grub and stuff to try to make it so that grub-update always works, can I just have 2 /boot partitions?
-			Might not be possible
-			The other way is already working - I just need to clean it up
-
 		Split up long sed lines
 			I can replace a line in the script file with itself plus my first line, and then
 			have a second sed statement that replaces the line I just placed with itself and the
 			next line
-
-		Uninstall function
-			If I need to, add the code that restores /etc/grub.d/10_linux
 
 		When LVM is used, make sure the LOGGER gets info about how the volume groups and logical volumes are organized, so I can duplicate it
 
@@ -153,19 +129,9 @@ Rewrite Notes:
 
 		Disable RAM Session updates?
 
-	Stop using sed to directly edit rupdate and rchroot - let them use /var/lib/ram_booster/conf to figure stuff out
-
 	rupdate script:
-		do NOT include 'rupdate -O'. It's unnecessary (as the
-			user can just boot the Original OS) and
-			complicates the code a lot
-
-		use /var/lib/ram_booster/conf to find out the root device
 
 	rchroot script:
-		make sure rchroot does NOT require manual running of "rupdate -f"
-
-		use /var/lib/ram_booster/conf to find out the root and boot devices
 
 		I use the fact that / is inode 2 in normal root, and something else in a chroot environment
 		to make sure the user can't run rchroot from rchroot. The thing is - that only works on ext[234]
@@ -175,18 +141,13 @@ Rewrite Notes:
 		
 			Make sure my code works in xfs, lvm, and other filesystems. I may have to modify the if statment
 
+			Update: The code was modified to work in XFS. Try lvm and maybe btrfs/reiserfs
+
 	Other:
 		add a way to automatically download new rupdate and rchroot
 
 		The point of the rewrite is to make the code easier to read and debug
 			Make sure the code doesn't become overly complex
-
-		Maybe remove some things that complicate the code,
-			like the whole gparted section
-
-
-		Find out what causes the mounts to fail to unmount
-			Run GUI stuff, install random stuff, and then try to unmount the chroot
 
 		Maybe have a way to revert an update, which with git, should be
 			pretty easy
