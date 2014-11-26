@@ -242,6 +242,14 @@ Uninstall_RAM_Booster() {
 		sudo rm -f /boot/RAM_Sess
 	fi
 
+	#Delete /boot/RS_KERNELS/
+	if [[ -d /boot/RS_KERNELS ]]
+	then
+		$QUIET || echo
+		$QUIET || echo "Removing /boot/RS_KERNELS/..."
+		sudo rm -rf /boot/RS_KERNELS
+	fi
+
 	#Fix grub menu
 	if grep -q '#GRUB_HIDDEN_TIMEOUT=0' /etc/default/grub
 	then
