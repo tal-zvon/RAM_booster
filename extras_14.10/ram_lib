@@ -327,6 +327,16 @@ Ask_User_About_Home() {
 		exit 1
 	fi
 
+	#Make sure nothing is currently using /mnt as a mount point
+	if mountpoint -q /mnt
+	then
+		echo
+		echo "Unable to mount $HOME_DEV to /mnt/tmp"
+		echo "Is something already using /mnt as a mountpoint?"
+		echo "Exiting..."
+		exit 1
+	fi
+
 	#Make sure the device is really empty
 	echo -e "Running file check on your device...\n"
 
