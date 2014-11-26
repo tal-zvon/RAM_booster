@@ -53,6 +53,14 @@ MOUNT_RS()
 		fi
 	fi
 
+	#If we are using the default /mnt/Original_OS/ as the mount point,
+	#check if anything is using /mnt as a mountpoint
+	if echo $Orig_OS | grep -q '^/mnt' && mountpoint -q /mnt
+	then
+		echo "Failed to mount RAM Session. Is something already mounted at /mnt?"
+		exit 1
+	fi
+
 	#Make Orig_OS folder
 	sudo mkdir -p "$Orig_OS"
 
