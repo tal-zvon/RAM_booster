@@ -210,7 +210,6 @@ UMOUNT_RS()
 
 	#Failed to unmount - use lsof to figure out what's holding it up:
 
-	clear
 	echo "Failed to unmount chroot"
 	echo "Scanning for processes holding it up..."
 
@@ -223,6 +222,7 @@ UMOUNT_RS()
 		echo
 		echo "None found"
 		sleep 4
+		echo
 		return 1
 	fi
 
@@ -262,17 +262,17 @@ UMOUNT_RS()
 			then
 				#Give user message
 				echo "Processes terminated, and $Orig_OS unmounted successfully"
+				echo
 				sleep 4
 
 				#Remove the folder
 				sudo rmdir $Orig_OS 2>/dev/null ||
 				{
-					echo
 					echo "Failed to remove $Orig_OS - are there files in it?"
+					echo
 					sleep 4
 				}
 
-				clear
 				return 0
 			else
 				#Still failed
