@@ -73,6 +73,14 @@ echo "Found ram session image: /boot/${PATH_TO_KERNEL}vmlinuz-$LATEST_SUPPORTED_
 # Create the menu entry #
 #########################
 
+#NOTE: The --chroot-sessions option is very important. Without it,
+#upstart will NOT differentiate between services started on the host,
+#and services started in the chroot. This causes problems when you try to
+#run services in the chroot which don't exist on the host, which is done
+#automatically when you install any kind of service (like ssh) through
+#apt by postinst scripts. --chroot-sessions makes upstart treat chroot
+#services separately, which fixes all those problems
+
 cat << EOF
 
 menuentry "Ubuntu to RAM" {
