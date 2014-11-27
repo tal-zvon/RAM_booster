@@ -149,6 +149,20 @@ sudo chroot $Orig_OS/$DEST/ /bin/bash
 
 clear
 
+###########################################################################
+# Quietly tell any upstart services that may have been started (manually, #
+# or by postinst scripts during installation) to stop. We later detect    #
+# and kill all remaining processes - this is just a nice initial step     #
+###########################################################################
+sudo chroot $Orig_OS/$DEST/ /bin/bash -c '
+IFS=$"\n"
+
+for SRV in $(initctl list | grep -v stop)
+do
+	SRV_NAME=$(echo $SRV | cut -d " " -f 1)
+	stop $SRV_NAME &>/dev/null
+done'
+
 ##########################################################################
 # Check if /etc/kernel/postinst.d/zd_warn has set a flag that shows that #
 # a kernel update occurred. If it has, the user should get a warning     #
