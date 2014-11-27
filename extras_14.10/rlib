@@ -266,9 +266,13 @@ UMOUNT_RS()
 
 				#Remove the folder
 				sudo rmdir $Orig_OS 2>/dev/null ||
-				echo "Failed to remove $Orig_OS - are there files in it?"
-				sleep 4
+				{
+					echo
+					echo "Failed to remove $Orig_OS - are there files in it?"
+					sleep 4
+				}
 
+				clear
 				return 0
 			else
 				#Still failed
