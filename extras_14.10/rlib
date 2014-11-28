@@ -168,6 +168,10 @@ MOUNT_RS()
 #Unmount $DEST (RAM Session)
 UMOUNT_RS()
 {
+	#The location of the chroot, nicely formatted (without double
+	#'/'s) for printing to stdout
+	CHROOT=${Orig_OS%/}/${DEST#/}
+
 	#Mostly for debugging purposes
 	#Makes sure Orig_OS was set before we got here
 	[[ -z "$Orig_OS" ]] &&
@@ -184,7 +188,16 @@ UMOUNT_RS()
 		exit 1
 	}
 
-	CHROOT=${Orig_OS%/}/${DEST#/}
+	###########################################################################
+	# Quietly tell any upstart services that may have been started (manually, #
+	# or by postinst scripts during installation) to stop. We later detect    #
+	# and kill all remaining processes - this is just a nice initial step     #
+	###########################################################################
+	sudo chroot $CHROOT /bin/bash -c '
+	while IFS= read -r SRV
+	do
+		stop $SRV &>/dev/null
+	done < <(initctl list | grep -v stop | cut -d " " -f 1)'
 
 	#Find processes who's root folder is actually the chroot
 	for ROOT in $(find /proc/*/root)
