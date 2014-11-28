@@ -205,11 +205,11 @@ UMOUNT_RS()
 	sudo chroot $CHROOT /bin/bash -c '
 	while IFS= read -r FS
 	do
-		echo $FS | grep -qx '/dev' && continue
-		echo $FS | grep -qx '/run' && continue
-		echo $FS | grep -qx '/boot' && continue
-		umount $FS
-	done < <(df | tail -n+2 | awk '{for(i=6;i<NF;i++)printf "%s",$i OFS; if (NF) printf "%s",$NF; printf ORS}')'
+		echo $FS | grep -qx "/dev" && continue
+		echo $FS | grep -qx "/run" && continue
+		echo $FS | grep -qx "/boot" && continue
+		umount "$FS"
+	done < <(df | tail -n+2 | tr -s " " | cut -d " " -f 6-)'
 
 	#Find processes who's root folder is actually the chroot
 	for ROOT in $(find /proc/*/root)
