@@ -199,6 +199,18 @@ UMOUNT_RS()
 		stop $SRV &>/dev/null
 	done < <(initctl list | grep -v stop | cut -d " " -f 1)'
 
+	###############################################################
+	# Quietly unmount any filesystems that may have been moounted #
+	###############################################################
+	sudo chroot $CHROOT /bin/bash -c '
+	while IFS= read -r FS
+	do
+		echo $FS | grep -qx '/dev' && continue
+		echo $FS | grep -qx '/run' && continue
+		echo $FS | grep -qx '/boot' && continue
+		umount $FS
+	done < <(df | tail -n+2 | awk '{for(i=6;i<NF;i++)printf "%s",$i OFS; if (NF) printf "%s",$NF; printf ORS}')'
+
 	#Find processes who's root folder is actually the chroot
 	for ROOT in $(find /proc/*/root)
 	do
