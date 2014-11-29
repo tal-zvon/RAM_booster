@@ -109,20 +109,28 @@ fi
 #Now, we do the actual updates
 sudo chroot $Orig_OS/$DEST/ /bin/bash -c "apt-get -y dist-upgrade"
 
-#If there were problems, warn the user
+#If there was a problem, exit
 if [[ "$?" != "0" ]]
 then
 	clear
-	echo "WARNING:"
+	echo "ERROR:"
 	echo "  There was a problem with the update. Scroll up to see what it was"
 	echo "  You may want to fix it using rchroot before recreating the squashfs image"
-	echo
-else
-	#If there were no problems, remove any packages no longer required
-	#and clear the screen
-	sudo chroot $Orig_OS/$DEST/ /bin/bash -c "apt-get -y autoremove"
-	clear
+	echo "  If you want to create the squash image anyway, run \"sudo rchroot -s\""
+
+	#Unmount everything
+	UMOUNT_RS
+
+	exit 1
 fi
+
+#Remove any packages no longer required
+sudo chroot $Orig_OS/$DEST/ /bin/bash -c "apt-get -y autoremove"
+
+#Clean apt cache
+sudo chroot $Orig_OS/$DEST/ /bin/bash -c "apt-get -y clean"
+
+clear
 
 ##########################################################################
 # Check if /etc/kernel/postinst.d/zd_warn has set a flag that shows that #
