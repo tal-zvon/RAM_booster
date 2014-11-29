@@ -96,7 +96,7 @@ fi
 case "$1" in
 	-s|--squashfs)
 		#Ask user if he wants to recreate filesystem.squashfs
-		#This basically just provides a user to skip entering the chroot
+		#This basically just lets the user skip the chroot completely
 		clear
 		echo "Are you sure you want to recreate the squashfs image?"
 		echo "This may take some time to complete"
