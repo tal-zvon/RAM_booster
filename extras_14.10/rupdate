@@ -130,6 +130,10 @@ sudo chroot $Orig_OS/$DEST/ /bin/bash -c "apt-get -y autoremove"
 #Clean apt cache
 sudo chroot $Orig_OS/$DEST/ /bin/bash -c "apt-get -y clean"
 
+#Update fake /boot, just in case any packages being installed in the
+#RAM Session want /boot to be consistent with the running system
+sudo rsync --delete -a $Orig_OS/$DEST/boot/ /boot/ --exclude=/IMPORTANT_README &>/dev/null
+
 clear
 
 ##########################################################################

@@ -147,6 +147,20 @@ MOUNT_RS
 #Let user into the chroot
 sudo chroot $Orig_OS/$DEST/ /bin/bash
 
+######################
+# Some quick cleanup #
+######################
+
+#Clean apt cache quietly
+sudo chroot $Orig_OS/$DEST/ /bin/bash -c "apt-get -y clean" &>/dev/null
+
+#Update fake /boot, just in case any packages being installed in the
+#RAM Session want /boot to be consistent with the running system
+#Note: This is usually only necessary during an update, but we do it
+#	anyway in case the user did updates in the rchroot instead of
+#	using rupdate
+sudo rsync --delete -a $Orig_OS/$DEST/boot/ /boot/ --exclude=/IMPORTANT_README &>/dev/null
+
 clear
 
 ##########################################################################
