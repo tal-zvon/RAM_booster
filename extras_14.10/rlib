@@ -398,11 +398,14 @@ CreateSquashfs()
 		exit 1
 	fi
 
+	clear
+
 	#Move the newly created squashfs image to the location we boot from
 	sudo mv ${Orig_OS%/}/live/filesystem.squashfs.new ${Orig_OS%/}/live/filesystem.squashfs
 
 	#Inform user we are done
-	echo "mksquashfs created successfully"
+	echo "squashfs image created successfully"
+	echo "reboot to use it"
 
 	#Unmount the root filesystem
 	UMOUNT_RS
