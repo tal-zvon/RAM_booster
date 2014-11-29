@@ -132,7 +132,9 @@ sudo chroot $Orig_OS/$DEST/ /bin/bash -c "apt-get -y clean"
 
 #Update fake /boot, just in case any packages being installed in the
 #RAM Session want /boot to be consistent with the running system
-sudo rsync --delete -a $Orig_OS/$DEST/boot/ /boot/ --exclude=/IMPORTANT_README &>/dev/null
+sudo mount -o bind $Orig_OS/$DEST/boot/ $Orig_OS/$DEST/mnt/ &>/dev/null &&
+sudo rsync --delete -a $Orig_OS/$DEST/boot/ $Orig_OS/$DEST/mnt/ --exclude=/IMPORTANT_README &>/dev/null &&
+sudo umount $Orig_OS/$DEST/mnt/ &>/dev/null
 
 clear
 
