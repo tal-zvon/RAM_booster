@@ -188,42 +188,46 @@ UMOUNT_RS()
 		exit 1
 	}
 
-	#Quietly tell any upstart services that may have been started (manually,
-	#or by postinst scripts during installation) to stop. We later detect
-	#and kill all remaining processes - this is just a nice initial step
-	sudo chroot $CHROOT /bin/bash -c '
-	while IFS= read -r SRV
-	do
-		stop $SRV &>/dev/null
-	done < <(initctl list | grep -v stop | cut -d " " -f 1)'
+	#Only do these tests if we did NOT do a root_only mount
+	if df -a | grep -q "${CHROOT%/}/dev"
+	then
+		#Quietly tell any upstart services that may have been started (manually,
+		#or by postinst scripts during installation) to stop. We later detect
+		#and kill all remaining processes - this is just a nice initial step
+		sudo chroot $CHROOT /bin/bash -c '
+		while IFS= read -r SRV
+		do
+			stop $SRV &>/dev/null
+		done < <(initctl list | grep -v stop | cut -d " " -f 1)'
 
-	#Quietly unmount any filesystems that may have been moounted
-	#inside of the chroot
-	#Ex: When the dbus package updates, it uses invoke-rc.d to launch
-	#	the dbus service, which, as a prerequisite, also runs
-	#	cgmanager. cgmanager mounts virtual filesystems when
-	#	it starts, but does NOT unmount them when it stops,
-	#	which prevents the chroot from unmounting. This finds
-	#	and unmounts anything like that
-	sudo chroot $CHROOT /bin/bash -c '
-	while IFS= read -r FS
-	do
-		echo $FS | grep -qx "/dev" && continue
-		echo $FS | grep -qx "/run" && continue
-		echo $FS | grep -qx "/boot" && continue
-		umount "$FS" &>/dev/null
-	done < <(df | tail -n+2 | tr -s " " | cut -d " " -f 6-)'
+		#Quietly unmount any filesystems that may have been moounted
+		#inside of the chroot
+		#Ex: When the dbus package updates, it uses invoke-rc.d to launch
+		#	the dbus service, which, as a prerequisite, also runs
+		#	cgmanager. cgmanager mounts virtual filesystems when
+		#	it starts, but does NOT unmount them when it stops,
+		#	which prevents the chroot from unmounting. This finds
+		#	and unmounts anything like that
+		sudo chroot $CHROOT /bin/bash -c '
+		while IFS= read -r FS
+		do
+			echo $FS | grep -qx "/dev" && continue
+			echo $FS | grep -qx "/run" && continue
+			echo $FS | grep -qx "/boot" && continue
+			umount "$FS" &>/dev/null
+		done < <(df | tail -n+2 | tr -s " " | cut -d " " -f 6-)'
 
-	#Find processes who's root folder is actually the chroot
-	for ROOT in $(find /proc/*/root)
-	do
-		LINK=$(readlink -f $ROOT)
-		if echo $LINK | grep -q ${CHROOT%/}
-		then
-			PID=$(basename $(dirname "$ROOT"))
-			KILL_PID $PID
-		fi
-	done
+		#Find processes who's root folder is actually the chroot
+		for ROOT in $(find /proc/*/root)
+		do
+			LINK=$(readlink -f $ROOT)
+			if echo $LINK | grep -q ${CHROOT%/}
+			then
+				PID=$(basename $(dirname "$ROOT"))
+				KILL_PID $PID
+			fi
+		done
+	fi
 
 	#Unmount all filesystems under $Orig_OS recursively
 	sudo umount -R $Orig_OS 2>/dev/null
