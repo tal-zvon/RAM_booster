@@ -1,16 +1,16 @@
-working on rupdate and rchroot:
+working on rupdate and redit:
 
-	If you want to work on rupdate and rchroot from within the RAM
+	If you want to work on rupdate and redit from within the RAM
 	Session, it is best not to spend your time copying the scripts
 	between the repo and /usr/sbin/. The best way to do this is to:
 
-	$ sudo rm -v /usr/sbin/rchroot /usr/sbin/rupdate
+	$ sudo rm -v /usr/sbin/redit /usr/sbin/rupdate
 	$ sudo ln -s RAM_Booster/extras_14.10/rupdate /usr/sbin/rupdate
-	$ sudo ln -s RAM_Booster/extras_14.10/rchroot /usr/sbin/rchroot
+	$ sudo ln -s RAM_Booster/extras_14.10/redit /usr/sbin/redit
 	$ cd RAM_Booster
 	$ git config core.fileMode false
 	$ chmod a+x extra_14.10/rupdate
-	$ chmod a+x extra_14.10/rchroot
+	$ chmod a+x extra_14.10/redit
 
 	In case it's not obvious, this creates symlinks to the files
 	directly in the git repo, and tells git to not care about the
@@ -66,7 +66,7 @@ Rewrite Notes:
 		Test my new script on Ubuntu 14.04
 
 		Test everything with efi, XFS, and BTRFS (at least warn people if it doesn't work)
-			Especially test if other filesystems (is reiserfs still around?) can run rchroot within rchroot because of the way I test for chroot
+			Especially test if other filesystems (is reiserfs still around?) can run redit within redit because of the way I test for chroot
 
 		Read all the messages I wrote to the user on screen - maybe I should reword some
 
@@ -131,10 +131,10 @@ Rewrite Notes:
 
 	rupdate script:
 
-	rchroot script:
+	redit script:
 
 		I use the fact that / is inode 2 in normal root, and something else in a chroot environment
-		to make sure the user can't run rchroot from rchroot. The thing is - that only works on ext[234]
+		to make sure the user can't run redit from redit. The thing is - that only works on ext[234]
 		filesystems - apparently xfs uses inode 128. You can check with "ls -di /".
 			Source: http://unix.stackexchange.com/questions/14345/how-do-i-tell-im-running-in-a-chroot
 			Source: http://stackoverflow.com/questions/75182/detecting-a-chroot-jail-from-within
@@ -144,7 +144,7 @@ Rewrite Notes:
 			Update: The code was modified to work in XFS. Try lvm and maybe btrfs/reiserfs
 
 	Other:
-		add a way to automatically download new rupdate and rchroot
+		add a way to automatically download new rupdate and redit
 
 		The point of the rewrite is to make the code easier to read and debug
 			Make sure the code doesn't become overly complex
@@ -153,7 +153,7 @@ Rewrite Notes:
 			pretty easy
 
 	Do a video:
-		Show that GUI apps can be run from rchroot
+		Show that GUI apps can be run from redit
 			Become a regular user, start up a GUI app, and change its settings to show you can do that
 				Test it first - I don't actually know if it will work
 

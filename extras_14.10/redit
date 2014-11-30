@@ -157,7 +157,7 @@ sudo chroot $Orig_OS/$DEST/ /bin/bash -c "apt-get -y clean" &>/dev/null
 #Update fake /boot, just in case any packages being installed in the
 #RAM Session want /boot to be consistent with the running system
 #Note: This is usually only necessary during an update, but we do it
-#	anyway in case the user did updates in the rchroot instead of
+#	anyway in case the user did updates in the redit instead of
 #	using rupdate
 sudo mount -o bind $Orig_OS/$DEST/ $Orig_OS/$DEST/mnt/ &>/dev/null &&
 sudo rsync --delete -a $Orig_OS/$DEST/boot/ $Orig_OS/$DEST/mnt/boot/ --exclude=/IMPORTANT_README &>/dev/null &&
@@ -189,7 +189,7 @@ then
 	echo "There was an error unmounting ${Orig_OS}"
 	echo "A reboot should fix that"
 	echo "After the reboot, if you need to save your changes by recreating"
-	echo "the squashfs image, just run \"sudo rchroot -s\""
+	echo "the squashfs image, just run \"sudo redit -s\""
 	exit 1
 fi
 
@@ -216,7 +216,7 @@ case $answer in
 	*)
 		echo
 		echo "You chose to NOT recreate the squashfs image"
-		echo "If you change your mind, run 'sudo rchroot -s'"
+		echo "If you change your mind, run 'sudo redit -s'"
 		exit 0
 		;;
 esac

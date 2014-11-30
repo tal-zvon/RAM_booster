@@ -44,7 +44,7 @@ DEST=$(cat /var/lib/ram_booster/conf | grep DEST= | sed 's/DEST=//g')
 #Remove leading slash from $DEST
 DEST="${DEST#/}"
 #The mountpoint of the Original OS device
-#Note: If you change it here, be sure to change it in the rchroot script as well
+#Note: If you change it here, be sure to change it in the redit script as well
 Orig_OS='/mnt/Original_OS/'
 
 ##########################################################
@@ -98,7 +98,7 @@ then
 	clear
 	echo "ERROR:"
 	echo "  There was a problem running \"apt-get update\". Scroll up to see what it was"
-	echo "  You may want to fix it using rchroot before running rupdate again"
+	echo "  You may want to fix it using redit before running rupdate again"
 
 	#Unmount everything
 	UMOUNT_RS
@@ -115,8 +115,8 @@ then
 	clear
 	echo "ERROR:"
 	echo "  There was a problem with the update. Scroll up to see what it was"
-	echo "  You may want to fix it using rchroot before recreating the squashfs image"
-	echo "  If you want to create the squash image anyway, run \"sudo rchroot -s\""
+	echo "  You may want to fix it using redit before recreating the squashfs image"
+	echo "  If you want to create the squash image anyway, run \"sudo redit -s\""
 
 	#Unmount everything
 	UMOUNT_RS
@@ -162,7 +162,7 @@ then
 	echo "There was an error unmounting ${Orig_OS}"
 	echo "A reboot should fix that"
 	echo "After the reboot, you will need to save your changes by recreating"
-	echo "the squashfs image if there was an update. Just run \"sudo rchroot -s\""
+	echo "the squashfs image if there was an update. Just run \"sudo redit -s\""
 	exit 1
 fi
 
@@ -190,7 +190,7 @@ case $answer in
 	*)
 		echo
 		echo "You chose to NOT recreate the squashfs image"
-		echo "If you change your mind, run 'sudo rchroot -s'"
+		echo "If you change your mind, run 'sudo redit -s'"
 		exit 0
 		;;
 esac

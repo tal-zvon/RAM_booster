@@ -58,8 +58,8 @@ RUPDATE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rupdate"
 #Path to the rupgrade script
 RUPGRADE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rupgrade"
 
-#Path to the rchroot script
-RCHROOT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rchroot"
+#Path to the redit script
+REDIT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/redit"
 
 #Path to the rlib library
 RLIB_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rlib"
@@ -186,14 +186,14 @@ then
 	exit 1
 fi
 
-############################
-# Check for rchroot script #
-############################
+##########################
+# Check for redit script #
+##########################
 
-if [[ ! -e $RCHROOT_FILE ]]
+if [[ ! -e $REDIT_FILE ]]
 then
 	clear
-	echo "\"$RCHROOT_FILE\" not found!"
+	echo "\"$REDIT_FILE\" not found!"
 	exit 1
 fi
 
@@ -297,13 +297,13 @@ LOGGER "$(echo "fdisk -l:"; sudo fdisk -l)"
 #blkid which shows the UUIDs that fstab uses
 LOGGER "$(echo -e "blkid:\n"; sudo blkid)"
 
-#################################################################
-# Create /var/lib/ram_booster/conf which rlib, rupdate, rchroot #
-#         and the Uninstall_RAM_Booster function can use        #
-# Note: Must be after section that checks args, or              #
-#         /var/lib/ram_booster/conf will get created even if    #
-#         script is called with --uninstall                     #
-#################################################################
+###############################################################
+# Create /var/lib/ram_booster/conf which rlib, rupdate, redit #
+#         and the Uninstall_RAM_Booster function can use      #
+# Note: Must be after section that checks args, or            #
+#         /var/lib/ram_booster/conf will get created even if  #
+#         script is called with --uninstall                   #
+###############################################################
 
 #If the folder already exists (wasn't cleaned up on last run), delete it
 if [[ -d /var/lib/ram_booster ]]
@@ -724,7 +724,7 @@ if [ -e /RAM_Session ]\
 then\
 	if [ "$(ls -di / | cut -d " " -f 1)" = 2 ] || [ "$(ls -di / | cut -d " " -f 1)" = 128 ]\
 	then\
-		echo "update-grub cannot be run from RAM Session unless you are using rchroot"\
+		echo "update-grub cannot be run from RAM Session unless you are using redit"\
 		echo "Ignoring grub-update request"\
 		exit 0\
 	fi\
@@ -802,13 +802,13 @@ sudo cp $RUPGRADE_FILE ${DEST}/usr/sbin/
 sudo chown root:root ${DEST}/usr/sbin/rupgrade
 sudo chmod 755 ${DEST}/usr/sbin/rupgrade
 
-#####################################
-# Add rchroot script to RAM Session #
-#####################################
+###################################
+# Add redit script to RAM Session #
+###################################
 
-sudo cp $RCHROOT_FILE ${DEST}/usr/sbin/
-sudo chown root:root ${DEST}/usr/sbin/rchroot
-sudo chmod 755 ${DEST}/usr/sbin/rchroot
+sudo cp $REDIT_FILE ${DEST}/usr/sbin/
+sudo chown root:root ${DEST}/usr/sbin/redit
+sudo chmod 755 ${DEST}/usr/sbin/redit
 
 ######################################################
 # Add za_ram_session_initramfs script to RAM Session #
