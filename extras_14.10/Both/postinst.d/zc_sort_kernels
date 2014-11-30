@@ -7,14 +7,14 @@
 #If /boot/Orig doesn't exist, there's nothing for us to do
 if [[ ! -e /boot/Orig ]]
 then
-	echo "/boot/Orig not found. Exiting za-sort-kernels"
+	echo "/boot/Orig not found. Exiting zc_sort_kernels"
 	exit 0
 fi
 
 #If /boot/RAM_Sess doesn't exist, there's nothing for us to do
 if [[ ! -e /boot/RAM_Sess ]]
 then
-	echo "/boot/RAM_Sess not found. Exiting za-sort-kernels"
+	echo "/boot/RAM_Sess not found. Exiting zc_sort_kernels"
 	exit 0
 fi
 

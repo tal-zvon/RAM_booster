@@ -50,34 +50,34 @@ LOG='/var/log/ram_booster.log'
 UBUNTU_VERSION='14.10'
 
 #Path to the file that contains all the functions for this script
-RAM_LIB="$SCRIPT_DIR/extras_$UBUNTU_VERSION/ram_lib"
+RAM_LIB="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Original_OS/ram_lib"
 
 #Path to the rupdate script
-RUPDATE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_SESSION/rupdate"
+RUPDATE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Ram_Session/rupdate"
 
 #Path to the rupgrade script
-RUPGRADE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_SESSION/rupgrade"
+RUPGRADE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Ram_Session/rupgrade"
 
 #Path to the redit script
-REDIT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_SESSION/redit"
+REDIT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Ram_Session/redit"
 
 #Path to the rlib library
-RLIB_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_SESSION/rlib"
+RLIB_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Ram_Session/rlib"
 
 #Path to the 06_RAMSESS
-GRUB_06_RAMSESS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/grub.d/06_RAMSESS"
+GRUB_06_RAMSESS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Both/grub.d/06_RAMSESS"
 
 #Path to the za_ram_session_initramfs kernel postinst script
-INITRAMFS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/za_ram_session_initramfs"
+INITRAMFS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Ram_Session/postinst.d/za_ram_session_initramfs"
 
 #Path to the zb_version_check kernel postinst script
-VER_CHECK_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/zb_version_check"
+VER_CHECK_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Both/postinst.d/zb_version_check"
 
 #Path to the zc_sort_kernels kernel postinst script
-SORT_KERNELS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/zc_sort_kernels"
+SORT_KERNELS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Both/postinst.d/zc_sort_kernels"
 
 #Path to the zd_warn kernel postinst script
-WARN_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/zd_warn"
+WARN_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Ram_Session/postinst.d/zd_warn"
 
 #True if home is already on another partition. False otherwise
 HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo false)
@@ -669,9 +669,9 @@ sudo mkdir -p ${DEST}
 sudo bash -c 'echo "This is the RAM Session. Your OS is running from within RAM." > '${DEST}'/RAM_Session'
 sudo bash -c 'echo "This is your Original OS. You are NOT inside the RAM Session." > /Original_OS'
 
-############################################
-# Run /etc/kernel/postinst.d/version_check #
-############################################
+###############################################
+# Run /etc/kernel/postinst.d/zb_version_check #
+###############################################
 
 SCRIPT_FILE_NAME=$(basename $VER_CHECK_SCRIPT)
 
