@@ -53,22 +53,22 @@ UBUNTU_VERSION='14.10'
 RAM_LIB="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Original_OS/ram_lib"
 
 #Path to the rupdate script
-RUPDATE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Ram_Session/rupdate"
+RUPDATE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/rupdate"
 
 #Path to the rupgrade script
-RUPGRADE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Ram_Session/rupgrade"
+RUPGRADE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/rupgrade"
 
 #Path to the redit script
-REDIT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Ram_Session/redit"
+REDIT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/redit"
 
 #Path to the rlib library
-RLIB_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Ram_Session/rlib"
+RLIB_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/rlib"
 
 #Path to the 06_RAMSESS
 GRUB_06_RAMSESS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Both/grub.d/06_RAMSESS"
 
 #Path to the za_ram_session_initramfs kernel postinst script
-INITRAMFS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Ram_Session/postinst.d/za_ram_session_initramfs"
+INITRAMFS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/postinst.d/za_ram_session_initramfs"
 
 #Path to the zb_version_check kernel postinst script
 VER_CHECK_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Both/postinst.d/zb_version_check"
@@ -77,7 +77,7 @@ VER_CHECK_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Both/postinst.d/zb_version_
 SORT_KERNELS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Both/postinst.d/zc_sort_kernels"
 
 #Path to the zd_warn kernel postinst script
-WARN_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Ram_Session/postinst.d/zd_warn"
+WARN_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/postinst.d/zd_warn"
 
 #True if home is already on another partition. False otherwise
 HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo false)
