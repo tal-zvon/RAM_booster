@@ -64,6 +64,9 @@ REDIT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/redit"
 #Path to the rlib library
 RLIB_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/rlib"
 
+#Path to the update-notifier script
+UPDATE_NOTIFIER_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/update-notifier"
+
 #Path to the 06_RAMSESS
 GRUB_06_RAMSESS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Both/grub.d/06_RAMSESS"
 
@@ -836,6 +839,16 @@ SCRIPT_FILE_NAME=$(basename $WARN_SCRIPT)
 sudo cp $WARN_SCRIPT ${DEST}/etc/kernel/postinst.d/
 sudo chown root:root ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 
 sudo chmod 755 ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 
+
+#############################################
+# Add update-notifier script to RAM Session #
+#############################################
+
+SCRIPT_FILE_NAME=$(basename $UPDATE_NOTIFIER_FILE)
+
+sudo cp $UPDATE_NOTIFIER_FILE ${DEST}/usr/local/sbin/
+sudo chown root:root ${DEST}/usr/local/sbin/$SCRIPT_FILE_NAME 
+sudo chmod 755 ${DEST}/usr/local/sbin/$SCRIPT_FILE_NAME 
 
 ##################################
 # Write some useful info to $LOG #

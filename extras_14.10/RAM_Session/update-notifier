@@ -1,0 +1,26 @@
+#/bin/bash
+
+#true if there are updates. false otherwise
+UPDATES=false
+
+#Check if apt-check exists
+[[ -e /usr/lib/update-notifier/apt-check ]] || exit 0
+
+#apt-check returns 2 semi-colon separated values to STDERR - one for
+#regular updates and one for security updates
+#See: "/usr/lib/update-notifier/apt-check --human-readable"
+
+IFS=';'
+for i in $(/usr/lib/update-notifier/apt-check 2>&1)
+do
+	if [[ $i != 0 ]]
+	then
+		UPDATES=true
+		break
+	fi
+done
+
+if $UPDATES
+then
+	zenity --info --text='Updates available. Please use rupdate to install them.'
+fi
