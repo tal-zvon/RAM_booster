@@ -53,19 +53,19 @@ UBUNTU_VERSION='14.10'
 RAM_LIB="$SCRIPT_DIR/extras_$UBUNTU_VERSION/ram_lib"
 
 #Path to the rupdate script
-RUPDATE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rupdate"
+RUPDATE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_SESSION/rupdate"
 
 #Path to the rupgrade script
-RUPGRADE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rupgrade"
+RUPGRADE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_SESSION/rupgrade"
 
 #Path to the redit script
-REDIT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/redit"
+REDIT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_SESSION/redit"
 
 #Path to the rlib library
-RLIB_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/rlib"
+RLIB_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_SESSION/rlib"
 
 #Path to the 06_RAMSESS
-GRUB_06_RAMSESS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/06_RAMSESS"
+GRUB_06_RAMSESS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/grub.d/06_RAMSESS"
 
 #Path to the za_ram_session_initramfs kernel postinst script
 INITRAMFS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/postinst.d/za_ram_session_initramfs"
