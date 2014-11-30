@@ -312,11 +312,11 @@ then
 fi
 
 #Create the folder
-sudo mkdir /var/lib/ram_booster 2>/dev/null
+sudo mkdir /var/lib/ram_booster 
 
 #Set permissions on the folder
-sudo chown root:root /var/lib/ram_booster 2>/dev/null
-sudo chmod 755 /var/lib/ram_booster 2>/dev/null
+sudo chown root:root /var/lib/ram_booster 
+sudo chmod 755 /var/lib/ram_booster 
 
 #Create /var/lib/ram_booster/conf
 sudo touch /var/lib/ram_booster/conf &>/dev/null
@@ -332,37 +332,38 @@ then
 fi
 
 #Set permissions on the file
-sudo chown root:root /var/lib/ram_booster/conf 2>/dev/null
-sudo chmod 644 /var/lib/ram_booster/conf 2>/dev/null
+sudo chown root:root /var/lib/ram_booster/conf 
+sudo chmod 644 /var/lib/ram_booster/conf 
 
 #####################################
 # Add rlib to /var/lib/ram_booster/ #
 #####################################
 
-#Copy the script
-sudo cp $RLIB_FILE /var/lib/ram_booster/
+SCRIPT_FILE_NAME=$(basename $RLIB_FILE)
 
-#Set permissions
-sudo chown root:root /var/lib/ram_booster/rlib 2>/dev/null
-sudo chmod 644 /var/lib/ram_booster/rlib 2>/dev/null
+sudo cp $RLIB_FILE /var/lib/ram_booster/
+sudo chown root:root /var/lib/ram_booster/$SCRIPT_FILE_NAME 
+sudo chmod 644 /var/lib/ram_booster/$SCRIPT_FILE_NAME 
 
 #########################################################################
 # Add zb_version_check kernel postinst script to /etc/kernel/postinst.d #
 #########################################################################
+
 SCRIPT_FILE_NAME=$(basename $VER_CHECK_SCRIPT)
 
 sudo cp $VER_CHECK_SCRIPT /etc/kernel/postinst.d/
-sudo chown root:root /etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
-sudo chmod 755 /etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
+sudo chown root:root /etc/kernel/postinst.d/$SCRIPT_FILE_NAME 
+sudo chmod 755 /etc/kernel/postinst.d/$SCRIPT_FILE_NAME 
 
 ########################################################################
 # Add zc_sort_kernels kernel postinst script to /etc/kernel/postinst.d #
 ########################################################################
+
 SCRIPT_FILE_NAME=$(basename $SORT_KERNELS_SCRIPT)
 
 sudo cp $SORT_KERNELS_SCRIPT /etc/kernel/postinst.d/
-sudo chown root:root /etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
-sudo chmod 755 /etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
+sudo chown root:root /etc/kernel/postinst.d/$SCRIPT_FILE_NAME 
+sudo chmod 755 /etc/kernel/postinst.d/$SCRIPT_FILE_NAME 
 
 #################################################
 # Find out what the user wants to do with /home # 
@@ -695,8 +696,8 @@ echo "Adding entry to Grub2 menu"
 cp $GRUB_06_RAMSESS_SCRIPT /etc/grub.d/
 
 #Set permissions
-sudo chown root:root /etc/grub.d/$SCRIPT_FILE_NAME 2>/dev/null
-sudo chmod 755 /etc/grub.d/$SCRIPT_FILE_NAME 2>/dev/null
+sudo chown root:root /etc/grub.d/$SCRIPT_FILE_NAME 
+sudo chmod 755 /etc/grub.d/$SCRIPT_FILE_NAME 
 
 #Unhide grub menu by uncommenting line in /etc/default/grub
 sudo sed -i 's/\(GRUB_HIDDEN_TIMEOUT=0\)/#\1/g' /etc/default/grub
@@ -790,25 +791,31 @@ sudo find ${DEST%/}/var/log -type f | while read file; do echo "emptied '$file'"
 # Add rupdate script to RAM Session #
 #####################################
 
+SCRIPT_FILE_NAME=$(basename $RUPDATE_FILE)
+
 sudo cp $RUPDATE_FILE ${DEST}/usr/sbin/
-sudo chown root:root ${DEST}/usr/sbin/rupdate
-sudo chmod 755 ${DEST}/usr/sbin/rupdate
+sudo chown root:root ${DEST}/usr/sbin/$SCRIPT_FILE_NAME
+sudo chmod 755 ${DEST}/usr/sbin/$SCRIPT_FILE_NAME
 
 ######################################
 # Add rupgrade script to RAM Session #
 ######################################
 
+SCRIPT_FILE_NAME=$(basename $RUPGRADE_FILE)
+
 sudo cp $RUPGRADE_FILE ${DEST}/usr/sbin/
-sudo chown root:root ${DEST}/usr/sbin/rupgrade
-sudo chmod 755 ${DEST}/usr/sbin/rupgrade
+sudo chown root:root ${DEST}/usr/sbin/$SCRIPT_FILE_NAME
+sudo chmod 755 ${DEST}/usr/sbin/$SCRIPT_FILE_NAME
 
 ###################################
 # Add redit script to RAM Session #
 ###################################
 
+SCRIPT_FILE_NAME=$(basename $REDIT_FILE)
+
 sudo cp $REDIT_FILE ${DEST}/usr/sbin/
-sudo chown root:root ${DEST}/usr/sbin/redit
-sudo chmod 755 ${DEST}/usr/sbin/redit
+sudo chown root:root ${DEST}/usr/sbin/$SCRIPT_FILE_NAME
+sudo chmod 755 ${DEST}/usr/sbin/$SCRIPT_FILE_NAME
 
 ######################################################
 # Add za_ram_session_initramfs script to RAM Session #
@@ -817,8 +824,8 @@ sudo chmod 755 ${DEST}/usr/sbin/redit
 SCRIPT_FILE_NAME=$(basename $INITRAMFS_SCRIPT)
 
 sudo cp $INITRAMFS_SCRIPT ${DEST}/etc/kernel/postinst.d/
-sudo chown root:root ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
-sudo chmod 755 ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
+sudo chown root:root ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 
+sudo chmod 755 ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 
 
 #####################################
 # Add zd_warn script to RAM Session #
@@ -827,8 +834,8 @@ sudo chmod 755 ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
 SCRIPT_FILE_NAME=$(basename $WARN_SCRIPT)
 
 sudo cp $WARN_SCRIPT ${DEST}/etc/kernel/postinst.d/
-sudo chown root:root ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
-sudo chmod 755 ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 2>/dev/null
+sudo chown root:root ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 
+sudo chmod 755 ${DEST}/etc/kernel/postinst.d/$SCRIPT_FILE_NAME 
 
 ##################################
 # Write some useful info to $LOG #
