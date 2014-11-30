@@ -212,6 +212,72 @@ then
 fi
 
 ####################################
+# Check for update-notifier script #
+####################################
+
+if [[ ! -e $UPDATE_NOTIFIER_FILE ]]
+then
+	clear
+	echo "\"$UPDATE_NOTIFIER_FILE\" not found!"
+	exit 1
+fi
+
+########################
+# Check for 06_RAMSESS #
+########################
+
+if [[ ! -e $GRUB_06_RAMSESS_SCRIPT ]]
+then
+	clear
+	echo "\"$GRUB_06_RAMSESS_SCRIPT\" not found!"
+	exit 1
+fi
+
+######################################
+# Check for za_ram_session_initramfs #
+######################################
+
+if [[ ! -e $INITRAMFS_SCRIPT ]]
+then
+	clear
+	echo "\"$INITRAMFS_SCRIPT\" not found!"
+	exit 1
+fi
+
+##############################
+# Check for zb_version_check #
+##############################
+
+if [[ ! -e $VER_CHECK_SCRIPT ]]
+then
+	clear
+	echo "\"$VER_CHECK_SCRIPT\" not found!"
+	exit 1
+fi
+
+#############################
+# Check for zc_sort_kernels #
+#############################
+
+if [[ ! -e $SORT_KERNELS_SCRIPT ]]
+then
+	clear
+	echo "\"$SORT_KERNELS_SCRIPT\" not found!"
+	exit 1
+fi
+
+#####################
+# Check for zd_warn #
+#####################
+
+if [[ ! -e $WARN_SCRIPT ]]
+then
+	clear
+	echo "\"$WARN_SCRIPT\" not found!"
+	exit 1
+fi
+
+####################################
 # Check args passed to this script #
 ####################################
 
