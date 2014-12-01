@@ -81,11 +81,6 @@ Rewrite Notes:
 				At this point, you still haven't reboot, so the running system isn't using /dev/sdb1 as /home, but /etc/fstab is
 
 	RAM_booster script itself:
-		Add a header like my original script has with author name, date, etc
-
-		For now, I skipped the part that asks if we should add
-			a cron job for updates (CronAsk) since it's hard
-			to test without a working RAM Session
 
 		Split up long sed lines
 			I can replace a line in the script file with itself plus my first line, and then
