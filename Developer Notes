@@ -64,8 +64,6 @@ Rewrite Notes:
 
 		Read all the messages I wrote to the user on screen - maybe I should reword some
 
-		When user chooses to share home, should I warn them that until they reboot, /home will not be mounted, so none of that will be shared?
-
 		Check that time is accurate
 
 		Check that internet is available

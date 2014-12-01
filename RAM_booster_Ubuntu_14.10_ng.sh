@@ -546,7 +546,15 @@ then
 
 				echo
 				ECHO "Your /etc/fstab will be modified to mount $HOME_DEV as your /home at boot"
-				sleep 4
+				echo
+				echo "WARNING: Your current system (Original OS) will NOT use $HOME_DEV as"
+				echo "/home until you reboot, so nothing you save to it now will appear in"
+				echo "either the Original OS or the RAM Session when you reboot. As such,"
+				echo "it is recommended that you reboot immediately after this script is"
+				echo "done running."
+				echo
+				echo "Press enter to continue"
+				read key
 				;;
 		esac
 	else
