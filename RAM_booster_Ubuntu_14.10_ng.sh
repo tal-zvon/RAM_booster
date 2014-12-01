@@ -587,6 +587,7 @@ echo "" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 
 echo "#The device and UUID for /boot on the Original OS" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "#Note: If BOOT_DEV/BOOT_UUID is the same as ROOT_DEV/ROOT_UUID, we are NOT using a separate partition for /boot" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "#IMPORTANT NOTE: The RAM Session NEVER mounts the real /boot - it uses a copy of /boot (a fake /boot). Only the redit and rupdate scripts actually mount /boot." | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "BOOT_DEV=$BOOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "BOOT_UUID=$BOOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
