@@ -4,9 +4,14 @@
 #Written By: Tal
 #Written For: Ubuntu Forums Community
 #Description:
-#	This script makes sure that any kernels that the Original OS can't run
-#	will not be picked up by /etc/grub.d/10_linux by moving them to
-#	/boot/RS_KERNELS/
+#	This script makes sure that any kernels that the Original OS can't
+#	run will not be picked up by /etc/grub.d/10_linux by moving them
+#	to /boot/RS_KERNELS/
+#	This script also deletes any kernels in /boot/RS_KERNELS/ that
+#	the Original OS also supports, since that means a recent update
+#	to the Original OS just installed the same kernel files to
+#	/boot. After this happens, 06_RAMSESS will find the kernel in
+#	/boot/ and fix the grub menu automatically
 
 #If /boot/Orig doesn't exist, there's nothing for us to do
 if [[ ! -e /boot/Orig ]]
