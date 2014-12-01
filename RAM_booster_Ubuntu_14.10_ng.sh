@@ -565,7 +565,7 @@ fi
 HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
 
 echo "#This file was created by the RAM Booster script" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-echo "Do NOT edit or delete this file" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "#Do NOT edit or delete this file" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 
 echo "#Path to the RAM Session dir on the Original OS" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
@@ -585,13 +585,15 @@ echo "ROOT_DEV=$ROOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "ROOT_UUID=$ROOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 
-echo "#The device and UUID for /boot" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "#The device and UUID for /boot on the Original OS" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "#Note: If BOOT_DEV/BOOT_UUID is the same as ROOT_DEV/ROOT_UUID, we are NOT using a separate partition for /boot" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "BOOT_DEV=$BOOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "BOOT_UUID=$BOOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 
 echo "#The device and UUID for /home that the RAM Session should be using" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "#IMPORTANT NOTE: This may be different than what the Original OS is using" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "#IMPORTANT NOTE 2: If HOME_DEV/HOME_UUID is the same as ROOT_DEV/ROOT_UUID, we are NOT using a separate partition for /home" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "HOME_DEV=$HOME_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "HOME_UUID=$HOME_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
