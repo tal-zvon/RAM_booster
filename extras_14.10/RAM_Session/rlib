@@ -1,3 +1,12 @@
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description: 
+#	Any reusable code used by redit, rupdate, and any other scripts
+#	that run in the RAM Session go here
+#	Many of it's variables come from /var/lib/ram_booster/conf,
+#	which gets written at install time
+
 ####################
 # Global Variables #
 ####################

@@ -1,3 +1,13 @@
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	Any code that is either reusable, or long enough that it would
+#	make the main RAM Booster install script hard to read has been
+#	made into a function and moved here.
+#	Note: The main RAM Booster install script is the only script
+#	that uses this file
+
 #Convert input to lowercase
 toLower() 
 {

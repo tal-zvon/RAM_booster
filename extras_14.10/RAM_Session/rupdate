@@ -1,5 +1,14 @@
 #!/bin/bash
 
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	This script allows the user to update the RAM Session with one
+#	command. The same thing can be done by using redit, and running
+#	"apt-get update; apt-get dist-upgrade". This script only exists
+#	for convenience
+
 ############################
 # Only run if user is root #
 ############################

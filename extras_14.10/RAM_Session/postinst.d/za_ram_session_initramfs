@@ -1,5 +1,15 @@
 #!/bin/bash
 
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	Normally, when a system is running live, the regular postinst
+#	script that creates the initrd image skips its creation,
+#	presumably because it takes some time, and it is almost always
+#	unnecessary. It's necessary in our case, so we create the image
+#	here instead
+
 version="$1"
 
 if [[ -e /RAM_Session ]]

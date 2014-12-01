@@ -1,5 +1,18 @@
 #!/bin/bash
 
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	This script is used to edit the RAM Session. Since
+#	the squashfs image is read only, this script mounts the
+#	Original OS to /mnt/Original_OS/, and chroots the user to
+#	the /mnt/Original_OS/var/squashfs directory, letting the user
+#	install or change anything they wish. When the user is done, the
+#	scripts automatically recreates the squashfs image and places it
+#	where it needs to be so that the next time the system reboots,
+#	it boots from the new image.
+
 ############################
 # Only run if user is root #
 ############################

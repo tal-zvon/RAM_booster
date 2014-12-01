@@ -1,5 +1,14 @@
 #!/bin/sh -e
 
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	This script uses /boot/RAM_Sess to figure out the latest kernel
+#	that the RAM Session supports, finds that kernel (checking /boot/
+#	and /boot/RS_KERNELS/), and creates a grub menu entry pointing
+#	to it
+
 #########################################################
 # Figure out the latest kernel the RAM Session Supports #
 #########################################################

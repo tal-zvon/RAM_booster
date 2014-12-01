@@ -1,2 +1,9 @@
 #!/bin/bash
+
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description: 
+#	This script downloads the latest bug fixes to the RAM Booster project
+
 echo "This is the rupgrade script"

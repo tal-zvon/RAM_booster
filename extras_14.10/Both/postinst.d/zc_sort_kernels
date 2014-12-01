@@ -1,8 +1,12 @@
 #!/bin/bash
 
-#This script makes sure that any kernels that the Original OS can't run
-#will not be picked up by /etc/grub.d/10_linux by moving them to
-#/boot/RS_KERNELS/
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	This script makes sure that any kernels that the Original OS can't run
+#	will not be picked up by /etc/grub.d/10_linux by moving them to
+#	/boot/RS_KERNELS/
 
 #If /boot/Orig doesn't exist, there's nothing for us to do
 if [[ ! -e /boot/Orig ]]

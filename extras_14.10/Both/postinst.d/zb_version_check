@@ -1,4 +1,17 @@
 #!/bin/bash
+
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	This script checks /lib/modules for the currently running system
+#	(whether it be the Original OS or the RAM Session) and writes
+#	down all the kernels that the current system supports. This is
+#	required because the Original OS and the RAM Session will not
+#	always be equally up to date, so grub can no longer assume that
+#	the latest kernel found in /boot is supported by the running OS,
+#	as it normally does
+
 OUTPUT=''
 
 if [[ -e /Original_OS ]]

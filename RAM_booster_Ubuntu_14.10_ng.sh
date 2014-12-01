@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	This is the main script that installs/uninstalls everything. Any
+#	functions not in this script are coming from the ram_lib library,
+#	which is also part of this project
+
 ###################################################
 # Make sure user didn't force script to run in sh #
 ###################################################
