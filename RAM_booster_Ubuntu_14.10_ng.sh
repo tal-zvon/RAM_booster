@@ -564,19 +564,39 @@ fi
 #Figure out the UUID of the home partition
 HOME_UUID=$(sudo blkid -o value -s UUID $HOME_DEV)
 
+echo "#This file was created by the RAM Booster script" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "Do NOT edit or delete this file" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+
+echo "#Path to the RAM Session dir on the Original OS" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "DEST=$DEST" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+
+echo "#True if both the Original OS and the RAM Session are sharing /home. False otherwise" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "SHARE_HOME=$SHARE_HOME" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+
+echo "#True if /home was already a mountpoint for some partition before we installed the RAM Session. False otherwise" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "HOME_ALREADY_MOUNTED=$HOME_ALREADY_MOUNTED" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+
+echo "#The device and UUID for / on the Original OS" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "ROOT_DEV=$ROOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "ROOT_UUID=$ROOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+
+echo "#The device and UUID for /boot" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "BOOT_DEV=$BOOT_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "BOOT_UUID=$BOOT_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-#Blank line
 echo "" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-echo "#The \$HOME_DEV and \$HOME_UUID variables reflect what the RAM Session should be using" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
-echo "#The Original OS may be using something else for /home" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+
+echo "#The device and UUID for /home that the RAM Session should be using" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "#IMPORTANT NOTE: This may be different than what the Original OS is using" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "HOME_DEV=$HOME_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "HOME_UUID=$HOME_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+echo "" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
+
+echo "#The device and UUID for the ESP (EFI partition) if they exist" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "EFI_DEV=$EFI_DEV" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 echo "EFI_UUID=$EFI_UUID" | sudo tee -a /var/lib/ram_booster/conf &>/dev/null
 
