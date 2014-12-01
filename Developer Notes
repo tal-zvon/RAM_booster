@@ -57,12 +57,6 @@ Rewrite Notes:
 
 	Generic:
 
-		Delete the extra files and folders in the git repo
-			Old 14.10 script
-			dev_script.sh
-			upstart_problem
-			test
-
 		Test my new script on Ubuntu 14.04
 
 		Test everything with efi, XFS, and BTRFS (at least warn people if it doesn't work)
@@ -87,14 +81,6 @@ Rewrite Notes:
 				The RAM_Booster script just ran, and created a new entry for /home in /etc/fstab
 				Immediately after, you uninstall, and run again
 				At this point, you still haven't reboot, so the running system isn't using /dev/sdb1 as /home, but /etc/fstab is
-
-		I still don't like the wording in the /var/lib/ram_booster/conf file
-			It implies that the RAM Session should be using /dev/sda1 as it's home, when it's not - it just means the root partition should be the same as home
-
-		Also, if /boot on the Original OS is NOT the same as /, it will be forced to be (which is good), but the /var/lib/ram_booster/conf file will show it as 
-		/dev/sdb1 when in fact, the RAM Session will be using a fake boot
-			FUNCTIONALLY, this works, and is exactly the way I designed it
-			I just need the conf file to be clear about what the devices are referring to
 
 	RAM_booster script itself:
 		Add a header like my original script has with author name, date, etc
