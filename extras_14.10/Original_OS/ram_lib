@@ -119,8 +119,8 @@ Uninstall_RAM_Booster() {
 	#$SHARE_HOME is used below to warn the user that this will NOT be undone
 	#if $SHARE_HOME is true, user did choose to use a new partition as their /home on the Original OS
 	#if $SHARE_HOME is false, the user did not
-	SHARE_HOME=$([[ -e /var/lib/ram_booster/conf ]] && { cat /var/lib/ram_booster/conf | grep -q 'SHARE_HOME=.*true.*' && echo true; } || echo false)
-	HOME_ALREADY_MOUNTED=$([[ -e /var/lib/ram_booster/conf ]] && { cat /var/lib/ram_booster/conf | grep -q 'HOME_ALREADY_MOUNTED=.*true.*' && echo true; } || echo false)
+	SHARE_HOME=$([[ -e /var/lib/ram_booster/conf ]] && { cat /var/lib/ram_booster/conf | grep -v '^#' | grep -q 'SHARE_HOME=.*true.*' && echo true; } || echo false)
+	HOME_ALREADY_MOUNTED=$([[ -e /var/lib/ram_booster/conf ]] && { cat /var/lib/ram_booster/conf | grep -v '^#' | grep -q 'HOME_ALREADY_MOUNTED=.*true.*' && echo true; } || echo false)
 
 	#This function can uninstall quietly if asked
 	QUIET=''

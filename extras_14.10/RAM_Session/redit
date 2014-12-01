@@ -53,7 +53,7 @@ fi
 #Path to the file that contains all the functions for this script
 RLIB=/var/lib/ram_booster/rlib
 #Figure out $DEST
-DEST=$(cat /var/lib/ram_booster/conf | grep DEST= | sed 's/DEST=//g')
+DEST=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep DEST= | sed 's/DEST=//g')
 #Remove leading slash from $DEST
 DEST="${DEST#/}"
 #The mountpoint of the Original OS device

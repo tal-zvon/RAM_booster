@@ -12,10 +12,10 @@
 ####################
 
 #/boot and / of the Original OS
-ROOT_UUID=$(cat /var/lib/ram_booster/conf | grep ROOT_UUID= | sed 's/ROOT_UUID=//g')
-BOOT_UUID=$(cat /var/lib/ram_booster/conf | grep BOOT_UUID= | sed 's/BOOT_UUID=//g')
-HOME_UUID=$(cat /var/lib/ram_booster/conf | grep HOME_UUID= | sed 's/HOME_UUID=//g')
-EFI_UUID=$(cat /var/lib/ram_booster/conf | grep EFI_UUID= | sed 's/EFI_UUID=//g')
+ROOT_UUID=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep ROOT_UUID= | sed 's/ROOT_UUID=//g')
+BOOT_UUID=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep BOOT_UUID= | sed 's/BOOT_UUID=//g')
+HOME_UUID=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep HOME_UUID= | sed 's/HOME_UUID=//g')
+EFI_UUID=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep EFI_UUID= | sed 's/EFI_UUID=//g')
 
 #Mount $DEST (RAM Session)
 #If function is passed "root_only" as arg, only mount $ROOT_UUID to
