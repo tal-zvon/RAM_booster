@@ -43,6 +43,17 @@ then
 	exit 0
 fi
 
+##################################
+# Check if system is using btrfs #
+##################################
+
+if df -T / /boot | grep -qi btrfs
+then
+	clear
+	echo "This script does NOT work with btrfs"
+	exit 0
+fi
+
 ####################
 # Global Variables #
 ####################
