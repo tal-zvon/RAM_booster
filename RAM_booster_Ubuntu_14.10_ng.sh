@@ -530,15 +530,15 @@ case $answer in
 		echo
 		ECHO "You chose to copy /home as is. I hope you read carefully and know what that means..."
 
+		sleep 4
+
 		#If /home is encrypted, tell user RAM Session's /home will NOT be
 		if $ENCRYPTED_HOME
 		then
-			echo
+			clear
 			echo "Your /home will remain encrypted. The /home on your RAM Session will NOT be."
 			echo Press enter to continue
 			read key
-		else
-			sleep 4
 		fi
 		;;  
 	*)
