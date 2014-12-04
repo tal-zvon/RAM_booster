@@ -109,6 +109,10 @@ HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo
 #Note: Do NOT remove the default value
 COPY_HOME=true
 
+#True if /home is encrypted
+#False otherwise
+ENCRYPTED_HOME=$(mount | grep /home/ | grep -q ecryptfs && echo true || echo false)
+
 #The new location of /home
 #Note: Here, we check the old location of /home, but later we can change it
 #to reflect the new location
@@ -525,7 +529,17 @@ case $answer in
 
 		echo
 		ECHO "You chose to copy /home as is. I hope you read carefully and know what that means..."
-		sleep 4
+
+		#If /home is encrypted, tell user RAM Session's /home will NOT be
+		if $ENCRYPTED_HOME
+		then
+			echo
+			echo "Your /home will remain encrypted. The /home on your RAM Session will NOT be."
+			echo Press enter to continue
+			read key
+		else
+			sleep 4
+		fi
 		;;  
 	*)
 		echo
@@ -843,6 +857,22 @@ echo "Grub entry added successfully."
 ########################
 
 CopyFileSystem
+
+#################################################
+# If /home is encrypted, disable the encryption #
+#################################################
+
+if $COPY_HOME
+then
+	if $ENCRYPTED_HOME
+	then
+		echo
+		echo "Disabling /home encryption on RAM Session..."
+		rm -rf ${DEST}/home/.ecryptfs &>/dev/null
+		rm -rf ${DEST}/home/*/.Private &>/dev/null
+		rm -rf ${DEST}/home/*/.encryptfs &>/dev/null
+	fi
+fi
 
 #####################################################################
 # Block update-grub from running in the RAM Session without rupdate #
