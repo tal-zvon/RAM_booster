@@ -870,7 +870,7 @@ then
 		echo "Disabling /home encryption on RAM Session..."
 		rm -rf ${DEST}/home/.ecryptfs &>/dev/null
 		rm -rf ${DEST}/home/*/.Private &>/dev/null
-		rm -rf ${DEST}/home/*/.encryptfs &>/dev/null
+		rm -rf ${DEST}/home/*/.ecryptfs &>/dev/null
 	fi
 fi
 
