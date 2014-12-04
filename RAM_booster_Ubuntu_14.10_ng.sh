@@ -476,7 +476,7 @@ ECHO "This script will create a copy of your Ubuntu OS in ${DEST} and then use t
 
 echo
 
-ECHO "/home is the place where your desktop, documents, music, pictures, and program settings are stored. Would you like /home to be stored on a separate partition so that it can be writable? If you choose yes, you will need to provide a device name of a partition. If you choose no, /home will be copied to the RAM session as is, and will become permanent. This means everytime you reboot, it will revert to the way it was the last time you created a squashfs image. Moving it to a separate partition is also the first step in making /home shared between the two systems, if that's what you're after."
+ECHO "/home is the place where your desktop, documents, music, pictures, and program settings are stored. Would you like /home to be stored on a separate partition so that any changes you make to it (saved files, config files store on it, etc.) will survive a reboot? If you choose yes, you will need to provide a device name of a partition. If you choose no, /home will be copied to the RAM session as is, and will become permanent. This means everytime you reboot, it will revert to the way it was the last time you created a squashfs image. Moving it to a separate partition is also the first step in making /home shared between the two systems, if that's what you're after."
 
 #If /home is already on a separate partition, let the user know
 if $HOME_ALREADY_MOUNTED
