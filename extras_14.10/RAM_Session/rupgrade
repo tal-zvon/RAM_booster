@@ -7,3 +7,7 @@
 #	This script downloads the latest bug fixes to the RAM Booster project
 
 echo "This is the rupgrade script"
+echo
+echo "It is meant to update the RAM Booster script files (redit, update,"
+echo "rupgrade, 06_RAMSESS, etc.) with bug fixes whenever the github repo gets"
+echo "updated, but it is not done yet"
