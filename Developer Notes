@@ -53,6 +53,25 @@ Speed up rsync filesystem copy to /var/squashfs during testing:
 
 ===============================================================
 
+BTRFS:
+
+Does NOT work
+
+live-boot is definately the problem (unless it's just the start)
+
+as a start, change:
+	set grub_boot=$grub_boot/boot
+   to
+	set set grub_boot=$grub_boot/@/boot
+   either in 06_RAMSESS, or edit the grub menu during boot
+
+if you add "debug=1" to the kernel line, as stated in the live-boot man
+page, you'll see it looping through what looks like 9990-misc-helpers.sh
+(about line 196), and then show the panic message from line 86 of
+9990-main.sh
+
+===============================================================
+
 Rewrite Notes:
 
 	Generic:
