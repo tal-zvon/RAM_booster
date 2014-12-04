@@ -453,16 +453,30 @@ sudo cp $SORT_KERNELS_SCRIPT /etc/kernel/postinst.d/
 sudo chown root:root /etc/kernel/postinst.d/$SCRIPT_FILE_NAME 
 sudo chmod 755 /etc/kernel/postinst.d/$SCRIPT_FILE_NAME 
 
+#####################################################
+# Let user know how to read messages that disappear #
+#####################################################
+clear
+ECHO "If at any point a message disappears before you have a chance to read it while this script is running:"
+echo
+echo "	1. Everything is fine - this script doesn't skip ahead if the message"
+echo "		said something important"
+echo "	2. You can always scroll up in your terminal to read what it said"
+
+echo
+echo "Press enter to continue"
+read key
+
 #################################################
 # Find out what the user wants to do with /home # 
 #################################################
 
 clear
-ECHO "This script will create a copy of your Ubuntu OS in ${DEST} and then use that copy to create a squashfs image of it located at /live. After this separation, your old OS and your new OS (the RAM Session) will be two completely separate entities. Updates of one OS will not affect the update of the other (unless done so using the update script - in which case two separate updates take place one after the other), and the setup of packages on one will not transfer to the other. Depending on what you choose however, your /home may be shared between the two systems."
+ECHO "This script will create a copy of your Ubuntu OS in ${DEST} and then use that copy to create a squashfs image of it located at /live. After this separation, your current OS (the Original OS) and your new OS (the RAM Session) will be two completely separate entities. Updates of one OS will not affect the update of the other, and the setup of packages on one will not transfer to the other. Depending on what you choose however, your /home may be shared between the two systems."
 
 echo
 
-ECHO "/home is the place where your desktop, documents, music, pictures, and program settings are stored. Would you like /home to be stored on a separate partition so that it can be writable? If you choose yes, you may need to provide a device name of a partition as this script will not attempt to partition your drives for you. If you choose no, /home will be copied to the RAM session as is, and will become permanent. This means everytime you reboot, it will revert to the way it is right now. Moving it to a separate partition will also make /home shared between the two systems."
+ECHO "/home is the place where your desktop, documents, music, pictures, and program settings are stored. Would you like /home to be stored on a separate partition so that it can be writable? If you choose yes, you will need to provide a device name of a partition. If you choose no, /home will be copied to the RAM session as is, and will become permanent. This means everytime you reboot, it will revert to the way it was the last time you created a squashfs image. Moving it to a separate partition is also the first step in making /home shared between the two systems, if that's what you're after."
 
 #If /home is already on a separate partition, let the user know
 if $HOME_ALREADY_MOUNTED
