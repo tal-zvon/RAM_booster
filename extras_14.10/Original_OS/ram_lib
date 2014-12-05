@@ -533,17 +533,25 @@ CopyFileSystem() {
 			sudo sed -i '/^[^#].*\/home/d' ${DEST}/etc/fstab
 		fi
 
-		#If /home is using encryption, copy /home with -x to avoid copying unencrypted files
+		#If /home is using encryption, bind / to a temp folder
+		#and copy /home without the decrypted files
 		if $ENCRYPTED_HOME
 		then
+			sudo mkdir /mnt/root
+			sudo mount -o bind / /mnt/root
+
 			echo
 			echo "Copying encrypted /home to ${DEST%/}/home/:"
 			echo
 			sleep 4
-			sudo rsync -x -aAXSH -hv --delete --progress /home/ $DEST/home/
+			sudo rsync -aAXSH -hv --delete --progress /mnt/root/home/ $DEST/home/
+			EXIT_CODE="$?"
+
+			sudo umount /mnt/root &>/dev/null
+			sudo rmdir /mnt/root &>/dev/null
 
 			#Check how it went
-			case "$?" in
+			case "$EXIT_CODE" in
 				0|24)
 					echo
 					echo "/home copied to ${DEST%/}/home/ successfully"
