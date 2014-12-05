@@ -157,6 +157,12 @@ esac
 #Mount the RAM Session, and bind all the pseudo filesystems to it
 MOUNT_RS
 
+#If /home is using encryption, have the chroot encrypt all home dirs
+if $ENCRYPTED_HOME
+then
+	sudo chroot $Orig_OS/$DEST/ /bin/bash -c "/sbin/mount_encrypted_home_dirs"
+fi
+
 #Let user into the chroot
 sudo chroot $Orig_OS/$DEST/ /bin/bash
 

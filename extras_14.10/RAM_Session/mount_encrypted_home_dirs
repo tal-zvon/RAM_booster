@@ -1,0 +1,68 @@
+#!/bin/bash
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	This script mounts all encrypted user directories in the chroot
+
+#Only run if user is root
+uid=$(/usr/bin/id -u) && [ "$uid" = "0" ] || 
+{
+        echo "You must be root to run $0."
+        exit 1
+}
+
+#Make sure there's at least one encrypted user dir that we can mount
+#before asking for the root pass
+ENCRYPTED_USER_CHECK=false
+for DIR in /home/*
+do
+	#Skip the current dir we are looking at if it's already mounted,
+	#or it's not encrypted
+	if [[ -e $DIR/.ecryptfs ]] && ! mountpoint -q $DIR
+	then
+		ENCRYPTED_USER_CHECK=true
+	fi
+done
+
+if ! $ENCRYPTED_USER_CHECK
+then
+	echo "No encrypted user directories to mount"
+	exit 0
+fi
+
+echo "Your /home is encrypted. Type the root password to decrypt"
+read -s -p "root login password: " loginpass
+echo
+
+#For every user's home dir
+for DIR in /home/*
+do
+
+	#If user is not using encryption on their home dir, skip it
+	if [[ ! -e $DIR/.ecryptfs ]]
+	then
+		echo "$DIR not encrypted - skipping"
+		continue
+	fi
+
+	#If it's already mounted, skip it
+	if mountpoint -q $DIR
+	then
+		echo "$DIR already mounted"
+		continue
+	fi
+
+	sig1=$(head -1 /home/.ecryptfs/`basename $DIR`/.ecryptfs/Private.sig)
+	sig2=$(tail -1 /home/.ecryptfs/`basename $DIR`/.ecryptfs/Private.sig)
+
+	printf '%s\0' "$loginpass" | ecryptfs-insert-wrapped-passphrase-into-keyring "$DIR/.ecryptfs/wrapped-passphrase" - 
+
+	if [[ "$?" != 0 ]]
+	then
+		echo "Did you type in the wrong pass?"
+		exit 1
+	fi
+
+	mount -i -t ecryptfs -o ecryptfs_passthrough=no,ecryptfs_unlink_sigs,ecryptfs_cipher=aes,ecryptfs_key_bytes=16,ecryptfs_sig=$sig1,ecryptfs_fnek_sig=$sig2 $DIR/.Private $DIR
+done
