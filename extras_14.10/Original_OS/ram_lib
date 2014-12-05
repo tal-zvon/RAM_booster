@@ -538,6 +538,7 @@ CopyFileSystem() {
 		then
 			echo
 			echo "Copying encrypted /home to ${DEST%/}/home/..."
+			echo
 			sleep 4
 			sudo rsync -x -aAXSH -hv --delete --progress /home/ $DEST/home/
 
@@ -571,6 +572,7 @@ CopyFileSystem() {
 
 			echo
 			echo "Copying /home to ${HOME_DEV}..."
+			echo
 			sleep 4
 
 			#Mount $HOME_DEV
