@@ -491,7 +491,7 @@ CopyFileSystem() {
 	#Stores rsync arguments that vary between copying /home and mounting it
 	RSYNC_OPTIONS=''
 
-	if $COPY_HOME
+	if $COPY_HOME && ! $ENCRYPTED_HOME
 	then
 		RSYNC_OPTIONS='--exclude=.local/share/Trash/files/*'
 	else
@@ -515,6 +515,7 @@ CopyFileSystem() {
 			echo "Copying filesystem failed."
 			echo
 			echo "Exiting..."
+			Uninstall_RAM_Booster quiet
 			exit 1
 			;;
 	esac
@@ -531,6 +532,33 @@ CopyFileSystem() {
 			#${DEST}/etc/fstab
 			sudo sed -i '/^[^#].*\/home/d' ${DEST}/etc/fstab
 		fi
+
+		#If /home is using encryption, copy /home with -x to avoid copying unencrypted files
+		if $ENCRYPTED_HOME
+		then
+			echo
+			echo "Copying encrypted /home to ${DEST%/}/home/..."
+			sleep 4
+			sudo rsync -x -aAXSH -hv --delete --progress /home/ $DEST/home/
+
+			#Check how it went
+			case "$?" in
+				0|24)
+					echo
+					echo "/home copied to ${DEST%/}/home/ successfully"
+					sleep 4
+					;;
+				*)
+					echo
+					echo "Failed to copy /home to ${DEST%/}/home/"
+					echo
+					echo "Exiting..."
+					Uninstall_RAM_Booster quiet
+					exit 1
+					;;
+			esac
+		fi
+
 	else
 		if ! $HOME_ALREADY_MOUNTED
 		then
@@ -571,6 +599,7 @@ CopyFileSystem() {
 					echo "Failed to copy /home to $HOME_DEV"
 					echo
 					echo "Exiting..."
+					Uninstall_RAM_Booster quiet
 					exit 1
 					;;
 			esac

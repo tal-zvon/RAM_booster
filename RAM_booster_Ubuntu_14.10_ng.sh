@@ -109,6 +109,10 @@ HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo
 #Note: Do NOT remove the default value
 COPY_HOME=true
 
+#True if /home is encrypted
+#False otherwise
+ENCRYPTED_HOME=$(mount | grep /home/ | grep -q ecryptfs && echo true || echo false)
+
 #The new location of /home
 #Note: Here, we check the old location of /home, but later we can change it
 #to reflect the new location
