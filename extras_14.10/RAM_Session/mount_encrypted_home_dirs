@@ -79,7 +79,7 @@ do
 	sig1=$(head -1 /home/.ecryptfs/`basename $DIR`/.ecryptfs/Private.sig)
 	sig2=$(tail -1 /home/.ecryptfs/`basename $DIR`/.ecryptfs/Private.sig)
 
-	printf '%s\0' "$loginpass" | ecryptfs-insert-wrapped-passphrase-into-keyring "$DIR/.ecryptfs/wrapped-passphrase" - 
+	printf '%s\0' "$loginpass" | ecryptfs-insert-wrapped-passphrase-into-keyring "$DIR/.ecryptfs/wrapped-passphrase" - >/dev/null
 
 	if [[ "$?" != 0 ]]
 	then
