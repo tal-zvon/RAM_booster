@@ -157,6 +157,9 @@ esac
 #Mount the RAM Session, and bind all the pseudo filesystems to it
 MOUNT_RS
 
+#Clear terminal
+clear
+
 ######################################
 # Deal with encrypted user home dirs #
 ######################################
@@ -167,7 +170,6 @@ ENCRYPTED_HOME=$(ls -l $Orig_OS/$DEST/home/*/.ecryptfs &>/dev/null && echo true 
 #If any are found to be encrypted, have the chroot mount all encrypted home dirs
 if $ENCRYPTED_HOME
 then
-	clear
 	sudo chroot $Orig_OS/$DEST/ /bin/bash -c "/usr/sbin/mount_encrypted_home_dirs"
 fi
 
