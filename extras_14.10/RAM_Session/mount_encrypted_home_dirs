@@ -41,7 +41,7 @@ echo "Your /home is encrypted. Type the root password to decrypt"
 #########################
 
 #If user hits ctrl+c, enable echo of typed characters again
-trap 'stty echo; echo; exit 1' SIGINT
+trap 'stty echo; echo -e "\n\nWARNING: None of your encrypted user home directories were mounted"; echo; exit 1' SIGINT
 
 echo -n "root login password: "
 
@@ -58,6 +58,11 @@ stty echo
 #################################################
 # Decrypt any user home dirs that are encrypted #
 #################################################
+
+#True if succeeds in mounting at least one user home dir
+#False otherwise
+#Used to tell user if he probably entered the wrong pass
+SUCCESS=false
 
 #For every user's home dir
 for DIR in /home/*
@@ -77,15 +82,15 @@ do
 		continue
 	fi
 
-	sig1=$(head -1 /home/.ecryptfs/`basename $DIR`/.ecryptfs/Private.sig)
-	sig2=$(tail -1 /home/.ecryptfs/`basename $DIR`/.ecryptfs/Private.sig)
+	sig1=$(head -1 /home/.ecryptfs/`basename $DIR`/.ecryptfs/Private.sig 2>/dev/null)
+	sig2=$(tail -1 /home/.ecryptfs/`basename $DIR`/.ecryptfs/Private.sig 2>/dev/null)
 
-	printf '%s\0' "$loginpass" | ecryptfs-insert-wrapped-passphrase-into-keyring "$DIR/.ecryptfs/wrapped-passphrase" - >/dev/null
+	printf '%s\0' "$loginpass" | ecryptfs-insert-wrapped-passphrase-into-keyring "$DIR/.ecryptfs/wrapped-passphrase" - &>/dev/null
 
 	if [[ "$?" != 0 ]]
 	then
-		echo "Did you type in the wrong pass?"
-		exit 1
+		echo "Failed to mount $DIR."
+		continue
 	fi
 
 	mount -i -t ecryptfs -o ecryptfs_passthrough=no,ecryptfs_unlink_sigs,ecryptfs_cipher=aes,ecryptfs_key_bytes=16,ecryptfs_sig=$sig1,ecryptfs_fnek_sig=$sig2 $DIR/.Private $DIR
@@ -97,6 +102,15 @@ do
 	fi
 
 	echo "$DIR mounted"
+	SUCCESS=true
 done
+
+if ! $SUCCESS
+then
+	echo
+	echo "None of the encrypted home directories mounted successfully"
+	echo "Did you enter the wrong root password?"
+	echo "If so, type \"exit\" and run redit again"
+fi
 
 echo
