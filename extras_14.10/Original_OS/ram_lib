@@ -550,6 +550,10 @@ CopyFileSystem() {
 
 	if $COPY_HOME
 	then
+		#/home has already been copied to $DEST/home, UNLESS it
+		#has any encrypted user home folders
+
+
 		if $HOME_ALREADY_MOUNTED
 		then
 			#/home was being mounted, but user chose to copy it instead
@@ -558,41 +562,13 @@ CopyFileSystem() {
 			sudo sed -i '/^[^#].*\/home/d' ${DEST}/etc/fstab
 		fi
 
-		#If /home is using encryption, bind / to a temp folder
-		#and copy /home without the decrypted files
+		#If /home is using encryption, have CopyHome handle it
+		#Otherwise, it will have already been copied to
+		#${DEST}/home with the rest of the filesystem
 		if $ENCRYPTED_HOME
 		then
-			sudo mkdir /mnt/root
-			sudo mount -o bind / /mnt/root
-
-			echo
-			echo "Copying encrypted /home to ${DEST%/}/home/:"
-			echo
-			sleep 4
-			sudo rsync -aAXSH -hv --delete --progress /mnt/root/home/ $DEST/home/
-			EXIT_CODE="$?"
-
-			sudo umount /mnt/root &>/dev/null
-			sudo rmdir /mnt/root &>/dev/null
-
-			#Check how it went
-			case "$EXIT_CODE" in
-				0|24)
-					echo
-					echo "/home copied to ${DEST%/}/home/ successfully"
-					sleep 4
-					;;
-				*)
-					echo
-					echo "Failed to copy /home to ${DEST%/}/home/"
-					echo
-					echo "Exiting..."
-					Uninstall_RAM_Booster quiet
-					exit 1
-					;;
-			esac
+			CopyHome "$DEST/home"
 		fi
-
 	else
 		if ! $HOME_ALREADY_MOUNTED
 		then
@@ -603,48 +579,160 @@ CopyFileSystem() {
 			#Change ${DEST}/etc/fstab
 			sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> '${DEST}'/etc/fstab'
 
-			echo
-			echo "Copying /home to ${HOME_DEV}:"
-			echo
-			sleep 4
-
-			#Mount $HOME_DEV
-			sudo mkdir /mnt/tmp
-			sudo mount $HOME_DEV /mnt/tmp
-
-			#Copy /home to $HOME_DEV and write down its
-			#exit code
-			sudo rsync -aAXSH -hv --delete --progress /home/ /mnt/tmp/
-			EXIT_CODE="$?"
-
-			#Unmount and remove /mnt/tmp, which we have to do
-			#whether the rsync command succedded or not
-			sudo umount /mnt/tmp
-			sudo rmdir /mnt/tmp
-
-			#Check if rsync was successful
-			case "$EXIT_CODE" in
-				0|24)
-					echo
-					echo "/home copied to $HOME_DEV successfully"
-					sleep 4
-					;;
-				*)
-					echo
-					echo "Failed to copy /home to $HOME_DEV"
-					echo
-					echo "Exiting..."
-					Uninstall_RAM_Booster quiet
-					exit 1
-					;;
-			esac
-
 			#If user chose to share /home between the Original OS and the RAM Session,
 			#modify /etc/fstab to make it happen
 			if $SHARE_HOME
 			then
 				sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> /etc/fstab'
 			fi
+
+			#Copy /home to the $HOME_DEV device
+			CopyHome "${HOME_DEV}"
 		fi
+	fi
+}
+
+#Copies /home to either a device or $DEST/home
+#Take one non-optional argument: either the device of the new /home
+#partition (eg: /dev/sdb1) OR the $DEST/home folder
+#Note: If the arg is NOT a device, it MUST be "$DEST/home"
+CopyHome() {
+
+	#Mostly for debugging
+	#Only appears if developer passed the function too many/too
+	#few args. User should never see this error
+	if [[ $# != 1 ]]
+	then
+		echo "Error - invalid number of arguments!" >&2
+		exit 1
+	fi
+
+	################################################
+	# Prepare source /home directory that does NOT #
+	# contain decrypted user home directories      #
+	################################################
+
+	#To handle encryption, we bind / to a temp folder
+	#and copy /home without the decrypted files
+	#Even if encryption is NOT being used (which is a possiblity),
+	#doing it this way doesn't hurt
+	sudo mkdir /mnt/root
+	sudo mount -o bind / /mnt/root
+
+	#If /home on the current system is using a separate
+	#partition, the bind mount's /home directory
+	#(/mnt/root/home) will be completely empty at this
+	#point. We need to bind mount /home to /mnt/root/home
+	#Note: This gives us /mnt/root which has a /home
+	#directory, but one that does NOT have the decrypted home
+	#user directories
+	if $HOME_ALREADY_MOUNTED
+	then
+		sudo mount -o bind /home /mnt/root/home
+	fi
+
+	#################################################################
+	# Copy /mnt/root/home to either $DEST/home, or a new partition, #
+	# depending on what we got as an argument to this function      #
+	#################################################################
+
+	if [[ -b $1 ]]
+	then
+		#We are copying /home to a block device
+		#this means user chose "Separate" option, AND the Original
+		#OS was NOT already using another partition as /home
+
+		echo
+		echo "Copying /home to ${HOME_DEV}:"
+		echo
+		sleep 4
+
+		#Mount $HOME_DEV
+		sudo mkdir /mnt/tmp
+		sudo mount $HOME_DEV /mnt/tmp
+
+		#Copy /home to $HOME_DEV and write down its
+		#exit code
+		sudo rsync -aAXSH -hv --delete --progress /mnt/root/home/ /mnt/tmp/
+		EXIT_CODE="$?"
+
+		#Unmount and remove /mnt/tmp, which we have to do
+		#whether the rsync command succedded or not
+		sudo umount /mnt/tmp
+		sudo rmdir /mnt/tmp
+
+		#Unmount and remove /mnt/root/home and /mnt/root, which
+		#we have to do whether the rsync command succedded or not
+		sudo umount -R /mnt/root 
+		sudo rmdir /mnt/root 
+
+		#Check if rsync was successful
+		case "$EXIT_CODE" in
+			0|24)
+				echo
+
+				#If /home is using encryption, add the
+				#word "Encrypted" to the beginning of
+				#the next sentence the user sees
+				$ENCRYPTED_HOME && echo -n "Encrypted "
+
+				echo "/home copied to $HOME_DEV successfully"
+				sleep 4
+				;;
+			*)
+				echo
+				echo "Failed to copy /home to $HOME_DEV"
+				echo
+				echo "Exiting..."
+				Uninstall_RAM_Booster quiet
+				exit 1
+				;;
+		esac
+	elif [[ -d $1 ]]
+	then
+		#We are copying /home to $DEST/home
+		#Normally, the rsync that copied the rest of the
+		#filesystem would have already done this. The only way it
+		#would NOT have is if some of the user home directories
+		#were using encryption, which we handle here
+
+		#Note: we use $1 to identify that we are copying to
+		#$DEST/home, but we don't actually use $1 below - we
+		#use $DEST/home directly for clarity
+
+		echo
+		echo "Copying encrypted /home to ${DEST%/}/home/:"
+		echo
+		sleep 4
+		sudo rsync -aAXSH -hv --delete --progress /mnt/root/home/ $DEST/home/
+		EXIT_CODE="$?"
+
+		#Unmount and remove /mnt/root/home and /mnt/root, which
+		#we have to do whether the rsync command succedded or not
+		sudo umount -R /mnt/root
+		sudo rmdir /mnt/root
+
+		#Check how it went
+		case "$EXIT_CODE" in
+			0|24)
+				echo
+				echo "Encrypted /home copied to ${DEST%/}/home/ successfully"
+				sleep 4
+				;;
+			*)
+				echo
+				echo "Failed to copy /home to ${DEST%/}/home/"
+				echo
+				echo "Exiting..."
+				Uninstall_RAM_Booster quiet
+				exit 1
+				;;
+		esac
+	else
+		#Another error only meant for debugging
+		#Only appears if developer passed the function a bad arg
+		#User should never see this error
+		echo "Error - \"$1\" is not a device or \$DEST/home" >&2
+		exit 1
 	fi
 }
