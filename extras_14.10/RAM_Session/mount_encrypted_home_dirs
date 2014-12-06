@@ -50,6 +50,7 @@ stty -echo
 
 read loginpass
 echo
+echo
 
 #Enable echo of typed characters
 stty echo
@@ -97,3 +98,5 @@ do
 
 	echo "$DIR mounted"
 done
+
+echo
