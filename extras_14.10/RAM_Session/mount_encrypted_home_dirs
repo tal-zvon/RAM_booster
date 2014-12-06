@@ -88,4 +88,12 @@ do
 	fi
 
 	mount -i -t ecryptfs -o ecryptfs_passthrough=no,ecryptfs_unlink_sigs,ecryptfs_cipher=aes,ecryptfs_key_bytes=16,ecryptfs_sig=$sig1,ecryptfs_fnek_sig=$sig2 $DIR/.Private $DIR
+
+	if [[ "$?" != 0 ]]
+	then
+		echo "Failed to mount $DIR"
+		continue
+	fi
+
+	echo "$DIR mounted"
 done
