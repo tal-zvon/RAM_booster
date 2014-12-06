@@ -643,7 +643,14 @@ CopyHome() {
 		#OS was NOT already using another partition as /home
 
 		echo
-		echo "Copying /home to ${HOME_DEV}:"
+
+		if $ENCRYPTED_HOME
+		then
+			echo "Copying encrypted /home to ${HOME_DEV}:"
+		else
+			echo "Copying /home to ${HOME_DEV}:"
+		fi
+
 		echo
 		sleep 4
 
