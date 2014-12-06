@@ -12,8 +12,11 @@ uid=$(/usr/bin/id -u) && [ "$uid" = "0" ] ||
         exit 1
 }
 
-#Make sure there's at least one encrypted user dir that we can mount
-#before asking for the root pass
+#######################################################################
+# Make sure there's at least one encrypted user dir that we can mount #
+# before asking for the root pass                                     #
+#######################################################################
+
 ENCRYPTED_USER_CHECK=false
 for DIR in /home/*
 do
@@ -32,8 +35,28 @@ then
 fi
 
 echo "Your /home is encrypted. Type the root password to decrypt"
-read -s -p "root login password: " loginpass
+
+#########################
+# Ask for root password #
+#########################
+
+#If user hits ctrl+c, enable echo of typed characters again
+trap 'stty echo; echo; exit 1' SIGINT
+
+echo -n "root login password: "
+
+#Disable echo of typed characters
+stty -echo
+
+read loginpass
 echo
+
+#Enable echo of typed characters
+stty echo
+
+#################################################
+# Decrypt any user home dirs that are encrypted #
+#################################################
 
 #For every user's home dir
 for DIR in /home/*
