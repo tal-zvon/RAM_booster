@@ -162,6 +162,31 @@ Uninstall_RAM_Booster() {
 		fi
         fi
 
+        #Delete /mnt/root
+        if [[ -d /mnt/root ]]
+	then 
+		#Check if directory is a mountpoint
+		if $(mountpoint -q /mnt/root)
+		then
+			$QUIET || echo
+			$QUIET || echo "Unmounting /mnt/root..."
+			sudo umount /mnt/root &>/dev/null
+
+			#Check how unmount operation went
+			if [[ "$?" != "0" ]]
+			then
+				echo "/mnt/root failed to unmount. Is it in use?"
+			else
+				$QUIET || echo "Removing /mnt/root..."
+				sudo rmdir /mnt/root
+			fi
+		else
+			$QUIET || echo
+			$QUIET || echo "Removing /mnt/root..."
+			sudo rmdir /mnt/root
+		fi
+        fi
+
         #Delete $DEST
         if [[ -d "$DEST" ]]; then 
 		$QUIET || echo
