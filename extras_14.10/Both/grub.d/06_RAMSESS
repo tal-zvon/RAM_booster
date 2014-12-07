@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 #Written On: Dec 2014
 #Written By: Tal
