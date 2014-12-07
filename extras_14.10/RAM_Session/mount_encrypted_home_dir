@@ -56,7 +56,6 @@ stty -echo
 
 read loginpass
 echo
-echo
 
 #Enable echo of typed characters
 stty echo
@@ -73,10 +72,11 @@ printf '%s\0' "$loginpass" | ecryptfs-insert-wrapped-passphrase-into-keyring "/h
 if [[ "$?" != 0 ]]
 then
 	echo "Failed to mount /home/${CRYPT_USER}"
+	echo "Did you type in the wrong password for ${CRYPT_USER}?"
 	exit 1
 fi
 
-mount -i -t ecryptfs -o ecryptfs_passthrough=no,ecryptfs_unlink_sigs,ecryptfs_cipher=aes,ecryptfs_key_bytes=16,ecryptfs_sig=$sig1,ecryptfs_fnek_sig=$sig2 $DIR/.Private $DIR
+mount -i -t ecryptfs -o ecryptfs_passthrough=no,ecryptfs_unlink_sigs,ecryptfs_cipher=aes,ecryptfs_key_bytes=16,ecryptfs_sig=$sig1,ecryptfs_fnek_sig=$sig2 /home/.ecryptfs/${CRYPT_USER}/.Private /home/${CRYPT_USER}
 
 if [[ "$?" != 0 ]]
 then
@@ -86,4 +86,3 @@ fi
 
 echo "/home/${CRYPT_USER} mounted"
 
-echo
