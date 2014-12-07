@@ -135,15 +135,6 @@ MOUNT_RS()
 		exit 1
 	}
 
-	#Change permissions on /dev/shm
-
-	sudo chmod 1777 "$Orig_OS/$DEST/dev/shm" ||
-	{
-		echo "Failed to set permissions on ${Orig_OS%/}/${DEST%/}/dev/shm to 1777"
-		UMOUNT_RS
-		exit 1
-	}
-
 	#Mount /boot, if it's not on the same partition as /
 	if [[ "$BOOT_UUID" != "$ROOT_UUID" ]]
 	then
@@ -189,6 +180,14 @@ MOUNT_RS()
 
 	#Enable X (GUI programs)
 	xhost +local: >/dev/null
+
+	#Change permissions on /dev/shm
+	sudo chroot $Orig_OS/$DEST/ /bin/bash -c "chmod 1777 /dev/shm" ||
+	{
+		echo "Failed to set permissions on ${Orig_OS%/}/${DEST%/}/dev/shm to 1777"
+		UMOUNT_RS
+		exit 1
+	}
 }
 
 #Unmount $DEST (RAM Session)
