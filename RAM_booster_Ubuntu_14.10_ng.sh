@@ -848,6 +848,12 @@ echo "Grub entry added successfully."
 
 CopyFileSystem
 
+##############
+# Copy /home #
+##############
+
+CopyHome
+
 #####################################################################
 # Block update-grub from running in the RAM Session without rupdate #
 # since it fails when it runs there, and it's unnecessary           #
