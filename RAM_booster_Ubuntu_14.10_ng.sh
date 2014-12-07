@@ -109,10 +109,6 @@ HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo
 #Note: Do NOT remove the default value
 COPY_HOME=true
 
-#True if ANY user home dirs are encrypted
-#False otherwise
-ENCRYPTED_HOME=$(ls -l /home/*/.ecryptfs &>/dev/null && echo true || echo false)
-
 #The new location of /home
 #Note: Here, we check the old location of /home, but later we can change it
 #to reflect the new location
