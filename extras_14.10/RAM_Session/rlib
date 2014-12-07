@@ -128,9 +128,18 @@ MOUNT_RS()
 	}
 
 	#Mount tmpfs to /dev/shm
-	sudo mount tmpfs tmpfs "$Orig_OS/$DEST/dev/shm" ||
+	sudo mount -t tmpfs tmpfs "$Orig_OS/$DEST/dev/shm" ||
 	{
 		echo "Failed to mount tmpfs to ${Orig_OS%/}/${DEST%/}/dev/shm"
+		UMOUNT_RS
+		exit 1
+	}
+
+	#Change permissions on /dev/shm
+
+	sudo chmod 1777 "$Orig_OS/$DEST/dev/shm" ||
+	{
+		echo "Failed to set permissions on ${Orig_OS%/}/${DEST%/}/dev/shm to 1777"
 		UMOUNT_RS
 		exit 1
 	}
