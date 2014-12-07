@@ -127,6 +127,14 @@ MOUNT_RS()
 		exit 1
 	}
 
+	#Mount tmpfs to /dev/shm
+	sudo mount tmpfs tmpfs "$Orig_OS/$DEST/dev/shm" ||
+	{
+		echo "Failed to mount tmpfs to ${Orig_OS%/}/${DEST%/}/dev/shm"
+		UMOUNT_RS
+		exit 1
+	}
+
 	#Mount /boot, if it's not on the same partition as /
 	if [[ "$BOOT_UUID" != "$ROOT_UUID" ]]
 	then
