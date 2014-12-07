@@ -15,7 +15,7 @@ uid=$(/usr/bin/id -u) && [ "$uid" = "0" ] ||
 #Check number of arguments
 if [[ $# != 1 ]]
 then
-	echo "$0 only takes one argument - a username"
+	echo "$0 takes exactly one argument - a username"
 	exit 1
 fi
 
@@ -23,7 +23,7 @@ fi
 # Ask for user password #
 #########################
 
-read -p "Which user's home directory would you like to mount?: " CRYPT_USER
+CRYPT_USER=$1
 
 #Check if user exists
 if ! grep -q "${CRYPT_USER}:" /etc/passwd
