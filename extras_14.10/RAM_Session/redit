@@ -160,17 +160,18 @@ MOUNT_RS
 #Clear terminal
 clear
 
-######################################
-# Deal with encrypted user home dirs #
-######################################
+#######################################################
+# Tell user how to deal with encrypted user home dirs #
+#######################################################
 
 #Find out if any user home directories are encrypted in the RAM Session
 ENCRYPTED_HOME=$(ls -l $Orig_OS/$DEST/home/*/.ecryptfs &>/dev/null && echo true || echo false)
 
-#If any are found to be encrypted, have the chroot mount all encrypted home dirs
+#If any are found to be encrypted, tell user what to do to mount them
 if $ENCRYPTED_HOME
 then
-	sudo chroot $Orig_OS/$DEST/ /bin/bash -c "/usr/sbin/mount_encrypted_home_dirs"
+	echo "Some user home directories were found to be encrypted"
+	echo "Run \"mount_encrypted_home_dir USERNAME\" to mount them"
 fi
 
 ############################
