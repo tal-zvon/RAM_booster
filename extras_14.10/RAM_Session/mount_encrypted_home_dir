@@ -15,7 +15,7 @@ uid=$(/usr/bin/id -u) && [ "$uid" = "0" ] ||
 #Check number of arguments
 if [[ $# != 1 ]]
 then
-	echo "$0 only takes on argument - a username"
+	echo "$0 only takes one argument - a username"
 	exit 1
 fi
 
