@@ -49,7 +49,7 @@ fi
 #If user hits ctrl+c, enable echo of typed characters again
 trap 'stty echo; echo; exit 1' SIGINT
 
-echo -n "${CRYPT_USER} login password: "
+echo -n "${CRYPT_USER}'s login password: "
 
 #Disable echo of typed characters
 stty -echo
