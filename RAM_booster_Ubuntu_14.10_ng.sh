@@ -101,9 +101,6 @@ SORT_KERNELS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Both/postinst.d/zc_sort_
 #Path to the zd_warn kernel postinst script
 WARN_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/postinst.d/zd_warn"
 
-#Path to the mount_encrypted_home_dir script
-MOUNT_ENC_HOME_DIRS_SCRIPT="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/mount_encrypted_home_dir"
-
 #True if home is already on another partition. False otherwise
 HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo false)
 
@@ -986,16 +983,6 @@ SCRIPT_FILE_NAME=$(basename $UPDATE_NOTIFIER_FILE)
 sudo cp $UPDATE_NOTIFIER_FILE ${DEST}/usr/local/sbin/
 sudo chown root:root ${DEST}/usr/local/sbin/$SCRIPT_FILE_NAME 
 sudo chmod 755 ${DEST}/usr/local/sbin/$SCRIPT_FILE_NAME 
-
-######################################################
-# Add mount_encrypted_home_dir script to RAM Session #
-######################################################
-
-SCRIPT_FILE_NAME=$(basename $MOUNT_ENC_HOME_DIRS_SCRIPT)
-
-sudo cp $MOUNT_ENC_HOME_DIRS_SCRIPT ${DEST}/usr/sbin/
-sudo chown root:root ${DEST}/usr/sbin/$SCRIPT_FILE_NAME 
-sudo chmod 755 ${DEST}/usr/sbin/$SCRIPT_FILE_NAME 
 
 ##################################
 # Write some useful info to $LOG #

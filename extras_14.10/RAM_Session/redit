@@ -160,21 +160,6 @@ MOUNT_RS
 #Clear terminal
 clear
 
-#######################################################
-# Tell user how to deal with encrypted user home dirs #
-#######################################################
-
-#Find out if any user home directories are encrypted in the RAM Session
-ENCRYPTED_HOME=$(ls -l $Orig_OS/$DEST/home/*/.ecryptfs &>/dev/null && echo true || echo false)
-
-#If any are found to be encrypted, tell user what to do to mount them
-if $ENCRYPTED_HOME
-then
-	echo "Some user home directories were found to be encrypted"
-	echo "Run \"mount_encrypted_home_dir USERNAME\" to mount them"
-	echo
-fi
-
 ############################
 # Let user into the chroot #
 ############################
