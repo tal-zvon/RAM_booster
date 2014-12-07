@@ -623,6 +623,9 @@ CopyHome() {
 		echo "Copying /home to ${HOME_DEV}:"
 	fi
 
+	sleep 4
+	echo
+
 	##############################
 	# Copy /home to $DESTINATION #
 	##############################
