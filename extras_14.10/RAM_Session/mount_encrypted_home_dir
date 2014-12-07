@@ -26,7 +26,7 @@ fi
 read -p "Which user's home directory would you like to mount?: " CRYPT_USER
 
 #Check if user exists
-if ! grep -q '${CRYPT_USER}:' /etc/passwd
+if ! grep -q "${CRYPT_USER}:" /etc/passwd
 then
 	echo "${CRYPT_USER} was not found"
 	exit 1

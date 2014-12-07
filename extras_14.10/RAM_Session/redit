@@ -172,6 +172,7 @@ if $ENCRYPTED_HOME
 then
 	echo "Some user home directories were found to be encrypted"
 	echo "Run \"mount_encrypted_home_dir USERNAME\" to mount them"
+	echo
 fi
 
 ############################
