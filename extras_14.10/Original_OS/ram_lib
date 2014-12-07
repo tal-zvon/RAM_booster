@@ -558,6 +558,19 @@ CopyHome() {
 	fi
 
 	#######################################
+	# Skip copying /home if not necessary #
+	#######################################
+
+	#If user chose to use the same partition for /home that the
+	#Original OS is already using, than there's no need to copy
+	#anything - if any users are using home directory encryption,
+	#the /home partition should already be setup to properly use it
+	if ! $COPY_HOME && $HOME_ALREADY_MOUNTED
+	then
+		return 0
+	fi
+
+	#######################################
 	# Modify fstab where/when appropriate #
 	#######################################
 
