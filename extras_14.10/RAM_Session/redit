@@ -150,14 +150,20 @@ case "$1" in
 esac
 		
 
-################################
-# Mount FS and let user use it #
-################################
+############
+# Mount FS #
+############
 
 #Mount the RAM Session, and bind all the pseudo filesystems to it
 MOUNT_RS
 
-#Let user into the chroot
+#Clear terminal
+clear
+
+############################
+# Let user into the chroot #
+############################
+
 sudo chroot $Orig_OS/$DEST/ /bin/bash
 
 ######################

@@ -109,10 +109,6 @@ HOME_ALREADY_MOUNTED=$(df /home | tail -1 | grep -q '/home' && echo true || echo
 #Note: Do NOT remove the default value
 COPY_HOME=true
 
-#True if /home is encrypted
-#False otherwise
-ENCRYPTED_HOME=$(mount | grep /home/ | grep -q ecryptfs && echo true || echo false)
-
 #The new location of /home
 #Note: Here, we check the old location of /home, but later we can change it
 #to reflect the new location
@@ -188,6 +184,18 @@ then
 	echo 
 	echo "Press enter to continue or Ctrl+C to exit"
 	read key
+fi
+
+#############################
+# Check if git is installed #
+#############################
+
+if ! dpkg -l git | grep -q $'^ii[ \t]*git[ \t]'
+then
+	clear
+	echo "You need to install git before running this script"
+	echo "Try running \"sudo apt-get install git\""
+	exit 1
 fi
 
 ############################
@@ -356,12 +364,11 @@ fi
 ############################################################################
 trap 'echo; Uninstall_RAM_Booster quiet; exit 1' SIGINT
 
-####################################################################
-# Overwrite old logfile, and check if we can write to $LOG at all, #
-# drawing a line on top to start the border of the first command   #
-####################################################################
+###################################################################
+# Overwrite old logfile, and check if we can write to $LOG at all #
+###################################################################
 
-echo '================================================================================' | sudo tee $LOG &>/dev/null ||
+echo -n '' | sudo tee $LOG &>/dev/null ||
 {
 	clear
 	echo "Failed to write to '$LOG' log file"
@@ -389,13 +396,9 @@ LOGGER "$(echo "fdisk -l:"; sudo fdisk -l)"
 #blkid which shows the UUIDs that fstab uses
 LOGGER "$(echo -e "blkid:\n"; sudo blkid)"
 
-###############################################################
-# Create /var/lib/ram_booster/conf which rlib, rupdate, redit #
-#         and the Uninstall_RAM_Booster function can use      #
-# Note: Must be after section that checks args, or            #
-#         /var/lib/ram_booster/conf will get created even if  #
-#         script is called with --uninstall                   #
-###############################################################
+######################################
+# Create /var/lib/ram_booster folder #
+######################################
 
 #If the folder already exists (wasn't cleaned up on last run), delete it
 if [[ -d /var/lib/ram_booster ]]
@@ -409,6 +412,11 @@ sudo mkdir /var/lib/ram_booster
 #Set permissions on the folder
 sudo chown root:root /var/lib/ram_booster 
 sudo chmod 755 /var/lib/ram_booster 
+
+###############################################################
+# Create /var/lib/ram_booster/conf which rlib, rupdate, redit #
+#         and the Uninstall_RAM_Booster function can use      #
+###############################################################
 
 #Create /var/lib/ram_booster/conf
 sudo touch /var/lib/ram_booster/conf &>/dev/null
@@ -509,10 +517,6 @@ case $answer in
 			#Ask user what he wants to use as /home
 			#Note: This function sets the global variable $HOME_DEV
 			Ask_User_About_Home
-
-			#Ask_User_About_Home clears the CtrlC trap,
-			#so here, we reset it
-			trap CtrlC SIGINT
 		fi
 		;;  
 	c|copy)  
@@ -529,17 +533,7 @@ case $answer in
 
 		echo
 		ECHO "You chose to copy /home as is. I hope you read carefully and know what that means..."
-
 		sleep 4
-
-		#If /home is encrypted, tell user RAM Session's /home will NOT be
-		if $ENCRYPTED_HOME
-		then
-			clear
-			echo "Your /home will remain encrypted. The /home on your RAM Session will NOT be."
-			echo Press enter to continue
-			read key
-		fi
 		;;  
 	*)
 		echo
@@ -858,28 +852,19 @@ echo "Grub entry added successfully."
 
 CopyFileSystem
 
-#################################################
-# If /home is encrypted, disable the encryption #
-#################################################
+########################################################################
+# Copy /home to either $DEST/home or to a new partition                #
+# The reason CopyFileSystem doesn't handle copying /home anymore is    #
+# because even if it just needs to be copied to $DEST/home, we do some #
+# tricks to make sure that any encrypted user home directories are not #
+# copied over in decrypted form                                        #
+########################################################################
 
-if $COPY_HOME
-then
-	if $ENCRYPTED_HOME
-	then
-		echo
-		echo "Disabling /home encryption on RAM Session..."
-		rm -rf ${DEST}/home/.ecryptfs &>/dev/null
-		rm -rf ${DEST}/home/*/.Private &>/dev/null
-		rm -rf ${DEST}/home/*/.ecryptfs &>/dev/null
-	fi
-fi
+CopyHome
 
 #####################################################################
 # Block update-grub from running in the RAM Session without rupdate #
 # since it fails when it runs there, and it's unnecessary           #
-# Note: Since we never modify the Original OS, we do not need to    #
-# have our Uninstall function remove this explicitly - it gets      #
-# removed with /var/squashfs                                        #
 #####################################################################
 
 #Modify $DEST/usr/sbin/update-grub

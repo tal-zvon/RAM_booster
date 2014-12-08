@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 #Written On: Dec 2014
 #Written By: Tal
@@ -78,6 +78,25 @@ fi
 
 echo "Found ram session image: /boot/${PATH_TO_KERNEL}vmlinuz-$LATEST_SUPPORTED_KERNEL" >&2
 
+#########################################
+# Remove "splash" option from boot args #
+#########################################
+
+GRUB_OPTIONS=''
+
+for word in $GRUB_CMDLINE_LINUX_DEFAULT
+do
+	if [[ $word != "splash" ]]
+	then
+		if [[ -n $GRUB_OPTIONS ]]
+		then
+			GRUB_OPTIONS="$GRUB_OPTIONS $word"
+		else
+			GRUB_OPTIONS=$word
+		fi
+	fi
+done
+
 #########################
 # Create the menu entry #
 #########################
@@ -104,7 +123,7 @@ menuentry "Ubuntu to RAM" {
      set grub_boot=\$grub_boot/boot
   fi
 
-  linux \$grub_boot/${PATH_TO_KERNEL}vmlinuz-$LATEST_SUPPORTED_KERNEL bootfrom=/dev/disk/by-uuid/\$uuid_os_root boot=live toram=filesystem.squashfs apparmor=0 security="" root=/dev/disk/by-uuid/\$uuid_os_root ro --chroot-sessions $GRUB_CMDLINE_LINUX_DEFAULT
+  linux \$grub_boot/${PATH_TO_KERNEL}vmlinuz-$LATEST_SUPPORTED_KERNEL bootfrom=/dev/disk/by-uuid/\$uuid_os_root boot=live toram=filesystem.squashfs apparmor=0 security="" root=/dev/disk/by-uuid/\$uuid_os_root ro --chroot-sessions $GRUB_OPTIONS
   initrd \$grub_boot/${PATH_TO_KERNEL}initrd.img-$LATEST_SUPPORTED_KERNEL
 }
 EOF

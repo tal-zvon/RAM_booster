@@ -16,6 +16,12 @@ toLower()
 
 #Writes all args directly to log file
 LOGGER() {
+	#If LOG file is empty, add top border
+	if ! grep -q '================================================================================' $LOG
+	then
+		echo '================================================================================' >> $LOG
+	fi
+
 	while IFS= read -r LINE
 	do
 		echo "${LINE}" >> $LOG
@@ -34,6 +40,12 @@ COMMAND() {
 	#	STDIN - contains the FULL output being piped to the command that this function is to run
 	#	$@ - contains the command itself that this function is supposed to run
 	#	OUTPUT - the final output the command passed to this function produces
+
+	#If LOG file is empty, add top border
+	if ! grep -q '================================================================================' $LOG
+	then
+		echo '================================================================================' >> $LOG
+	fi
 
 	#See if anything is being piped to our function
 	#Eg:
@@ -162,6 +174,31 @@ Uninstall_RAM_Booster() {
 		fi
         fi
 
+        #Delete /mnt/root
+        if [[ -d /mnt/root ]]
+	then 
+		#Check if directory is a mountpoint
+		if $(mountpoint -q /mnt/root)
+		then
+			$QUIET || echo
+			$QUIET || echo "Unmounting /mnt/root..."
+			sudo umount /mnt/root &>/dev/null
+
+			#Check how unmount operation went
+			if [[ "$?" != "0" ]]
+			then
+				echo "/mnt/root failed to unmount. Is it in use?"
+			else
+				$QUIET || echo "Removing /mnt/root..."
+				sudo rmdir /mnt/root
+			fi
+		else
+			$QUIET || echo
+			$QUIET || echo "Removing /mnt/root..."
+			sudo rmdir /mnt/root
+		fi
+        fi
+
         #Delete $DEST
         if [[ -d "$DEST" ]]; then 
 		$QUIET || echo
@@ -258,8 +295,6 @@ Uninstall_RAM_Booster() {
 		$QUIET || echo
 		$QUIET || echo "Restoring grub menu..."
 		sudo sed -i 's/#\(GRUB_HIDDEN_TIMEOUT=0\)/\1/g' /etc/default/grub
-
-		#Fix /etc/grub.d/10_linux
 
 		#Update grub
 		$QUIET || echo
@@ -375,9 +410,6 @@ Ask_User_About_Home() {
 		exit 1
 	fi
 
-	#If user hits Ctrl+C, unmount /mnt/tmp
-	trap 'COMMAND sudo umount /mnt/tmp && sudo rmdir /mnt/tmp; echo; Uninstall_RAM_Booster quiet; exit 1' SIGINT
-
 	#Count how many files are on the newly mounted device
 	FILE_COUNT=`sudo ls -lR /mnt/tmp | grep ^- | wc -l`
 	if [[ "$FILE_COUNT" -gt 0 ]]
@@ -432,9 +464,6 @@ Ask_User_About_Home() {
 	sudo umount /mnt/tmp
 	sudo rmdir /mnt/tmp
 
-	#Clear trap
-	trap - SIGINT
-
 	#Format the device
 	sudo mkfs.ext4 -L home $HOME_DEV
 
@@ -488,18 +517,9 @@ CopyFileSystem() {
 	#Set timeout incase the user left so the script continues to run
 	read -t 60 key
 
-	#Stores rsync arguments that vary between copying /home and mounting it
-	RSYNC_OPTIONS=''
-
-	if $COPY_HOME
-	then
-		RSYNC_OPTIONS='--exclude=.local/share/Trash/files/*'
-	else
-		RSYNC_OPTIONS='--exclude=/home/*'
-	fi
-
 	#Copy the filesystem to $DEST
-	sudo rsync -aAXSH -hv --delete --progress / ${DEST} --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/etc/mtab","/live","/Original_OS","/RAM_Session","/var/cache/apt/archives/*.deb","${DEST}","${LOG}",/lost+found} $RSYNC_OPTIONS
+	#Note: Always skips /home
+	sudo rsync -aAXSH -hv --delete --progress / ${DEST} --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/home/*","/etc/mtab","/live","/Original_OS","/RAM_Session","/var/cache/apt/archives/*.deb","${DEST}","${LOG}",/lost+found}
 
 	#Check how the operation went
 	#Exit code 24 indicates some source files vanished, which is pretty
@@ -515,72 +535,160 @@ CopyFileSystem() {
 			echo "Copying filesystem failed."
 			echo
 			echo "Exiting..."
+			Uninstall_RAM_Booster quiet
 			exit 1
 			;;
 	esac
 
 	#Remove entry for / in RAM Session's fstab
 	sudo sed -i '/^UUID=[-0-9a-zA-Z]*[ \t]*\/[ \t]/d' $DEST/etc/fstab
+}
+
+#Copies /home to either $DEST/home or to a new partition
+#Also modifies /etc/fstab and $DEST/etc/fstab where appropriate
+CopyHome() {
+	####################
+	# Global Variables #
+	####################
 
 	if $COPY_HOME
 	then
-		if $HOME_ALREADY_MOUNTED
-		then
-			#/home was being mounted, but user chose to copy it instead
-			#Remove entry of current partition being used for /home from
-			#${DEST}/etc/fstab
-			sudo sed -i '/^[^#].*\/home/d' ${DEST}/etc/fstab
-		fi
+		DESTINATION=$DEST/home/
 	else
-		if ! $HOME_ALREADY_MOUNTED
+		DESTINATION=/mnt/tmp/
+	fi
+
+	#######################################
+	# Skip copying /home if not necessary #
+	#######################################
+
+	#If user chose to use the same partition for /home that the
+	#Original OS is already using, than there's no need to copy
+	#anything - if any users are using home directory encryption,
+	#the /home partition should already be setup to properly use it
+	if ! $COPY_HOME && $HOME_ALREADY_MOUNTED
+	then
+		return 0
+	fi
+
+	#######################################
+	# Modify fstab where/when appropriate #
+	#######################################
+
+	#/home was being mounted, but user chose to copy it instead
+	#Remove entry of current partition being used for /home from
+	#${DEST}/etc/fstab
+	if $COPY_HOME && $HOME_ALREADY_MOUNTED
+	then
+		sudo sed -i '/^[^#].*\/home/d' ${DEST}/etc/fstab
+	fi
+
+	#If /home is being copied to a separate empty partition
+	if ! $COPY_HOME && ! $HOME_ALREADY_MOUNTED
+	then
+		#Tell RAM Session to use that partition as /home
+		sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> '${DEST}'/etc/fstab'
+
+		#If user chose to do so, also tell the Original OS to
+		#use that partition as /home
+		if $SHARE_HOME
 		then
-			#If user chose to use a partition as /home, and
-			#the current system wasn't doing it already, modify
-			#${DEST}/etc/fstab
-
-			#Change ${DEST}/etc/fstab
-			sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> '${DEST}'/etc/fstab'
-
-			echo
-			echo "Copying /home to ${HOME_DEV}..."
-			sleep 4
-
-			#Mount $HOME_DEV
-			sudo mkdir /mnt/tmp
-			sudo mount $HOME_DEV /mnt/tmp
-
-			#Copy /home to $HOME_DEV and write down its
-			#exit code
-			sudo rsync -aAXSH -hv --delete --progress /home/ /mnt/tmp/
-			EXIT_CODE="$?"
-
-			#Unmount and remove /mnt/tmp, which we have to do
-			#whether the rsync command succedded or not
-			sudo umount /mnt/tmp
-			sudo rmdir /mnt/tmp
-
-			#Check if rsync was successful
-			case "$EXIT_CODE" in
-				0|24)
-					echo
-					echo "/home copied to $HOME_DEV successfully"
-					sleep 4
-					;;
-				*)
-					echo
-					echo "Failed to copy /home to $HOME_DEV"
-					echo
-					echo "Exiting..."
-					exit 1
-					;;
-			esac
-
-			#If user chose to share /home between the Original OS and the RAM Session,
-			#modify /etc/fstab to make it happen
-			if $SHARE_HOME
-			then
-				sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> /etc/fstab'
-			fi
+			sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> /etc/fstab'
 		fi
 	fi
+
+	#################################################################
+	# Prepare /mnt/root/home (Source)                               #
+	# Note: We do this in all cases to make sure that we never copy #
+	# decrypted home user directories in case a user is using       #
+	# encryption                                                    #
+	#################################################################
+
+	sudo mkdir /mnt/root
+	sudo mount -o bind / /mnt/root
+
+	#If /home is using a separate partition, we mount that, while
+	#ignoring any mounted user home directories (/home/USERNAME)
+	if $HOME_ALREADY_MOUNTED
+	then
+		sudo mount -o bind /home /mnt/root/home
+	fi
+
+	#######################
+	# Prepare destination #
+	#######################
+
+	if ! $COPY_HOME
+	then
+		#Mount $HOME_DEV
+		sudo mkdir /mnt/tmp
+		sudo mount $HOME_DEV /mnt/tmp
+	fi
+	
+	##############################
+	# Tell user what we're doing #
+	##############################
+	echo
+
+	if $COPY_HOME
+	then
+		echo "Copying /home to ${DEST%/}/home/:"
+	else
+		echo "Copying /home to ${HOME_DEV}:"
+	fi
+
+	sleep 4
+	echo
+
+	##############################
+	# Copy /home to $DESTINATION #
+	##############################
+
+	sudo rsync -aAXSH -hv --delete --progress /mnt/root/home/ $DESTINATION --exclude=.local/share/Trash/files/*
+	EXIT_CODE="$?"
+
+	############
+	# Clean up #
+	############
+
+	#Unmount and remove /mnt/tmp, which we have to do
+	#whether the rsync command succedded or not
+	if ! $COPY_HOME
+	then
+		sudo umount /mnt/tmp
+		sudo rmdir /mnt/tmp
+	fi
+
+	#Unmount and remove /mnt/root/home and /mnt/root, which
+	#we have to do whether the rsync command succedded or not
+	sudo umount -R /mnt/root 
+	sudo rmdir /mnt/root 
+
+	#Check how it went
+	case "$EXIT_CODE" in
+		0|24)
+			echo
+			if $COPY_HOME
+			then
+				echo "/home copied to ${DEST%/}/home/ successfully"
+			else
+				echo "/home copied to ${HOME_DEV} successfully"
+			fi
+			sleep 4
+			;;
+		*)
+			echo
+			if $COPY_HOME
+			then
+				echo "Failed to copy /home to ${DEST%/}/home/"
+			else
+				echo "Failed to copy /home to ${HOME_DEV}"
+			fi
+			echo
+			echo "Exiting..."
+			Uninstall_RAM_Booster quiet
+			exit 1
+			;;
+	esac
+	
 }
