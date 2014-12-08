@@ -262,7 +262,7 @@ UMOUNT_RS()
 			echo $FS | grep -qx "/run" && continue
 			echo $FS | grep -qx "/boot" && continue
 			umount "$FS" &>/dev/null
-		done < <(df | tail -n+2 | tr -s " " | cut -d " " -f 6-)'
+		done < <(df | tail -n+2 | tr -s " " | cut -d " " -f 6- | sort -r)'
 
 		#Find processes who's root folder is actually the chroot
 		for ROOT in $(find /proc/*/root)
