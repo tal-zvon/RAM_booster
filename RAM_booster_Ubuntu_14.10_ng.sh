@@ -186,6 +186,18 @@ then
 	read key
 fi
 
+#############################
+# Check if git is installed #
+#############################
+
+if ! dpkg -l git | grep -q $'^ii[ \t]*git[ \t]'
+then
+	clear
+	echo "You need to install git before running this script"
+	echo "Try running \"sudo apt-get install git\""
+	exit 1
+fi
+
 ############################
 # Check for rupdate script #
 ############################
