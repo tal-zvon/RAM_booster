@@ -856,18 +856,19 @@ echo "Grub entry added successfully."
 
 CopyFileSystem
 
-##############
-# Copy /home #
-##############
+########################################################################
+# Copy /home to either $DEST/home or to a new partition                #
+# The reason CopyFileSystem doesn't handle copying /home anymore is    #
+# because even if it just needs to be copied to $DEST/home, we do some #
+# tricks to make sure that any encrypted user home directories are not #
+# copied over in decrypted form                                        #
+########################################################################
 
 CopyHome
 
 #####################################################################
 # Block update-grub from running in the RAM Session without rupdate #
 # since it fails when it runs there, and it's unnecessary           #
-# Note: Since we never modify the Original OS, we do not need to    #
-# have our Uninstall function remove this explicitly - it gets      #
-# removed with /var/squashfs                                        #
 #####################################################################
 
 #Modify $DEST/usr/sbin/update-grub
