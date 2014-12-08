@@ -296,8 +296,6 @@ Uninstall_RAM_Booster() {
 		$QUIET || echo "Restoring grub menu..."
 		sudo sed -i 's/#\(GRUB_HIDDEN_TIMEOUT=0\)/\1/g' /etc/default/grub
 
-		#Fix /etc/grub.d/10_linux
-
 		#Update grub
 		$QUIET || echo
 		$QUIET || echo "Updating grub..."
@@ -412,9 +410,6 @@ Ask_User_About_Home() {
 		exit 1
 	fi
 
-	#If user hits Ctrl+C, unmount /mnt/tmp
-	trap 'COMMAND sudo umount /mnt/tmp && sudo rmdir /mnt/tmp; echo; Uninstall_RAM_Booster quiet; exit 1' SIGINT
-
 	#Count how many files are on the newly mounted device
 	FILE_COUNT=`sudo ls -lR /mnt/tmp | grep ^- | wc -l`
 	if [[ "$FILE_COUNT" -gt 0 ]]
@@ -468,9 +463,6 @@ Ask_User_About_Home() {
 	#Unmount the device
 	sudo umount /mnt/tmp
 	sudo rmdir /mnt/tmp
-
-	#Clear trap
-	trap - SIGINT
 
 	#Format the device
 	sudo mkfs.ext4 -L home $HOME_DEV

@@ -517,10 +517,6 @@ case $answer in
 			#Ask user what he wants to use as /home
 			#Note: This function sets the global variable $HOME_DEV
 			Ask_User_About_Home
-
-			#Ask_User_About_Home clears the Ctrl+C trap,
-			#so here, we reset it
-			trap 'echo; Uninstall_RAM_Booster quiet; exit 1' SIGINT
 		fi
 		;;  
 	c|copy)  
