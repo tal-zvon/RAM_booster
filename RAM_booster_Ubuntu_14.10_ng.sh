@@ -396,13 +396,9 @@ LOGGER "$(echo "fdisk -l:"; sudo fdisk -l)"
 #blkid which shows the UUIDs that fstab uses
 LOGGER "$(echo -e "blkid:\n"; sudo blkid)"
 
-###############################################################
-# Create /var/lib/ram_booster/conf which rlib, rupdate, redit #
-#         and the Uninstall_RAM_Booster function can use      #
-# Note: Must be after section that checks args, or            #
-#         /var/lib/ram_booster/conf will get created even if  #
-#         script is called with --uninstall                   #
-###############################################################
+######################################
+# Create /var/lib/ram_booster folder #
+######################################
 
 #If the folder already exists (wasn't cleaned up on last run), delete it
 if [[ -d /var/lib/ram_booster ]]
@@ -416,6 +412,11 @@ sudo mkdir /var/lib/ram_booster
 #Set permissions on the folder
 sudo chown root:root /var/lib/ram_booster 
 sudo chmod 755 /var/lib/ram_booster 
+
+###############################################################
+# Create /var/lib/ram_booster/conf which rlib, rupdate, redit #
+#         and the Uninstall_RAM_Booster function can use      #
+###############################################################
 
 #Create /var/lib/ram_booster/conf
 sudo touch /var/lib/ram_booster/conf &>/dev/null
