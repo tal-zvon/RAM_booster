@@ -517,9 +517,6 @@ CopyFileSystem() {
 	#Set timeout incase the user left so the script continues to run
 	read -t 60 key
 
-	#Stores rsync arguments that vary between copying /home and mounting it
-	RSYNC_OPTIONS=''
-
 	#Copy the filesystem to $DEST
 	#Note: Always skips /home
 	sudo rsync -aAXSH -hv --delete --progress / ${DEST} --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/home/*","/etc/mtab","/live","/Original_OS","/RAM_Session","/var/cache/apt/archives/*.deb","${DEST}","${LOG}",/lost+found}
