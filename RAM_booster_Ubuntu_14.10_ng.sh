@@ -518,9 +518,9 @@ case $answer in
 			#Note: This function sets the global variable $HOME_DEV
 			Ask_User_About_Home
 
-			#Ask_User_About_Home clears the CtrlC trap,
+			#Ask_User_About_Home clears the Ctrl+C trap,
 			#so here, we reset it
-			trap CtrlC SIGINT
+			trap 'echo; Uninstall_RAM_Booster quiet; exit 1' SIGINT
 		fi
 		;;  
 	c|copy)  
