@@ -160,6 +160,19 @@ MOUNT_RS
 #Clear terminal
 clear
 
+#####################################################
+# Tell user about any user home dirs we had to bind #
+#####################################################
+
+if mount | grep bind | grep -q $"${Orig_OS%/}/${DEST%/}/home/[^ \t]*"
+then
+	echo "The following encrypted home directories were automatically mounted,"
+	echo "since you are currently logged into them:"
+	echo
+	mount | grep bind | grep $"${Orig_OS%/}/${DEST%/}/home/[^ \t]*" | sed 's/on.*//g'
+	echo
+fi
+
 ############################
 # Let user into the chroot #
 ############################
