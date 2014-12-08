@@ -16,6 +16,12 @@ toLower()
 
 #Writes all args directly to log file
 LOGGER() {
+	#If LOG file is empty, add top border
+	if ! grep -q '================================================================================' $LOG
+	then
+		echo '================================================================================' >> $LOG
+	fi
+
 	while IFS= read -r LINE
 	do
 		echo "${LINE}" >> $LOG
@@ -34,6 +40,12 @@ COMMAND() {
 	#	STDIN - contains the FULL output being piped to the command that this function is to run
 	#	$@ - contains the command itself that this function is supposed to run
 	#	OUTPUT - the final output the command passed to this function produces
+
+	#If LOG file is empty, add top border
+	if ! grep -q '================================================================================' $LOG
+	then
+		echo '================================================================================' >> $LOG
+	fi
 
 	#See if anything is being piped to our function
 	#Eg:

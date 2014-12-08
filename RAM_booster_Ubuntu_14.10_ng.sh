@@ -352,12 +352,11 @@ fi
 ############################################################################
 trap 'echo; Uninstall_RAM_Booster quiet; exit 1' SIGINT
 
-####################################################################
-# Overwrite old logfile, and check if we can write to $LOG at all, #
-# drawing a line on top to start the border of the first command   #
-####################################################################
+###################################################################
+# Overwrite old logfile, and check if we can write to $LOG at all #
+###################################################################
 
-echo '================================================================================' | sudo tee $LOG &>/dev/null ||
+echo -n '' | sudo tee $LOG &>/dev/null ||
 {
 	clear
 	echo "Failed to write to '$LOG' log file"
