@@ -261,6 +261,7 @@ UMOUNT_RS()
 			#Things that were mounted outside of the chroot
 			#are better left alone for now so they can be
 			#unmounted outside of the chroot later
+			echo $FS | grep -qx "/" && continue
 			echo $FS | grep -qx "/dev" && continue
 			echo $FS | grep -qx "/run" && continue
 			echo $FS | grep -qx "/boot" && continue
