@@ -175,6 +175,28 @@ MOUNT_RS()
 		}
 	fi
 
+	#When the /home being used by the running system (RAM Session)
+	#is using EXACTLY the same files as the one inside of redit,
+	#ecryptfs-mount-private fails to mount the /home directory of
+	#any user that is already logged into the RAM Session. This
+	#only applies to users that are using ecryption on their /home
+	#directory. To fix this, we bind the decrypted home directory
+	#of any logged-in user from the running system to the chroot
+	#environment
+	if [[ "$HOME_UUID" != "$ROOT_UUID" ]]
+	then
+		for DIR in /home/*
+		do
+			if [[ -e $DIR/.ecryptfs ]]
+			then
+				if mountpoint -q $DIR
+				then
+					sudo mount -o bind $DIR "$Orig_OS/$DEST/$DIR"
+				fi
+			fi
+		done
+	fi
+
 	#Setup mtab. Some programs (like df) use it to read partition table data
 	sudo chroot "$Orig_OS/$DEST/" /bin/bash -c "grep -v rootfs /proc/mounts > /etc/mtab"
 
