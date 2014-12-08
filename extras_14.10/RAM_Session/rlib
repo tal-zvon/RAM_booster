@@ -258,12 +258,15 @@ UMOUNT_RS()
 		sudo chroot $CHROOT /bin/bash -c '
 		while IFS= read -r FS
 		do
+			#Things that were mounted outside of the chroot
+			#are better left alone for now so they can be
+			#unmounted outside of the chroot later
 			echo $FS | grep -qx "/dev" && continue
 			echo $FS | grep -qx "/run" && continue
 			echo $FS | grep -qx "/boot" && continue
-			#Encrypted home directories that are mounted
-			#will be unmounted outside of the chroot later
+			#Encrypted home directories
 			echo $FS | grep -qx "/home/[^/]*" && continue
+			echo $FS | grep -qx "/home" && continue
 			umount "$FS" &>/dev/null
 		done < <(df | tail -n+2 | tr -s " " | cut -d " " -f 6- | sort -r)'
 
