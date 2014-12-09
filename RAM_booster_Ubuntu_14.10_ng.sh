@@ -906,12 +906,14 @@ echo "This is NOT the real /boot. This is a temporary /boot that software you in
 #expert on the linux kernel by any means, and I have no idea if this is
 #dangerous in any way, but updating /boot only when a permanent software
 #update is going to be made just seems like the cleanest alternative.
-sudo sed -i '/^UUID=[-0-9a-zA-Z]*[ \t]*\/boot[ \t]/d' $DEST/etc/fstab
-sudo sed -i '/^\/dev\/...[0-9][ \t]*\/boot[ \t]/d' $DEST/etc/fstab
+#Note:
+#	Below regex handles UUID, LVM and regular device entries
+sudo sed -i '/^UUID=[^ \t]\{1,\}[ \t]\{1,\}\/boot[/]*[ \t]/d' $DEST/etc/fstab
+sudo sed -i '/^\/dev\/[^ \t]\{1,\}[ \t]\{1,\}\/boot[/]*[ \t]/d' $DEST/etc/fstab
 
 #Also remove /boot/efi if it's there
-sudo sed -i '/^UUID=[-0-9a-zA-Z]*[ \t]*\/boot\/efi[ \t]/d' $DEST/etc/fstab
-sudo sed -i '/^\/dev\/...[0-9][ \t]*\/boot\/efi[ \t]/d' $DEST/etc/fstab
+sudo sed -i '/^UUID=[^ \t]\{1,\}[ \t]\{1,\}\/boot\/efi[/]*[ \t]/d' $DEST/etc/fstab
+sudo sed -i '/^\/dev\/[^ \t]\{1,\}[ \t]\{1,\}\/boot\/efi[/]*[ \t]/d' $DEST/etc/fstab
 
 #################
 # Cleanup Tasks #

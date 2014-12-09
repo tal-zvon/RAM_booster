@@ -545,7 +545,8 @@ CopyFileSystem() {
 	esac
 
 	#Remove entry for / in RAM Session's fstab
-	sudo sed -i '/^UUID=[-0-9a-zA-Z]*[ \t]*\/[ \t]/d' $DEST/etc/fstab
+	sudo sed -i '/^UUID=[^ \t]\{1,\}[ \t]\{1,\}\/[ \t]/d' $DEST/etc/fstab
+	sudo sed -i '/^\/dev\/[^ \t]\{1,\}[ \t]\{1,\}\/[ \t]/d' $DEST/etc/fstab
 }
 
 #Copies /home to either $DEST/home or to a new partition
@@ -584,7 +585,8 @@ CopyHome() {
 	#${DEST}/etc/fstab
 	if $COPY_HOME && $HOME_ALREADY_MOUNTED
 	then
-		sudo sed -i '/^[^#].*\/home/d' ${DEST}/etc/fstab
+		sudo sed -i '/^UUID=[^ \t]\{1,\}[ \t]\{1,\}\/home[/]*[ \t]/d' ${DEST}/etc/fstab
+		sudo sed -i '/^\/dev\/[^ \t]\{1,\}[ \t]\{1,\}\/home[/]*[ \t]/d' ${DEST}/etc/fstab
 	fi
 
 	#If /home is being copied to a separate empty partition
