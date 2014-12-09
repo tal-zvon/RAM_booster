@@ -135,6 +135,14 @@ MOUNT_RS()
 		exit 1
 	}
 
+	#Mount tmpfs to /run/user
+	sudo mount -t tmpfs none "$Orig_OS/$DEST/run/user" ||
+	{
+		echo "Failed to mount tmpfs to ${Orig_OS%/}/${DEST%/}/run/user"
+		UMOUNT_RS
+		exit 1
+	}
+
 	#Mount /boot, if it's not on the same partition as /
 	if [[ "$BOOT_UUID" != "$ROOT_UUID" ]]
 	then
@@ -268,6 +276,7 @@ UMOUNT_RS()
 			#Encrypted home directories
 			echo $FS | grep -qx "/home/[^/]*" && continue
 			echo $FS | grep -qx "/home" && continue
+			echo $FS | grep -qx "/run/user" && continue
 			umount "$FS" &>/dev/null
 		done < <(df | tail -n+2 | tr -s " " | cut -d " " -f 6- | sort -r)'
 
