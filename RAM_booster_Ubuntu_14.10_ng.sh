@@ -356,13 +356,22 @@ then
 	esac
 fi
 
-############################################################################
-# If at any point the user hits Ctrl+C, quietly clean up any files we      #
-# may have created.                                                        #
-# Note: If the user hits Ctrl+C AFTER we start copying the filesystem to   #
-# $DEST, a different trap will be activated which will be a lot less quiet #
-############################################################################
-trap 'echo; Uninstall_RAM_Booster quiet; exit 1' SIGINT
+#############################################################################
+# If at any point the user hits Ctrl+C, quietly clean up any files we       #
+# may have created.                                                         #
+#                                                                           #
+# Note: If the user hits Ctrl+C AFTER we start copying the filesystem to    #
+# $DEST, a different trap will be activated which will be a lot less quiet  #
+#                                                                           #
+# Note 2: If user hit Ctrl+C when 'read' was waiting for user input, even   #
+# if read wasn't waiting for a password, the terminal will be messed up:    #
+# 	-echoing will be disabled                                           #
+#	-the next time the script runs, 'read key' will show ^M when you    #
+#               hit enter                                                   #
+#     All the stty commands below restore stty settings to normal (use      #
+#     stty -a to see what they are before and after you Ctrl+C during read) #
+#############################################################################
+trap 'stty echo; stty icrnl; stty icanon; stty lnext ^V; echo; Uninstall_RAM_Booster quiet; exit 1' SIGINT
 
 ###################################################################
 # Overwrite old logfile, and check if we can write to $LOG at all #
