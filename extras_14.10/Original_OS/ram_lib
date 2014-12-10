@@ -365,7 +365,10 @@ Ask_User_About_Home() {
 	fi
 
 	#Make sure the device is a partition (not an entire physical drive) or a logical volume
-	if ! (echo $HOME_DEV | grep -q '/dev/sd[a-z][0-9]') && ! (sudo lvdisplay $HOME_DEV &>/dev/null)
+	#We also check if the device is the real device that a logical volume symbolic link points to
+	#	Ex:
+	#		If /dev/mapper/test_vol-home is a symlink to /dev/dm-0, we test for /dev/dm-0
+	if ! (echo $HOME_DEV | grep -q '/dev/sd[a-z][0-9]') && ! (sudo lvdisplay $HOME_DEV &>/dev/null) && ! (readlink -f `sudo lvdisplay 2>/dev/null | grep 'LV Path' | tr -s ' ' | sed 's/ LV Path //g'` 2>/dev/null | grep -q $HOME_DEV)
 	then
 		echo
 		ECHO "\"$HOME_DEV\" is neither a partition, nor a logical volume. Please rerun the script and specify the device name of a partition or logical volume."
