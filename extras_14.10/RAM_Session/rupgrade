@@ -109,12 +109,13 @@ fi
 
 for FILE in $(find /tmp/RAM_Booster/$SCRIPT_DIR/Update_Scripts -type f -iname "*.sh")
 do
-	echo "Running $FILE"
+	echo "Running $(basename $FILE)"
+	chmod a+x $FILE
 	$FILE
 
 	if [[ $? != 0 ]]
 	then
-		echo "$FILE exited with an error"
+		echo "$(basename $FILE) exited with an error"
 		echo "Stopping upgrade"
 		exit 1
 	fi
