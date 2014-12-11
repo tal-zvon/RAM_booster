@@ -43,7 +43,28 @@ fi
 # Check arguments #
 ###################
 
+#If true, user chose to only check for updates - not apply them
+#false otherwise
+CHECK_ONLY=false
 
+if [[ $# != 0 ]] && [[ $# != 1 ]]
+then
+	echo "Invalid number of arguments"
+	exit 1
+fi
+
+case $1 in
+	"")
+		#No arguments is fine
+		;;
+	--check)
+		CHECK_ONLY=true
+		;;
+	*)
+		echo "Error: \"$1\" is an invalid argument"
+		exit 1
+		;;
+esac
 
 #############################
 # Check if git is installed #
@@ -96,10 +117,150 @@ then
 	echo "The script for your version of Ubuntu ($OS_NAME) appears to be old"
 	echo "You may want to check if the RAM Booster script exists for a newer"
 	echo "version of Ubuntu, and if so, update your system and use the new script"
+	echo
 else
 	echo "A script for $OS_NAME could not be found in the github RAM Booster repo"
 	exit 1
 fi
+
+###########################################
+# Check which files need to be updated    #
+# Vars set to true when updates required  #
+# Vars set to false otherwise             #
+# Note: Do NOT change the default (false) #
+###########################################
+
+RLIB=false
+REDIT=false
+RUPDATE=false
+UPDATE_NOTIFIER=false
+GRUB_06_RAMSESS=false
+POSTINST_VERSION_CHECK=false
+POSTINST_SORT_KERNELS=false
+POSTINST_RAM_SESSION_INITRAMFS=false
+POSTINST_WARN=false
+
+#############################
+# Check AND Update rupgrade #
+#############################
+
+PATH_TO_REPO_FILE=/tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rupgrade
+PATH_TO_INSTALLED_FILE=/usr/sbin/rupgrade
+PERMS=755
+
+if [[ ! -e $PATH_TO_REPO_FILE ]]
+then
+	echo "Error: The latest version of the repo does not have an rupgrade script"
+	exit 1
+fi
+
+if [[ ! -e $PATH_TO_INSTALLED_FILE ]]
+then
+	if $CHECK_ONLY
+	then
+		echo "Error: rupgrade is not installed, and you are running in --check mode"
+		exit 1
+	else
+		echo "Installing $PATH_TO_INSTALLED_FILE"
+		sudo cp $PATH_TO_REPO_FILE $PATH_TO_INSTALLED_FILE
+		sudo chmod $PERMS $PATH_TO_INSTALLED_FILE
+	fi
+fi
+
+#Check the md5s
+MD5_OF_REPO_FILE=$(md5sum $PATH_TO_REPO_FILE | cut -d ' ' -f 1)
+MD5_OF_INSTALLED_FILE=$(md5sum $PATH_TO_INSTALLED_FILE | cut -d ' ' -f 1)
+
+if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
+then
+	if $CHECK_ONLY
+	then
+		echo "A new version of the rupgrade script is available"
+		echo "Run $0 without \"--check\" to install it"
+		echo "Note: rupgrade must be updated before the other scripts are"
+		exit 0
+	else
+		echo "Updating $PATH_TO_INSTALLED_FILE"
+
+		sudo rm -f $PATH_TO_INSTALLED_FILE
+		sudo cp $PATH_TO_REPO_FILE $PATH_TO_INSTALLED_FILE
+		sudo chmod $PERMS $PATH_TO_INSTALLED_FILE
+
+		echo "Running new rupgrade script..."
+
+		#We are NOT exiting so the trap that deletes /tmp/RAM_Booster
+		#shouldn't fire here, so we do it manually
+		sudo rm -rf /tmp/RAM_Booster
+
+		exec /usr/sbin/rupgrade
+	fi
+fi
+
+##############
+# Check RLIB #
+##############
+
+PATH_TO_REPO_FILE=/tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rlib
+PATH_TO_INSTALLED_FILE=/var/lib/ram_booster/rlib
+PERMS=
+
+
+MD5_OF_REPO_FILE=$(md5sum $PATH_TO_REPO_FILE | cut -d ' ' -f 1)
+MD5_OF_INSTALLED_FILE=$(md5sum $PATH_TO_INSTALLED_FILE | cut -d ' ' -f 1)
+
+if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
+then
+	RLIB=true
+fi
+
+###############
+# Check Redit #
+###############
+
+PATH_TO_REPO_FILE=/tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/redit
+PATH_TO_INSTALLED_FILE=/usr/sbin/redit
+PERMS=
+
+
+MD5_OF_REPO_FILE=$(md5sum $PATH_TO_REPO_FILE | cut -d ' ' -f 1)
+MD5_OF_INSTALLED_FILE=$(md5sum $PATH_TO_INSTALLED_FILE | cut -d ' ' -f 1)
+
+if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
+then
+	REDIT=true
+fi
+
+#################
+# Check rupdate #
+#################
+
+#########################
+# Check update-notifier #
+#########################
+
+####################
+# Check 06_RAMSESS #
+####################
+
+#######################################
+# Check Postinst Version Check Script #
+#######################################
+
+######################################
+# Check Postinst Sort Kernels Script #
+######################################
+
+###############################################
+# Check Postinst RAM Session Initramfs Script #
+###############################################
+
+##############################
+# Check Postinst Warn script #
+##############################
+
+#######################################################################
+# Check if we were only supposed to check for updates and not do them #
+#######################################################################
 
 ########################################################################
 # Run update scripts                                                   #
@@ -121,86 +282,11 @@ do
 	fi
 done
 
-###########################################
-# Check which files need to be updated    #
-# Vars set to true when updates required  #
-# Vars set to false otherwise             #
-# Note: Do NOT change the default (false) #
-###########################################
+###############
+# Update rlib #
+###############
 
-RLIB=false
-REDIT=false
-RUPDATE=false
-RUPGRADE=false
-UPDATE_NOTIFIER=false
-GRUB_06_RAMSESS=false
-POSTINST_VERSION_CHECK=false
-POSTINST_SORT_KERNELS=false
-POSTINST_RAM_SESSION_INITRAMFS=false
-POSTINST_WARN=false
-
-########
-# RLIB #
-########
-
-PATH_TO_REPO_FILE=/tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rlib
-PATH_TO_INSTALLED_FILE=/var/lib/ram_booster/rlib
-MD5_OF_REPO_FILE=$(md5sum $PATH_TO_REPO_FILE | cut -d ' ' -f 1)
-MD5_OF_INSTALLED_FILE=$(md5sum $PATH_TO_INSTALLED_FILE | cut -d ' ' -f 1)
-
-if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
+if $RLIB
 then
-	RLIB=true
+
 fi
-
-#########
-# Redit #
-#########
-
-PATH_TO_REPO_FILE=/tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/redit
-PATH_TO_INSTALLED_FILE=/usr/sbin/redit
-MD5_OF_REPO_FILE=$(md5sum $PATH_TO_REPO_FILE | cut -d ' ' -f 1)
-MD5_OF_INSTALLED_FILE=$(md5sum $PATH_TO_INSTALLED_FILE | cut -d ' ' -f 1)
-
-if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
-then
-	REDIT=true
-fi
-
-###########
-# rupdate #
-###########
-
-############
-# rupgrade #
-############
-
-###################
-# update-notifier #
-###################
-
-##############
-# 06_RAMSESS #
-##############
-
-#################################
-# Postinst Version Check Script #
-#################################
-
-################################
-# Postinst Sort Kernels Script #
-################################
-
-#########################################
-# Postinst RAM Session Initramfs Script #
-#########################################
-
-########################
-# Postinst Warn script #
-########################
-
-#######################################################################
-# Check if we were only supposed to check for updates and not do them #
-#######################################################################
-
-
