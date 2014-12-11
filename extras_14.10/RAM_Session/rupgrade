@@ -6,8 +6,120 @@
 #Description: 
 #	This script downloads the latest bug fixes to the RAM Booster project
 
-echo "This is the rupgrade script"
-echo
-echo "It is meant to update the RAM Booster script files (redit, update,"
-echo "rupgrade, 06_RAMSESS, etc.) with bug fixes whenever the github repo gets"
-echo "updated, but it is not done yet"
+############################
+# Only run if user is root #
+############################
+
+uid=$(/usr/bin/id -u) && [ "$uid" = "0" ] ||  
+{
+        clear
+        echo "You must be root to run $0."
+        echo "Try again with the command 'sudo $0'"
+        exit 1
+} 
+
+##################################################################################
+# Check if the user is trying to run this script from outside of the RAM Session #
+##################################################################################
+
+if [ ! -e /RAM_Session ]
+then
+        clear
+        echo "This script cannot be run from outside of the RAM Session."
+        exit 0
+fi
+
+##########################################################################
+# Check if the user is trying to run this script from inside of a chroot #
+##########################################################################
+
+if [[ "$(ls -di / | cut -d ' ' -f 1)" != 2 ]] && [[ "$(ls -di / | cut -d ' ' -f 1)" != 128 ]]
+then
+        echo "This script cannot be run from inside of a chroot"
+        exit 0
+fi
+
+#############################
+# Check if git is installed #
+#############################
+
+if ! dpkg -l git | grep -q $'^ii[ \t]*git[ \t]'
+then
+        clear
+        echo "You need to install git before running this script"
+        echo "Try running \"sudo apt-get install git\""
+        exit 1
+fi
+
+#########################################################
+# Download the latest version of the RAM Booster script #
+#########################################################
+
+#Delete it if it's left over from a previous attempt to update
+if [[ -d /tmp/RAM_Booster ]]
+then
+	rm -rf /tmp/RAM_Booster
+fi
+
+git clone git://github.com/terminator14/RAM_Booster.git /tmp/RAM_Booster &>/dev/null
+
+if [[ $? != 0 ]]
+then
+	echo "Failed to download RAM_Booster git repo"
+	exit 1
+fi
+
+#####################################################################
+# Setup a trap that deletes the git repo we just downloaded on exit #
+#####################################################################
+
+trap 'sudo rm -rf /tmp/RAM_Booster' EXIT
+
+############################################################
+# Figure out the path of the script folder in the git repo #
+############################################################
+
+OS_NAME=$(cat /etc/os-release | grep PRETTY_NAME | grep -o "\"[^\"]*\"" | tr -d '"')
+UBUNTU_VERSION=$(cat /etc/os-release | grep VERSION_ID | grep -o "\"[^\"]*\"" | tr -d '"')
+if [[ -d /tmp/RAM_Booster/extras_$UBUNTU_VERSION ]]
+then
+	PATH=extras_$UBUNTU_VERSION
+elif [[ -d /tmp/RAM_Booster/old/extras_$UBUNTU_VERSION ]]
+then
+	PATH=old/extras_$UBUNTU_VERSION
+	echo "The script for your version of Ubuntu ($OS_NAME) appears to be old"
+	echo "You may want to check if the RAM Booster script exists for a newer"
+	echo "version of Ubuntu, and if so, update your system and use the new script"
+else
+	echo "A script for $OS_NAME could not be found in the github RAM Booster repo"
+	exit 1
+fi
+
+########################################
+# Check which files need to be updated #
+########################################
+
+REDIT=false
+RUPDATE=false
+RUPGRADE=false
+GRUB_06_RAMSESS=false
+POSTINST_VERSION_CHECK=false
+POSTINST_SORT_KERNELS=false
+
+#Redit
+PATH_TO_REPO_FILE=/tmp/RAM_Booster/$PATH/RAM_Session/redit
+PATH_TO_INSTALLED_FILE=/usr/sbin/redit
+MD5_OF_REPO_FILE=$(md5sum $PATH_TO_REPO_FILE | cut -d ' ' -f 1)
+MD5_OF_INSTALLED_FILE=$(md5sum $PATH_TO_INSTALLED_FILE | cut -d ' ' -f 1)
+
+if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
+then
+	REDIT=true
+fi
+
+#######################################################################
+# Check if we were only supposed to check for updates and not do them #
+#######################################################################
+
+
+
