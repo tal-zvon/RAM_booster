@@ -83,10 +83,10 @@ OS_NAME=$(cat /etc/os-release | grep PRETTY_NAME | grep -o "\"[^\"]*\"" | tr -d 
 UBUNTU_VERSION=$(cat /etc/os-release | grep VERSION_ID | grep -o "\"[^\"]*\"" | tr -d '"')
 if [[ -d /tmp/RAM_Booster/extras_$UBUNTU_VERSION ]]
 then
-	PATH=extras_$UBUNTU_VERSION
+	SCRIPT_DIR=extras_$UBUNTU_VERSION
 elif [[ -d /tmp/RAM_Booster/old/extras_$UBUNTU_VERSION ]]
 then
-	PATH=old/extras_$UBUNTU_VERSION
+	SCRIPT_DIR=old/extras_$UBUNTU_VERSION
 	echo "The script for your version of Ubuntu ($OS_NAME) appears to be old"
 	echo "You may want to check if the RAM Booster script exists for a newer"
 	echo "version of Ubuntu, and if so, update your system and use the new script"
@@ -107,7 +107,7 @@ POSTINST_VERSION_CHECK=false
 POSTINST_SORT_KERNELS=false
 
 #Redit
-PATH_TO_REPO_FILE=/tmp/RAM_Booster/$PATH/RAM_Session/redit
+PATH_TO_REPO_FILE=/tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/redit
 PATH_TO_INSTALLED_FILE=/usr/sbin/redit
 MD5_OF_REPO_FILE=$(md5sum $PATH_TO_REPO_FILE | cut -d ' ' -f 1)
 MD5_OF_INSTALLED_FILE=$(md5sum $PATH_TO_INSTALLED_FILE | cut -d ' ' -f 1)
