@@ -39,6 +39,12 @@ then
         exit 0
 fi
 
+###################
+# Check arguments #
+###################
+
+
+
 #############################
 # Check if git is installed #
 #############################
@@ -95,18 +101,61 @@ else
 	exit 1
 fi
 
-########################################
-# Check which files need to be updated #
-########################################
+########################################################################
+# Run update scripts                                                   #
+# Note: The update scripts are ALWAYS run and MUST make sure that they #
+# check if the changes they make have already been applied             #
+########################################################################
 
+for FILE in $(find /tmp/RAM_Booster/$SCRIPT_DIR/Update_Scripts -type f -iname "*.sh")
+do
+	echo "Running $FILE"
+	$FILE
+
+	if [[ $? != 0 ]]
+	then
+		echo "$FILE exited with an error"
+		echo "Stopping upgrade"
+		exit 1
+	fi
+done
+
+###########################################
+# Check which files need to be updated    #
+# Vars set to true when updates required  #
+# Vars set to false otherwise             #
+# Note: Do NOT change the default (false) #
+###########################################
+
+RLIB=false
 REDIT=false
 RUPDATE=false
 RUPGRADE=false
+UPDATE_NOTIFIER=false
 GRUB_06_RAMSESS=false
 POSTINST_VERSION_CHECK=false
 POSTINST_SORT_KERNELS=false
+POSTINST_RAM_SESSION_INITRAMFS=false
+POSTINST_WARN=false
 
-#Redit
+########
+# RLIB #
+########
+
+PATH_TO_REPO_FILE=/tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rlib
+PATH_TO_INSTALLED_FILE=/var/lib/ram_booster/rlib
+MD5_OF_REPO_FILE=$(md5sum $PATH_TO_REPO_FILE | cut -d ' ' -f 1)
+MD5_OF_INSTALLED_FILE=$(md5sum $PATH_TO_INSTALLED_FILE | cut -d ' ' -f 1)
+
+if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
+then
+	RLIB=true
+fi
+
+#########
+# Redit #
+#########
+
 PATH_TO_REPO_FILE=/tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/redit
 PATH_TO_INSTALLED_FILE=/usr/sbin/redit
 MD5_OF_REPO_FILE=$(md5sum $PATH_TO_REPO_FILE | cut -d ' ' -f 1)
@@ -117,9 +166,40 @@ then
 	REDIT=true
 fi
 
+###########
+# rupdate #
+###########
+
+############
+# rupgrade #
+############
+
+###################
+# update-notifier #
+###################
+
+##############
+# 06_RAMSESS #
+##############
+
+#################################
+# Postinst Version Check Script #
+#################################
+
+################################
+# Postinst Sort Kernels Script #
+################################
+
+#########################################
+# Postinst RAM Session Initramfs Script #
+#########################################
+
+########################
+# Postinst Warn script #
+########################
+
 #######################################################################
 # Check if we were only supposed to check for updates and not do them #
 #######################################################################
-
 
 
