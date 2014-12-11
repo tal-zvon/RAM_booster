@@ -17,6 +17,9 @@ UPDATES=false
 #Check if apt-check exists
 [[ -e /usr/lib/update-notifier/apt-check ]] || exit 0
 
+#Check for updates
+apt-get update
+
 #apt-check returns 2 semi-colon separated values to STDERR - one for
 #regular updates and one for security updates
 #See: "/usr/lib/update-notifier/apt-check --human-readable"
