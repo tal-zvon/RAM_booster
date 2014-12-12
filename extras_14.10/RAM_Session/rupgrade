@@ -151,6 +151,11 @@ DEST=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep DEST= | sed 's/DEST=/
 DEST="${DEST#/}"
 #UUID of / on the Original OS
 ROOT_UUID=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep ROOT_UUID= | sed 's/ROOT_UUID=//g')
+#True if MOUNT_ROOT FAILED
+FAILED_TO_MOUNT_ORIG_OS=false
+#True if any updates were applied
+#False otherwise
+UPDATES_PERFORMED=false
 
 ##############################################################################
 ####                             FUNCTIONS                                ####
@@ -199,7 +204,11 @@ MOUNT_ROOT() {
         sudo mount --uuid $ROOT_UUID "$Orig_OS" &>/dev/null ||
         {
                 echo "Failed to mount $ROOT_UUID to $Orig_OS"
-                exit 1
+		#Note: We don't exit right away here incase the problem
+		#is some bug with rupgrade
+		#We'll try to update rupgrade and run the code again
+		#before we give up
+		FAILED_TO_MOUNT_ORIG_OS=true
         }
 }
 
@@ -208,6 +217,12 @@ MOUNT_ROOT() {
 #actually ran in a chroot, there is no need for all the complexity of
 #rlib's UMOUNT_RS (shutting down services, killing processes, etc.)
 UMOUNT_ROOT() {
+	#If there's nothing to unmount, do nothing
+	if ! mountpoint -q $Orig_OS
+	then
+		return
+	fi
+
         #Unmount $Orig_OS
         sudo umount $Orig_OS 2>/dev/null
 
@@ -224,25 +239,6 @@ UMOUNT_ROOT() {
 
 #Create squashfs image
 MakeSquashfsImage() {
-	echo "Some scripts on the RAM Session were updated"
-	read -p "Would you like to recreate the squashfs image? [y\N]: " answer
-
-        #Convert answer to lowercase
-        answer=$(echo $answer | tr "[:upper:]" "[:lower:]")
-
-        case $answer in
-                y|yes)
-                        #Fall through and create the image
-                        ;;
-                n|no)
-			echo
-			echo "You chose to NOT recreate the squashfs image, even though updates were applied"
-			echo "If you change your mind, run 'sudo redit -s'"
-
-			return
-			;;
-	esac
-
         echo "Creating squashfs image"
         echo
 
@@ -285,6 +281,7 @@ CheckForUpdates() {
 	INSTALLED_SCRIPT=$2
 	PERMS=$3
 	OWNER=$4
+	RETURN_CODE=1
 
 	#Check permissions arg
 	#Note: Mostly for debugging - user should never see this error
@@ -310,7 +307,9 @@ CheckForUpdates() {
 	if [[ ! -e $GIT_SCRIPT ]]
 	then
 		echo "The latest version of the git repo does not have the $(basename $GIT_SCRIPT) script"
-		return 3
+
+		RETURN_CODE=3
+		return $RETURN_CODE
 	fi
 
 	#Check if script is installed in the running system
@@ -319,12 +318,13 @@ CheckForUpdates() {
 		if $CHECK_ONLY
 		then
 			echo "$INSTALLED_SCRIPT not installed"
-			return 2
+			RETURN_CODE=2
 		else
 			echo "Installing $INSTALLED_SCRIPT"
 			sudo cp $GIT_SCRIPT $INSTALLED_SCRIPT
 			sudo chmod $PERMS $INSTALLED_SCRIPT
 			sudo chown $OWNER $INSTALLED_SCRIPT
+			RETURN_CODE=0
 		fi
 	fi
 
@@ -336,7 +336,7 @@ CheckForUpdates() {
 	then
 		if $CHECK_ONLY
 			echo "$INSTALLED_SCRIPT: update available"
-			return 2
+			RETURN_CODE=2
 		else
 			echo "Updating $INSTALLED_SCRIPT"
 
@@ -345,16 +345,25 @@ CheckForUpdates() {
 			sudo chmod $PERMS $INSTALLED_SCRIPT
 			sudo chown $OWNER $INSTALLED_SCRIPT
 
-			return 0
+			RETURN_CODE=0
 		fi
 	else
 		echo "$INSTALLED_SCRIPT: up to date"
-		return 1
+		RETURN_CODE=1
 	fi
 
 	################################
 	# Check file on squashfs image #
 	################################
+
+	#This returns if the Original OS is NOT mounted
+	#The only time this will happen is if we are seeing if there is
+	#an update for rupgrade that might fix the problem we are having
+	#with mounting the Original OS
+	if $FAILED_TO_MOUNT_ORIG_OS
+	then
+		return $RETURN_CODE
+	fi
 
 	#Check if the script exists in the RAM Session
 	if [[ ! -e ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT ]]
@@ -362,12 +371,21 @@ CheckForUpdates() {
 		if $CHECK_ONLY
 		then
 			echo "$INSTALLED_SCRIPT not installed on squashfs image"
-			return 2
+
+			#The only things RETURN_CODE can be at this point are 1 or 2
+			#Either way, it should return 2 here
+			RETURN_CODE=2
+			return $RETURN_CODE
 		else
 			echo "Installing $INSTALLED_SCRIPT on squashfs image"
 			sudo cp $GIT_SCRIPT ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
 			sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
 			sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+
+			#The only things RETURN_CODE can be at this point are 0 or 1
+			#Either way, it should return 0 here
+			RETURN_CODE=0
+			return $RETURN_CODE
 		fi
 	fi
 
@@ -379,7 +397,11 @@ CheckForUpdates() {
 		if $CHECK_ONLY
 		then
 			echo "$INSTALLED_SCRIPT on squashfs image: update available"
-			return 2
+
+			#The only things RETURN_CODE can be at this point are 1 or 2
+			#Either way, it should return 2 here
+			RETURN_CODE=2
+			return $RETURN_CODE
 		else
 			echo "Updating $INSTALLED_SCRIPT on squashfs image"
 
@@ -388,11 +410,17 @@ CheckForUpdates() {
 			sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
 			sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
 
-			return 0
+			#The only things RETURN_CODE can be at this point are 0 or 1
+			#Either way, it should return 0 here
+			RETURN_CODE=0
+			return $RETURN_CODE
 		fi
 	else
 		echo "$INSTALLED_SCRIPT on squashfs image: up to date"
-		return 1
+
+		#The only things RETURN_CODE can be at this point are 0, 1 or 2
+		#Either way, it should return whatever RETURN_CODE was already set to
+		return $RETURN_CODE
 	fi
 }
 
@@ -400,15 +428,101 @@ CheckForUpdates() {
 ####                           MAIN SCRIPT                                ####
 ##############################################################################
 
-#Mount root
+##############
+# Mount root #
+##############
+
 MOUNT_ROOT
 
-#Check for updates
+#####################
+# Check for updates #
+#####################
 
-#Create squashfs image
+#Rupgrade itself
+CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rupgrade /usr/sbin/rupgrade 755 root:root
+case $? in
+	0)
+		#Updates performed
+		exec /usr/sbin/rupgrade
+		;;
+	1)
+		#Updates not required
+
+		#If there are no new updates for rupgrade, and it still
+		#failed to mount Orig_OS, bail out
+		if $FAILED_TO_MOUNT_ORIG_OS
+		then
+			echo "Updating rupgrade"
+			exit 1
+		fi
+		;;
+	2)
+		#Update required but not performed (due to --check mode)
+		echo
+		echo "Update of rupgrade required"
+		echo "Run $0 without --check to apply them"
+		exit 0
+		;;
+	3)
+		#Update failed
+		echo "Update of rupgrade failed"
+		exit 1
+		;;
+esac
+
+#RLIB
+CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rlib /usr/sbin/rupgrade 644 root:root
+case $? in
+	0)
+		#Updates performed
+		UPDATES_PERFORMED=true
+		;;
+	1)
+		#Updates not required
+		;;
+	2)
+		#Update required but not performed (due to --check mode)
+		;;
+	3)
+		#Update failed
+		echo "No updates will be performed without updating rlib first"
+		echo "Report this error on my Ubuntu Forum thread and try again in a few days"
+		exit 1
+		;;
+esac
+
+#########################
+# Create squashfs image #
+#########################
+
 if $UPDATES_PERFORMED
 then
+	#Ask user if they want to create the squashfs image
+	echo "Some scripts on the RAM Session were updated"
+	read -p "Would you like to recreate the squashfs image? [y\N]: " answer
+
+        #Convert answer to lowercase
+        answer=$(echo $answer | tr "[:upper:]" "[:lower:]")
+
+        case $answer in
+                y|yes)
+			MakeSquashfsImage
+                        ;;
+                n|no)
+			echo
+			echo "You chose to NOT recreate the squashfs image, even though updates were applied"
+			echo "If you change your mind, run 'sudo redit -s'"
+
+			return
+			;;
+	esac
 
 fi
 
-#Unmount
+############################################################################
+# Unmount Original OS                                                      #
+# Note: This is redundant, since it will already be done by our EXIT trap, #
+# but we have this code here as a reminder (it doesn't hurt)               #
+############################################################################
+
+UMOUNT_ROOT
