@@ -5,6 +5,11 @@
 #Written For: Ubuntu Forums Community
 #Description: 
 #	This script downloads the latest bug fixes to the RAM Booster project
+#	Note: This script is:
+#		1. self-reliant (does NOT source rlib, in case rlib is
+#			broken or not updated yet)
+#		2. can be run from any dir in the RAM Session, in case it
+#			got uninstalled from /usr/sbin/ somehow
 
 ############################
 # Only run if user is root #
@@ -78,28 +83,6 @@ then
         exit 1
 fi
 
-##########################################################
-# Source the file with all the functions for this script #
-##########################################################
-
-if [[ -e $RLIB ]]
-then
-	. $RLIB
-
-	#Check if there was a problem
-	if [[ "$?" != "0" ]]
-	then
-		echo
-		echo "The library that comes with RAM Booster ($RLIB) failed to be sourced"
-		echo "Is it broken?"
-		exit 1
-	fi
-else
-	clear
-	echo "The library that comes with RAM Booster ($RLIB) was not found!"
-	exit 1
-fi
-
 #########################################################
 # Download the latest version of the RAM Booster script #
 #########################################################
@@ -118,12 +101,12 @@ then
 	exit 1
 fi
 
-
 ################
 # Setup a trap #
 ################
 
-trap 'UMOUNT_RS; sudo rm -rf /tmp/RAM_Booster' EXIT SIGINT
+#Note: Trap fires on Ctrl+C AND anytime the script exits
+trap 'UMOUNT_ROOT; sudo rm -rf /tmp/RAM_Booster' EXIT SIGINT
 
 ############################################################
 # Figure out the path of the script folder in the git repo #
@@ -146,170 +129,278 @@ else
 	exit 1
 fi
 
-###########################################
-# Check which files need to be updated    #
-# Vars set to true when updates required  #
-# Vars set to false otherwise             #
-# Note: Do NOT change the default (false) #
-###########################################
-
-RLIB=false
-REDIT=false
-RUPDATE=false
-UPDATE_NOTIFIER=false
-GRUB_06_RAMSESS=false
-POSTINST_VERSION_CHECK=false
-POSTINST_SORT_KERNELS=false
-POSTINST_RAM_SESSION_INITRAMFS=false
-POSTINST_WARN=false
-
-#############################
-# Check AND Update rupgrade #
-#############################
-
-PATH_TO_REPO_FILE=/tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rupgrade
-PATH_TO_INSTALLED_FILE=/usr/sbin/rupgrade
-PERMS=755
-
-if [[ ! -e $PATH_TO_REPO_FILE ]]
-then
-	echo "Error: The latest version of the repo does not have an rupgrade script"
-	exit 1
-fi
-
-if [[ ! -e $PATH_TO_INSTALLED_FILE ]]
-then
-	if $CHECK_ONLY
-	then
-		echo "Error: rupgrade is not installed, and you are running in --check mode"
-		exit 1
-	else
-		echo "Installing $PATH_TO_INSTALLED_FILE"
-		sudo cp $PATH_TO_REPO_FILE $PATH_TO_INSTALLED_FILE
-		sudo chmod $PERMS $PATH_TO_INSTALLED_FILE
-	fi
-fi
-
-#Check the md5s
-MD5_OF_REPO_FILE=$(md5sum $PATH_TO_REPO_FILE | cut -d ' ' -f 1)
-MD5_OF_INSTALLED_FILE=$(md5sum $PATH_TO_INSTALLED_FILE | cut -d ' ' -f 1)
-
-if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
-then
-	if $CHECK_ONLY
-	then
-		echo "A new version of the rupgrade script is available"
-		echo "Run $0 without \"--check\" to install it"
-		echo "Note: rupgrade must be updated before the other scripts are"
-		exit 0
-	else
-		echo "Updating $PATH_TO_INSTALLED_FILE"
-
-		sudo rm -f $PATH_TO_INSTALLED_FILE
-		sudo cp $PATH_TO_REPO_FILE $PATH_TO_INSTALLED_FILE
-		sudo chmod $PERMS $PATH_TO_INSTALLED_FILE
-
-		echo "Running new rupgrade script..."
-
-		#We are NOT exiting so the trap that deletes /tmp/RAM_Booster
-		#shouldn't fire here, so we do it manually
-		sudo rm -rf /tmp/RAM_Booster
-
-		exec /usr/sbin/rupgrade
-	fi
-fi
-
-##############
-# Check RLIB #
-##############
-
-PATH_TO_REPO_FILE=/tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rlib
-PATH_TO_INSTALLED_FILE=/var/lib/ram_booster/rlib
-PERMS=
-
-
-MD5_OF_REPO_FILE=$(md5sum $PATH_TO_REPO_FILE | cut -d ' ' -f 1)
-MD5_OF_INSTALLED_FILE=$(md5sum $PATH_TO_INSTALLED_FILE | cut -d ' ' -f 1)
-
-if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
-then
-	RLIB=true
-fi
-
-###############
-# Check Redit #
-###############
-
-PATH_TO_REPO_FILE=/tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/redit
-PATH_TO_INSTALLED_FILE=/usr/sbin/redit
-PERMS=
-
-
-MD5_OF_REPO_FILE=$(md5sum $PATH_TO_REPO_FILE | cut -d ' ' -f 1)
-MD5_OF_INSTALLED_FILE=$(md5sum $PATH_TO_INSTALLED_FILE | cut -d ' ' -f 1)
-
-if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
-then
-	REDIT=true
-fi
-
-#################
-# Check rupdate #
-#################
-
-#########################
-# Check update-notifier #
-#########################
-
 ####################
-# Check 06_RAMSESS #
+# Global Variables #
 ####################
 
-#######################################
-# Check Postinst Version Check Script #
-#######################################
+Orig_OS='/mnt/Original_OS/'
+#Figure out $DEST
+DEST=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep DEST= | sed 's/DEST=//g')
+#Remove leading slash from $DEST
+DEST="${DEST#/}"
+#UUID of / on the Original OS
+ROOT_UUID=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep ROOT_UUID= | sed 's/ROOT_UUID=//g')
 
-######################################
-# Check Postinst Sort Kernels Script #
-######################################
+##############################################################################
+####                             FUNCTIONS                                ####
+#### NOTE: MOST OF THESE ARE SIMPLIFIED VERSIONS OF FUNCTIONS PROVIDED BY ####
+####    RLIB FOR THE PURPOSE OF SELF-RELIANCE OF THE RUPGRADE SCRIPT      ####
+##############################################################################
 
-###############################################
-# Check Postinst RAM Session Initramfs Script #
-###############################################
+#Mounts the Original OS
+#Note: This does what rlib already does, since this script must be self-reliant
+MOUNT_ROOT() {
+        #If the $Orig_OS folder exists, check if
+        #anything is using it as a mount point
+        if [[ -d "$Orig_OS" ]]
+        then
+                #If something is mounted, exit with an error
+                if mountpoint -q "$Orig_OS"
+                then
+                        echo "Failed to mount RAM Session. Is it already mounted?"
+                        exit 1
+                fi
 
-##############################
-# Check Postinst Warn script #
-##############################
+                #Try to remove the $Orig_OS
+                sudo rmdir "$Orig_OS" &>/dev/null
 
-#######################################################################
-# Check if we were only supposed to check for updates and not do them #
-#######################################################################
+                #If removing the $Orig_OS folder fails, like if it's
+                #not empty, exit with an error
+                if [[ "$?" != "0" ]]
+                then
+                        echo "Failed to remove old $Orig_OS folder."
+                        echo "Does it have files in it?"
+                        exit 1
+                fi
+        fi
 
-########################################################################
-# Run update scripts                                                   #
-# Note: The update scripts are ALWAYS run and MUST make sure that they #
-# check if the changes they make have already been applied             #
-########################################################################
+        #If we are using the default /mnt/Original_OS/ as the mount point,
+        #check if anything is using /mnt as a mountpoint
+        if echo $Orig_OS | grep -q '^/mnt' && mountpoint -q /mnt
+        then
+                echo "Failed to mount Original OS. Is something already mounted at /mnt?"
+                exit 1
+        fi
 
-for FILE in $(find /tmp/RAM_Booster/$SCRIPT_DIR/Update_Scripts -type f -iname "*.sh")
-do
-	echo "Running $(basename $FILE)"
-	chmod a+x $FILE
-	$FILE
+        #Make Orig_OS folder
+        sudo mkdir -p "$Orig_OS"
 
-	if [[ $? != 0 ]]
+        #Try to mount $ROOT_UUID to $Orig_OS
+        sudo mount --uuid $ROOT_UUID "$Orig_OS" &>/dev/null ||
+        {
+                echo "Failed to mount $ROOT_UUID to $Orig_OS"
+                UMOUNT_RS
+                exit 1
+        }
+}
+
+#Unmounts the Original OS
+#Note: Since all we did was add some files to it, and no processes
+#actually ran in a chroot, there is no need for all the complexity of
+#rlib's UMOUNT_RS (shutting down services, killing processes, etc.)
+UMOUNT_ROOT() {
+        #Unmount $Orig_OS
+        sudo umount $Orig_OS 2>/dev/null
+
+        #Check how it went
+        if [[ "$?" == 0 ]]
+        then
+                #Remove the temp folder
+                sudo rmdir $Orig_OS
+	else
+		echo "Failed to unmount $Orig_OS"
+		return 1
+        fi
+}
+
+#Create squashfs image
+MakeSquashfsImage() {
+	echo "Some scripts on the RAM Session were updated"
+	read -p "Would you like to recreate the squashfs image? [y\N]: " answer
+
+        #Convert answer to lowercase
+        answer=$(toLower $answer)
+
+        case $answer in
+                y|yes)
+                        #Fall through and create the image
+                        ;;
+                n|no)
+			echo
+			echo "You chose to NOT recreate the squashfs image, even though updates were applied"
+			echo "If you change your mind, run 'sudo redit -s'"
+
+			return
+			;;
+	esac
+			
+
+        echo "Creating squashfs image"
+        echo
+
+        #Create squashfs image
+        #Note: We do NOT write the file directly to the one we boot
+        #from so that if the process gets interrupted and we reboot,
+        #we can still boot into the old image
+        sudo mksquashfs ${Orig_OS%/}/${DEST#/} ${Orig_OS%/}/live/filesystem.squashfs.new -noappend -always-use-fragments
+
+        #If there was an error, exit 1
+        if [[ "$?" != "0" ]]
+        then
+                echo
+                echo "Failed to create ${Orig_OS%/}/live/filesystem.squashfs"
+                return 1
+        fi
+
+        clear
+
+        #Move the newly created squashfs image to the location we boot from
+        sudo mv ${Orig_OS%/}/live/filesystem.squashfs.new ${Orig_OS%/}/live/filesystem.squashfs
+
+        #Inform user we are done
+        echo "squashfs image created successfully"
+        echo "reboot to use it"
+}
+
+#Take exactly 4 args:
+# 1. Path to script in the git repo
+# 2. Path to script in the filesystem when installed
+# 3. Permissions in the form (###)
+# 4. Ownership in the form user:group
+#Returns:
+# 0: Updates successful
+# 1: Updates not required
+# 2: Updates required, but not done (--check mode)
+# 3: Updates failed
+CheckForUpdates() {
+	GIT_SCRIPT=$1
+	INSTALLED_SCRIPT=$2
+	PERMS=$3
+	OWNER=$4
+
+	#Check permissions arg
+	#Note: Mostly for debugging - user should never see this error
+	if ! echo $PERMS | grep -qx '[0-9]\{3\}'
 	then
-		echo "$(basename $FILE) exited with an error"
-		echo "Stopping upgrade"
+		echo "Invalid permissions passed to CheckForUpdates function"
 		exit 1
 	fi
-done
 
-###############
-# Update rlib #
-###############
+	#Check ownership arg
+	#Note: Mostly for debugging - user should never see this error
+	if ! echo $OWNER | grep -qx '[a-Z]:[a-Z]'
+	then
+		echo "Invalid ownership passed to CheckForUpdates function"
+		exit 1
+	fi
 
-if $RLIB
+	################################
+	# Check file on running system #
+	################################
+
+	#Check if the script exists in the git repo we just downloaded
+	if [[ ! -e $GIT_SCRIPT ]]
+	then
+		echo "The latest version of the git repo does not have the $(basename $GIT_SCRIPT) script"
+		return 3
+	fi
+
+	#Check if script is installed in the running system
+	if [[ ! -e $INSTALLED_SCRIPT ]]
+	then
+		if $CHECK_ONLY
+		then
+			echo "$INSTALLED_SCRIPT not installed"
+			return 2
+		else
+			echo "Installing $INSTALLED_SCRIPT"
+			sudo cp $GIT_SCRIPT $INSTALLED_SCRIPT
+			sudo chmod $PERMS $INSTALLED_SCRIPT
+			sudo chown $OWNER $INSTALLED_SCRIPT
+		fi
+	fi
+
+	#Check the md5s
+	MD5_OF_REPO_FILE=$(md5sum $GIT_SCRIPT | cut -d ' ' -f 1)
+	MD5_OF_INSTALLED_FILE=$(md5sum $INSTALLED_SCRIPT | cut -d ' ' -f 1)
+
+	if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
+	then
+		if $CHECK_ONLY
+			echo "$INSTALLED_SCRIPT: update available"
+			return 2
+		else
+			echo "Updating $INSTALLED_SCRIPT"
+
+			sudo rm -f $INSTALLED_SCRIPT
+			sudo cp $GIT_SCRIPT $INSTALLED_SCRIPT
+			sudo chmod $PERMS $INSTALLED_SCRIPT
+			sudo chown $OWNER $INSTALLED_SCRIPT
+
+			return 0
+		fi
+	else
+		echo "$INSTALLED_SCRIPT: up to date"
+		return 1
+	fi
+
+	################################
+	# Check file on squashfs image #
+	################################
+
+	#Check if the script exists in the RAM Session
+	if [[ ! -e ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT ]]
+	then
+		if $CHECK_ONLY
+		then
+			echo "$INSTALLED_SCRIPT not installed on squashfs image"
+			return 2
+		else
+			echo "Installing $INSTALLED_SCRIPT on squashfs image"
+			sudo cp $GIT_SCRIPT ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+			sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+			sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+		fi
+	fi
+
+	#Check the md5 of ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+	MD5_OF_INSTALLED_FILE_ON_DEST=$(md5sum ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT | cut -d ' ' -f 1)
+
+	if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE_ON_DEST ]]
+	then
+		if $CHECK_ONLY
+		then
+			echo "$INSTALLED_SCRIPT on squashfs image: update available"
+			return 2
+		else
+			echo "Updating $INSTALLED_SCRIPT on squashfs image"
+
+			sudo rm -f ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+			sudo cp $GIT_SCRIPT ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+			sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+			sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+
+			return 0
+		fi
+	else
+		echo "$INSTALLED_SCRIPT on squashfs image: up to date"
+		return 1
+	fi
+}
+
+##############################################################################
+####                           MAIN SCRIPT                                ####
+##############################################################################
+
+#Mount root
+MOUNT_ROOT
+
+#Check for updates
+
+#Create squashfs image
+if $UPDATES_PERFORMED
 then
-	:
+
 fi
+
+#Unmount
