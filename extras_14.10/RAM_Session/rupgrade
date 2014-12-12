@@ -105,8 +105,19 @@ fi
 # Setup a trap #
 ################
 
-#Note: Trap fires on Ctrl+C AND anytime the script exits
-trap 'UMOUNT_ROOT; sudo rm -rf /tmp/RAM_Booster' EXIT SIGINT
+#Trap that fires whenever the script exits
+trap 'UMOUNT_ROOT; sudo rm -rf /tmp/RAM_Booster' EXIT
+
+#Trap that fires when Ctrl+C is hit
+#Note: If user hit Ctrl+C when 'read' was waiting for user input (see
+#	MakeSquashfsImage function), even if read wasn't waiting for a password,
+#	the terminal will be messed up:
+#       -echoing will be disabled
+#       -the next time a script runs, 'read key' will show ^M when you
+#               hit enter
+#     All the stty commands below restore stty settings to normal (use
+#     stty -a to see what they are before and after you Ctrl+C during read)
+trap 'stty echo; stty icrnl; stty icanon; stty lnext ^V; echo; UMOUNT_ROOT; sudo rm -rf /tmp/RAM_Booster' SIGINT
 
 ############################################################
 # Figure out the path of the script folder in the git repo #
@@ -148,7 +159,6 @@ ROOT_UUID=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep ROOT_UUID= | sed
 ##############################################################################
 
 #Mounts the Original OS
-#Note: This does what rlib already does, since this script must be self-reliant
 MOUNT_ROOT() {
         #If the $Orig_OS folder exists, check if
         #anything is using it as a mount point
@@ -189,7 +199,6 @@ MOUNT_ROOT() {
         sudo mount --uuid $ROOT_UUID "$Orig_OS" &>/dev/null ||
         {
                 echo "Failed to mount $ROOT_UUID to $Orig_OS"
-                UMOUNT_RS
                 exit 1
         }
 }
@@ -219,7 +228,7 @@ MakeSquashfsImage() {
 	read -p "Would you like to recreate the squashfs image? [y\N]: " answer
 
         #Convert answer to lowercase
-        answer=$(toLower $answer)
+        answer=$(echo $answer | tr "[:upper:]" "[:lower:]")
 
         case $answer in
                 y|yes)
@@ -233,7 +242,6 @@ MakeSquashfsImage() {
 			return
 			;;
 	esac
-			
 
         echo "Creating squashfs image"
         echo
