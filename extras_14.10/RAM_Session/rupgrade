@@ -78,6 +78,28 @@ then
         exit 1
 fi
 
+##########################################################
+# Source the file with all the functions for this script #
+##########################################################
+
+if [[ -e $RLIB ]]
+then
+	. $RLIB
+
+	#Check if there was a problem
+	if [[ "$?" != "0" ]]
+	then
+		echo
+		echo "The library that comes with RAM Booster ($RLIB) failed to be sourced"
+		echo "Is it broken?"
+		exit 1
+	fi
+else
+	clear
+	echo "The library that comes with RAM Booster ($RLIB) was not found!"
+	exit 1
+fi
+
 #########################################################
 # Download the latest version of the RAM Booster script #
 #########################################################
@@ -96,11 +118,12 @@ then
 	exit 1
 fi
 
-#####################################################################
-# Setup a trap that deletes the git repo we just downloaded on exit #
-#####################################################################
 
-trap 'sudo rm -rf /tmp/RAM_Booster' EXIT
+################
+# Setup a trap #
+################
+
+trap 'UMOUNT_RS; sudo rm -rf /tmp/RAM_Booster' EXIT SIGINT
 
 ############################################################
 # Figure out the path of the script folder in the git repo #
@@ -288,5 +311,5 @@ done
 
 if $RLIB
 then
-
+	:
 fi
