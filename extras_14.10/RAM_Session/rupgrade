@@ -101,12 +101,14 @@ then
 	exit 1
 fi
 
-################
-# Setup a trap #
-################
+###############
+# Setup traps #
+###############
 
 #Trap that fires whenever the script exits
-trap 'UMOUNT_ROOT; sudo rm -rf /tmp/RAM_Booster' EXIT
+#Note: for now, our trap does NOT unmount the Original OS
+#Later, we reset it so that it does
+trap 'sudo rm -rf /tmp/RAM_Booster' EXIT
 
 #Trap that fires when Ctrl+C is hit
 #Note: If user hit Ctrl+C when 'read' was waiting for user input (see
@@ -434,6 +436,11 @@ CheckForUpdates() {
 
 MOUNT_ROOT
 
+#Up to this point, the exit trap did unmount the Original OS in case
+#there was an error mounting
+#From now on, our exit trap will unmount the Original OS too
+trap 'UMOUNT_ROOT; sudo rm -rf /tmp/RAM_Booster' EXIT
+
 #####################
 # Check for updates #
 #####################
@@ -443,6 +450,15 @@ CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rupgrade /usr/sbin/rupg
 case $? in
 	0)
 		#Updates performed
+
+		#Since this is not considered exiting the script, we
+		#must clean up manually
+
+		UMOUNT_ROOT
+		sudo rm -rf /tmp/RAM_Booster
+
+		#Run the new rupgrade script
+		echo "Running the new rupgrade script..."
 		exec /usr/sbin/rupgrade
 		;;
 	1)
@@ -452,19 +468,19 @@ case $? in
 		#failed to mount Orig_OS, bail out
 		if $FAILED_TO_MOUNT_ORIG_OS
 		then
-			echo "Updating rupgrade"
 			exit 1
 		fi
 		;;
 	2)
 		#Update required but not performed (due to --check mode)
 		echo
-		echo "Update of rupgrade required"
-		echo "Run $0 without --check to apply them"
+		echo "Rupgrade must be updated before other scripts are"
+		echo "Run $0 without --check to apply all updates"
 		exit 0
 		;;
 	3)
 		#Update failed
+		echo
 		echo "Update of rupgrade failed"
 		exit 1
 		;;
@@ -485,8 +501,9 @@ case $? in
 		;;
 	3)
 		#Update failed
-		echo "No updates will be performed without updating rlib first"
-		echo "Report this error on my Ubuntu Forum thread and try again in a few days"
+		echo "No updates will be performed without updating rlib first,"
+		echo "as most other scripts depend on it"
+		echo "Report this error on my Ubuntu Forums thread and try again in a few days"
 		exit 1
 		;;
 esac
@@ -498,7 +515,8 @@ esac
 if $UPDATES_PERFORMED
 then
 	#Ask user if they want to create the squashfs image
-	echo "Some scripts on the RAM Session were updated"
+	echo
+	echo "Some scripts were updated"
 	read -p "Would you like to recreate the squashfs image? [y\N]: " answer
 
         #Convert answer to lowercase
@@ -508,21 +526,20 @@ then
                 y|yes)
 			MakeSquashfsImage
                         ;;
-                n|no)
+                *)
 			echo
 			echo "You chose to NOT recreate the squashfs image, even though updates were applied"
 			echo "If you change your mind, run 'sudo redit -s'"
-
-			return
 			;;
 	esac
-
 fi
 
 ############################################################################
-# Unmount Original OS                                                      #
+# Unmount Original OS and delete the temporary git repo                    #
 # Note: This is redundant, since it will already be done by our EXIT trap, #
 # but we have this code here as a reminder (it doesn't hurt)               #
 ############################################################################
 
 UMOUNT_ROOT
+
+sudo rm -rf /tmp/RAM_Booster
