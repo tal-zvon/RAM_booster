@@ -76,7 +76,7 @@ MOUNT_RS()
 	#Try to mount $ROOT_UUID to $Orig_OS
 	sudo mount --uuid $ROOT_UUID "$Orig_OS" &>/dev/null ||
 	{
-		echo "Failed to mount $ROOT_UUID $Orig_OS"
+		echo "Failed to mount $ROOT_UUID to $Orig_OS"
 		UMOUNT_RS
 		exit 1
 	}
