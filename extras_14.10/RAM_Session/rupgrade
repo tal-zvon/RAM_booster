@@ -110,8 +110,7 @@ then
 	rm -rf /tmp/RAM_Booster
 fi
 
-#git clone git://github.com/terminator14/RAM_Booster.git /tmp/RAM_Booster &>/dev/null
-git clone /home/test/Documents/test /tmp/RAM_Booster &>/dev/null
+git clone git://github.com/terminator14/RAM_Booster.git /tmp/RAM_Booster &>/dev/null
 
 if [[ $? != 0 ]]
 then
@@ -119,8 +118,6 @@ then
 	exit 1
 fi
 
-#DEBUG ONLY
-#(cd /tmp/RAM_Booster; git checkout -b rewrite origin/rewrite)
 
 ################
 # Setup a trap #
