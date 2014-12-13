@@ -702,10 +702,6 @@ case $? in
 		;;
 	2)
 		#Update required but not performed (due to --check mode)
-		echo
-		echo "Rupgrade must be updated before other scripts are"
-		echo "Run $0 without --check to apply all updates"
-		exit 0
 		;;
 	3)
 		#Update failed
