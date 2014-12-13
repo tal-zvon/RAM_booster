@@ -9,9 +9,13 @@ existing file in an existing directory. Ex:
 Any scripts here will:
 	1. Be run EVERY TIME rupgrade runs
 	2. Be automatically made executable using chmod
-	3. If ANY script fails, rupgrade fails and bails out
-	4. Only scripts with a .sh extension will be executed
+	3. Only run if they have a .sh extension
+	4. Be considered to have errored out by rupgrade if they exit
+		with any non-zero exit code
 
 This means that ALL scripts in this folder MUST check to see if the
 changes they are going to be making have already been made, and if so,
-do nothing (exit with error code 0)
+do nothing (exit with exit code 0)
+
+See "Developer Notes" file for the update strategy, which describes
+	when these scripts are to be used
