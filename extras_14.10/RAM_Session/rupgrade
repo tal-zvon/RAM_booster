@@ -718,17 +718,20 @@ esac
 # it's important to apply them first)                                   #
 #########################################################################
 
-for FILE in $(find /tmp/RAM_Booster/$SCRIPT_DIR/Update_Scripts -type f -iname "*.sh")
-do
-        echo "Running $(basename $FILE)"
-        sudo chmod a+x $FILE
-        $FILE
+if ! $CHECK_ONLY
+then
+	for FILE in $(find /tmp/RAM_Booster/$SCRIPT_DIR/Update_Scripts -type f -iname "*.sh")
+	do
+		echo "Running $(basename $FILE)"
+		sudo chmod a+x $FILE
+		$FILE
 
-        if [[ $? != 0 ]]
-        then
-                echo "$(basename $FILE) exited with an error"
-        fi
-done
+		if [[ $? != 0 ]]
+		then
+			echo "$(basename $FILE) exited with an error"
+		fi
+	done
+fi
 
 #RLIB
 CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rlib /usr/sbin/rupgrade 644 root:root false true
