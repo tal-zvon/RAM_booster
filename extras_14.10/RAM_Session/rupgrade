@@ -392,6 +392,31 @@ CheckForUpdates() {
 		fi
 	fi
 
+	#Check the md5s
+	MD5_OF_REPO_FILE=$(md5sum $GIT_SCRIPT | cut -d ' ' -f 1)
+	MD5_OF_INSTALLED_FILE=$(md5sum $INSTALLED_SCRIPT | cut -d ' ' -f 1)
+
+	if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
+	then
+		if $CHECK_ONLY
+		then
+			echo "$INSTALLED_SCRIPT (Currently Running System): update available"
+			RETURN_CODE=2
+		else
+			echo "$INSTALLED_SCRIPT (Currently Running System): updating..."
+
+			sudo rm -f $INSTALLED_SCRIPT
+			sudo cp $GIT_SCRIPT $INSTALLED_SCRIPT
+			sudo chmod $PERMS $INSTALLED_SCRIPT
+			sudo chown $OWNER $INSTALLED_SCRIPT
+
+			RETURN_CODE=0
+		fi
+	else
+		$VERBOSE && echo "$INSTALLED_SCRIPT (Currently Running System): up to date"
+		RETURN_CODE=1
+	fi
+
 	#Check permissions
 	if ! stat $INSTALLED_SCRIPT | grep Access | grep Uid | grep -q $PERMS
 	then
@@ -433,30 +458,6 @@ CheckForUpdates() {
 		fi
 	fi
 
-	#Check the md5s
-	MD5_OF_REPO_FILE=$(md5sum $GIT_SCRIPT | cut -d ' ' -f 1)
-	MD5_OF_INSTALLED_FILE=$(md5sum $INSTALLED_SCRIPT | cut -d ' ' -f 1)
-
-	if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
-	then
-		if $CHECK_ONLY
-		then
-			echo "$INSTALLED_SCRIPT (Currently Running System): update available"
-			RETURN_CODE=2
-		else
-			echo "$INSTALLED_SCRIPT (Currently Running System): updating..."
-
-			sudo rm -f $INSTALLED_SCRIPT
-			sudo cp $GIT_SCRIPT $INSTALLED_SCRIPT
-			sudo chmod $PERMS $INSTALLED_SCRIPT
-			sudo chown $OWNER $INSTALLED_SCRIPT
-
-			RETURN_CODE=0
-		fi
-	else
-		$VERBOSE && echo "$INSTALLED_SCRIPT (Currently Running System): up to date"
-		RETURN_CODE=1
-	fi
 
 	####################################################
 	# If we failed to mount the Original OS, stop here #
@@ -499,6 +500,37 @@ CheckForUpdates() {
 			fi
 		fi
 
+		#Check the md5 of ${Orig_OS}/$INSTALLED_SCRIPT
+		MD5_OF_INSTALLED_FILE_ON_ORIG_OS=$(md5sum ${Orig_OS}/$INSTALLED_SCRIPT | cut -d ' ' -f 1)
+
+		if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE_ON_ORIG_OS ]]
+		then
+			if $CHECK_ONLY
+			then
+				echo "$INSTALLED_SCRIPT (Original OS): update available"
+
+				#The only things RETURN_CODE can be at this point are 1 or 2
+				#Either way, it should be set to 2 here
+				RETURN_CODE=2
+			else
+				echo "$INSTALLED_SCRIPT (Original OS): updating..."
+
+				sudo rm -f ${Orig_OS}/$INSTALLED_SCRIPT
+				sudo cp $GIT_SCRIPT ${Orig_OS}/$INSTALLED_SCRIPT
+				sudo chmod $PERMS ${Orig_OS}/$INSTALLED_SCRIPT
+				sudo chown $OWNER ${Orig_OS}/$INSTALLED_SCRIPT
+
+				#The only things RETURN_CODE can be at this point are 0 or 1
+				#Either way, it should be set to 0 here
+				RETURN_CODE=0
+			fi
+		else
+			$VERBOSE && echo "$INSTALLED_SCRIPT (Original OS): up to date"
+
+			#The only things RETURN_CODE can be at this point are 0, 1 or 2
+			#Either way, it should remain whatever RETURN_CODE was already set to
+		fi
+
 		#Check permissions
 		if ! stat ${Orig_OS}/$INSTALLED_SCRIPT | grep Access | grep Uid | grep -q $PERMS
 		then
@@ -539,37 +571,6 @@ CheckForUpdates() {
 				RETURN_CODE=0
 			fi
 		fi
-
-		#Check the md5 of ${Orig_OS}/$INSTALLED_SCRIPT
-		MD5_OF_INSTALLED_FILE_ON_ORIG_OS=$(md5sum ${Orig_OS}/$INSTALLED_SCRIPT | cut -d ' ' -f 1)
-
-		if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE_ON_ORIG_OS ]]
-		then
-			if $CHECK_ONLY
-			then
-				echo "$INSTALLED_SCRIPT (Original OS): update available"
-
-				#The only things RETURN_CODE can be at this point are 1 or 2
-				#Either way, it should be set to 2 here
-				RETURN_CODE=2
-			else
-				echo "$INSTALLED_SCRIPT (Original OS): updating..."
-
-				sudo rm -f ${Orig_OS}/$INSTALLED_SCRIPT
-				sudo cp $GIT_SCRIPT ${Orig_OS}/$INSTALLED_SCRIPT
-				sudo chmod $PERMS ${Orig_OS}/$INSTALLED_SCRIPT
-				sudo chown $OWNER ${Orig_OS}/$INSTALLED_SCRIPT
-
-				#The only things RETURN_CODE can be at this point are 0 or 1
-				#Either way, it should be set to 0 here
-				RETURN_CODE=0
-			fi
-		else
-			$VERBOSE && echo "$INSTALLED_SCRIPT (Original OS): up to date"
-
-			#The only things RETURN_CODE can be at this point are 0, 1 or 2
-			#Either way, it should remain whatever RETURN_CODE was already set to
-		fi
 	fi
 
 	#############################
@@ -600,6 +601,40 @@ CheckForUpdates() {
 				RETURN_CODE=0
 				return $RETURN_CODE
 			fi
+		fi
+
+		#Check the md5 of ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+		MD5_OF_INSTALLED_FILE_ON_RS=$(md5sum ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT | cut -d ' ' -f 1)
+
+		if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE_ON_RS ]]
+		then
+			if $CHECK_ONLY
+			then
+				echo "$INSTALLED_SCRIPT (RAM Session): update available"
+
+				#The only things RETURN_CODE can be at this point are 1 or 2
+				#Either way, it should return 2 here
+				RETURN_CODE=2
+				return $RETURN_CODE
+			else
+				echo "$INSTALLED_SCRIPT (RAM Session): updating..."
+
+				sudo rm -f ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+				sudo cp $GIT_SCRIPT ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+				sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+				sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+
+				#The only things RETURN_CODE can be at this point are 0 or 1
+				#Either way, it should return 0 here
+				RETURN_CODE=0
+				return $RETURN_CODE
+			fi
+		else
+			$VERBOSE && echo "$INSTALLED_SCRIPT (RAM Session): up to date"
+
+			#The only things RETURN_CODE can be at this point are 0, 1 or 2
+			#Either way, it should return whatever RETURN_CODE was already set to
+			return $RETURN_CODE
 		fi
 
 		#Check permissions
@@ -641,40 +676,6 @@ CheckForUpdates() {
 				#Either way, it should be set to 0 here
 				RETURN_CODE=0
 			fi
-		fi
-
-		#Check the md5 of ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-		MD5_OF_INSTALLED_FILE_ON_RS=$(md5sum ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT | cut -d ' ' -f 1)
-
-		if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE_ON_RS ]]
-		then
-			if $CHECK_ONLY
-			then
-				echo "$INSTALLED_SCRIPT (RAM Session): update available"
-
-				#The only things RETURN_CODE can be at this point are 1 or 2
-				#Either way, it should return 2 here
-				RETURN_CODE=2
-				return $RETURN_CODE
-			else
-				echo "$INSTALLED_SCRIPT (RAM Session): updating..."
-
-				sudo rm -f ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-				sudo cp $GIT_SCRIPT ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-				sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-				sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-
-				#The only things RETURN_CODE can be at this point are 0 or 1
-				#Either way, it should return 0 here
-				RETURN_CODE=0
-				return $RETURN_CODE
-			fi
-		else
-			$VERBOSE && echo "$INSTALLED_SCRIPT (RAM Session): up to date"
-
-			#The only things RETURN_CODE can be at this point are 0, 1 or 2
-			#Either way, it should return whatever RETURN_CODE was already set to
-			return $RETURN_CODE
 		fi
 	else
 			#If script doesn't need to be installed to the RAM
