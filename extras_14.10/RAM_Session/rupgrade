@@ -740,7 +740,7 @@ then
 fi
 
 #RLIB
-CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rlib /usr/sbin/rupgrade 644 root:root false true
+CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rlib /var/lib/ram_booster/rlib 644 root:root false true
 case $? in
 	0)
 		#Updates performed
