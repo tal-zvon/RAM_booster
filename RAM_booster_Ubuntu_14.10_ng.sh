@@ -444,16 +444,6 @@ fi
 sudo chown root:root /var/lib/ram_booster/conf 
 sudo chmod 644 /var/lib/ram_booster/conf 
 
-#####################################
-# Add rlib to /var/lib/ram_booster/ #
-#####################################
-
-SCRIPT_FILE_NAME=$(basename $RLIB_FILE)
-
-sudo cp $RLIB_FILE /var/lib/ram_booster/
-sudo chown root:root /var/lib/ram_booster/$SCRIPT_FILE_NAME 
-sudo chmod 644 /var/lib/ram_booster/$SCRIPT_FILE_NAME 
-
 #########################################################################
 # Add zb_version_check kernel postinst script to /etc/kernel/postinst.d #
 #########################################################################
@@ -945,6 +935,16 @@ sudo find ${DEST%/}/var/log -type f -iname '*.gz' -exec rm -v {} \;
 echo
 echo "Cleaning recent log files:"
 sudo find ${DEST%/}/var/log -type f | while read file; do echo "emptied '$file'"; echo -n '' | sudo tee $file; done 
+
+###########################
+# Add rlib to RAM Session #
+###########################
+
+SCRIPT_FILE_NAME=$(basename $RLIB_FILE)
+
+sudo cp $RLIB_FILE ${DEST}/var/lib/ram_booster/
+sudo chown root:root ${DEST}/var/lib/ram_booster/$SCRIPT_FILE_NAME 
+sudo chmod 644 ${DEST}/var/lib/ram_booster/$SCRIPT_FILE_NAME 
 
 #####################################
 # Add rupdate script to RAM Session #
