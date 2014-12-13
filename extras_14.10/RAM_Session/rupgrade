@@ -268,22 +268,35 @@ MakeSquashfsImage() {
         echo "reboot to use it"
 }
 
-#Take exactly 4 args:
+#Take exactly 6 args:
 # 1. Path to script in the git repo
 # 2. Path to script in the filesystem when installed
 # 3. Permissions in the form (###)
 # 4. Ownership in the form user:group
+# 5. 'true'/'false' if script should be installed to Original OS
+# 6. 'true'/'false' if script should be installed to RAM Session
 #Returns:
 # 0: Updates successful
 # 1: Updates not required
 # 2: Updates required, but not done (--check mode)
 # 3: Updates failed
 CheckForUpdates() {
+
 	GIT_SCRIPT=$1
 	INSTALLED_SCRIPT=$2
 	PERMS=$3
 	OWNER=$4
+	INSTALL_TO_ORIG_OS=$5
+	INSTALL_TO_RAM_SESSION=$6
 	RETURN_CODE=1
+
+	#Check if exactly 6 args were passed to this function
+	#Note: Mostly for debugging - user should never see this error
+	if [[ $# != 6 ]]
+	then
+		echo "Invalid number of args passed to CheckForUpdates function"
+		exit 1
+	fi
 
 	#Check permissions arg
 	#Note: Mostly for debugging - user should never see this error
@@ -298,6 +311,22 @@ CheckForUpdates() {
 	if ! echo $OWNER | grep -qx '[a-Z]:[a-Z]'
 	then
 		echo "Invalid ownership passed to CheckForUpdates function"
+		exit 1
+	fi
+
+	#Make sure $5 is 'true' or 'false'
+	#Note: Mostly for debugging - user should never see this error
+	if ! [[ $5 == 'true' ]] && ! [[ $5 == 'false' ]]
+	then
+		echo "\$5 to CheckForUpdates must be 'true' or 'false'"
+		exit 1
+	fi
+
+	#Make sure $6 is 'true' or 'false'
+	#Note: Mostly for debugging - user should never see this error
+	if ! [[ $6 == 'true' ]] && ! [[ $6 == 'false' ]]
+	then
+		echo "\$6 to CheckForUpdates must be 'true' or 'false'"
 		exit 1
 	fi
 
@@ -319,10 +348,10 @@ CheckForUpdates() {
 	then
 		if $CHECK_ONLY
 		then
-			echo "$INSTALLED_SCRIPT not installed"
+			echo "$INSTALLED_SCRIPT (Currently Running System): not installed"
 			RETURN_CODE=2
 		else
-			echo "Installing $INSTALLED_SCRIPT"
+			echo "$INSTALLED_SCRIPT (Currently Running System): installing..."
 			sudo cp $GIT_SCRIPT $INSTALLED_SCRIPT
 			sudo chmod $PERMS $INSTALLED_SCRIPT
 			sudo chown $OWNER $INSTALLED_SCRIPT
@@ -337,10 +366,10 @@ CheckForUpdates() {
 	if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
 	then
 		if $CHECK_ONLY
-			echo "$INSTALLED_SCRIPT: update available"
+			echo "$INSTALLED_SCRIPT (Currently Running System): update available"
 			RETURN_CODE=2
 		else
-			echo "Updating $INSTALLED_SCRIPT"
+			echo "$INSTALLED_SCRIPT (Currently Running System): updating..."
 
 			sudo rm -f $INSTALLED_SCRIPT
 			sudo cp $GIT_SCRIPT $INSTALLED_SCRIPT
@@ -350,13 +379,13 @@ CheckForUpdates() {
 			RETURN_CODE=0
 		fi
 	else
-		echo "$INSTALLED_SCRIPT: up to date"
+		echo "$INSTALLED_SCRIPT (Currently Running System): up to date"
 		RETURN_CODE=1
 	fi
 
-	################################
-	# Check file on squashfs image #
-	################################
+	####################################################
+	# If we failed to mount the Original OS, stop here #
+	####################################################
 
 	#This returns if the Original OS is NOT mounted
 	#The only time this will happen is if we are seeing if there is
@@ -367,62 +396,133 @@ CheckForUpdates() {
 		return $RETURN_CODE
 	fi
 
-	#Check if the script exists in the RAM Session
-	if [[ ! -e ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT ]]
+	#############################
+	# Check file on Original OS #
+	#############################
+
+	if $INSTALL_TO_ORIG_OS
 	then
-		if $CHECK_ONLY
+		#Check if the script exists in the Original OS
+		if [[ ! -e ${Orig_OS}/$INSTALLED_SCRIPT ]]
 		then
-			echo "$INSTALLED_SCRIPT not installed on squashfs image"
+			if $CHECK_ONLY
+			then
+				echo "$INSTALLED_SCRIPT (Original OS): not installed"
 
-			#The only things RETURN_CODE can be at this point are 1 or 2
-			#Either way, it should return 2 here
-			RETURN_CODE=2
-			return $RETURN_CODE
+				#The only things RETURN_CODE can be at this point are 1 or 2
+				#Either way, it should be set to 2 here
+				RETURN_CODE=2
+			else
+				echo "$INSTALLED_SCRIPT (Original OS): installing..."
+				sudo cp $GIT_SCRIPT ${Orig_OS}/$INSTALLED_SCRIPT
+				sudo chmod $PERMS ${Orig_OS}/$INSTALLED_SCRIPT
+				sudo chown $OWNER ${Orig_OS}/$INSTALLED_SCRIPT
+
+				#The only things RETURN_CODE can be at this point are 0 or 1
+				#Either way, it should be set to 0 here
+				RETURN_CODE=0
+			fi
+		fi
+
+		#Check the md5 of ${Orig_OS}/$INSTALLED_SCRIPT
+		MD5_OF_INSTALLED_FILE_ON_ORIG_OS=$(md5sum ${Orig_OS}/$INSTALLED_SCRIPT | cut -d ' ' -f 1)
+
+		if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE_ON_ORIG_OS ]]
+		then
+			if $CHECK_ONLY
+			then
+				echo "$INSTALLED_SCRIPT (Original OS): update available"
+
+				#The only things RETURN_CODE can be at this point are 1 or 2
+				#Either way, it should be set to 2 here
+				RETURN_CODE=2
+			else
+				echo "$INSTALLED_SCRIPT (Original OS): updating..."
+
+				sudo rm -f ${Orig_OS}/$INSTALLED_SCRIPT
+				sudo cp $GIT_SCRIPT ${Orig_OS}/$INSTALLED_SCRIPT
+				sudo chmod $PERMS ${Orig_OS}/$INSTALLED_SCRIPT
+				sudo chown $OWNER ${Orig_OS}/$INSTALLED_SCRIPT
+
+				#The only things RETURN_CODE can be at this point are 0 or 1
+				#Either way, it should be set to 0 here
+				RETURN_CODE=0
+			fi
 		else
-			echo "Installing $INSTALLED_SCRIPT on squashfs image"
-			sudo cp $GIT_SCRIPT ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-			sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-			sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+			echo "$INSTALLED_SCRIPT (Original OS): up to date"
 
-			#The only things RETURN_CODE can be at this point are 0 or 1
-			#Either way, it should return 0 here
-			RETURN_CODE=0
-			return $RETURN_CODE
+			#The only things RETURN_CODE can be at this point are 0, 1 or 2
+			#Either way, it should remain whatever RETURN_CODE was already set to
 		fi
 	fi
 
-	#Check the md5 of ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-	MD5_OF_INSTALLED_FILE_ON_DEST=$(md5sum ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT | cut -d ' ' -f 1)
+	#############################
+	# Check file on RAM Session #
+	#############################
 
-	if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE_ON_DEST ]]
+	if $INSTALL_TO_RAM_SESSION
 	then
-		if $CHECK_ONLY
+		#Check if the script exists in the RAM Session
+		if [[ ! -e ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT ]]
 		then
-			echo "$INSTALLED_SCRIPT on squashfs image: update available"
+			if $CHECK_ONLY
+			then
+				echo "$INSTALLED_SCRIPT (RAM Session): not installed"
 
-			#The only things RETURN_CODE can be at this point are 1 or 2
-			#Either way, it should return 2 here
-			RETURN_CODE=2
-			return $RETURN_CODE
+				#The only things RETURN_CODE can be at this point are 1 or 2
+				#Either way, it should return 2 here
+				RETURN_CODE=2
+				return $RETURN_CODE
+			else
+				echo "$INSTALLED_SCRIPT (RAM Session): installing..."
+				sudo cp $GIT_SCRIPT ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+				sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+				sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+
+				#The only things RETURN_CODE can be at this point are 0 or 1
+				#Either way, it should return 0 here
+				RETURN_CODE=0
+				return $RETURN_CODE
+			fi
+		fi
+
+		#Check the md5 of ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+		MD5_OF_INSTALLED_FILE_ON_RS=$(md5sum ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT | cut -d ' ' -f 1)
+
+		if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE_ON_RS ]]
+		then
+			if $CHECK_ONLY
+			then
+				echo "$INSTALLED_SCRIPT (RAM Session): update available"
+
+				#The only things RETURN_CODE can be at this point are 1 or 2
+				#Either way, it should return 2 here
+				RETURN_CODE=2
+				return $RETURN_CODE
+			else
+				echo "$INSTALLED_SCRIPT (RAM Session): updating..."
+
+				sudo rm -f ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+				sudo cp $GIT_SCRIPT ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+				sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+				sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+
+				#The only things RETURN_CODE can be at this point are 0 or 1
+				#Either way, it should return 0 here
+				RETURN_CODE=0
+				return $RETURN_CODE
+			fi
 		else
-			echo "Updating $INSTALLED_SCRIPT on squashfs image"
+			echo "$INSTALLED_SCRIPT (RAM Session): up to date"
 
-			sudo rm -f ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-			sudo cp $GIT_SCRIPT ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-			sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-			sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-
-			#The only things RETURN_CODE can be at this point are 0 or 1
-			#Either way, it should return 0 here
-			RETURN_CODE=0
+			#The only things RETURN_CODE can be at this point are 0, 1 or 2
+			#Either way, it should return whatever RETURN_CODE was already set to
 			return $RETURN_CODE
 		fi
 	else
-		echo "$INSTALLED_SCRIPT on squashfs image: up to date"
-
-		#The only things RETURN_CODE can be at this point are 0, 1 or 2
-		#Either way, it should return whatever RETURN_CODE was already set to
-		return $RETURN_CODE
+			#If script doesn't need to be installed to the RAM
+			#Session at all, just return with the last return code
+			return $RETURN_CODE
 	fi
 }
 
