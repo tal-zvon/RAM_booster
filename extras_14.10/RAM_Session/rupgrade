@@ -674,6 +674,18 @@ trap 'UMOUNT_ROOT; sudo rm -rf /tmp/RAM_Booster' EXIT
 # Check for updates #
 #####################
 
+#If the env variable that indicates that we just upgraded and reran
+#rupgrade is set, tell the rest of the script that updates were done and
+#unset the env variable
+#This is necessary for cases where rupgrade is the only update -
+#otherwise, rupgrade wouldn't offer to recreate the squashfs image if
+#rupgrade was the only updated script
+if [[ -n $RUPGRADE_PERFORMED ]]
+then
+	UPDATES_PERFORMED=true
+	unset RUPGRADE_PERFORMED
+fi
+
 #Rupgrade itself
 CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rupgrade /usr/sbin/rupgrade 755 root:root false true
 case $? in
@@ -685,6 +697,11 @@ case $? in
 
 		UMOUNT_ROOT
 		sudo rm -rf /tmp/RAM_Booster
+
+		#Since we are rerunning the rupgrade script, all variables
+		#will be cleared, so we export an env variable to indicate
+		#we just updated rupgrade
+		export RUPGRADE_PERFORMED=y
 
 		#Run the new rupgrade script
 		echo "Running the new rupgrade script..."
