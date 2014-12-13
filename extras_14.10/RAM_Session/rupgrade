@@ -754,27 +754,147 @@ esac
 
 #Redit
 CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/redit /usr/sbin/redit 755 root:root false true
+case $? in
+	0)
+		#Updates performed
+		UPDATES_PERFORMED=true
+		;;
+	1)
+		#Updates not required
+		;;
+	2)
+		#Update required but not performed (due to --check mode)
+		;;
+	3)
+		#Update failed
+		;;
+esac
 
 #Rupdate
 CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rupdate /usr/sbin/rupdate 755 root:root false true
+case $? in
+	0)
+		#Updates performed
+		UPDATES_PERFORMED=true
+		;;
+	1)
+		#Updates not required
+		;;
+	2)
+		#Update required but not performed (due to --check mode)
+		;;
+	3)
+		#Update failed
+		;;
+esac
 
 #06_RAMSESS
 CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/Both/grub.d/06_RAMSESS /etc/grub.d/06_RAMSESS 755 root:root true true
+case $? in
+	0)
+		#Updates performed
+		UPDATES_PERFORMED=true
+		;;
+	1)
+		#Updates not required
+		;;
+	2)
+		#Update required but not performed (due to --check mode)
+		;;
+	3)
+		#Update failed
+		;;
+esac
 
 #za_ram_session_initramfs
 CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/postinst.d/za_ram_session_initramfs /etc/kernel/postinst.d/za_ram_session_initramfs 755 root:root false true
+case $? in
+	0)
+		#Updates performed
+		UPDATES_PERFORMED=true
+		;;
+	1)
+		#Updates not required
+		;;
+	2)
+		#Update required but not performed (due to --check mode)
+		;;
+	3)
+		#Update failed
+		;;
+esac
 
 #zb_version_check
 CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/Both/postinst.d/zb_version_check /etc/kernel/postinst.d/zb_version_check 755 root:root true true
+case $? in
+	0)
+		#Updates performed
+		UPDATES_PERFORMED=true
+		;;
+	1)
+		#Updates not required
+		;;
+	2)
+		#Update required but not performed (due to --check mode)
+		;;
+	3)
+		#Update failed
+		;;
+esac
 
 #zc_sort_kernels
 CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/Both/postinst.d/zc_sort_kernels /etc/kernel/postinst.d/zc_sort_kernels 755 root:root true true
+case $? in
+	0)
+		#Updates performed
+		UPDATES_PERFORMED=true
+		;;
+	1)
+		#Updates not required
+		;;
+	2)
+		#Update required but not performed (due to --check mode)
+		;;
+	3)
+		#Update failed
+		;;
+esac
 
 #zd_warn
 CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/postinst.d/zd_warn /etc/kernel/postinst.d/zd_warn 755 root:root false true
+case $? in
+	0)
+		#Updates performed
+		UPDATES_PERFORMED=true
+		;;
+	1)
+		#Updates not required
+		;;
+	2)
+		#Update required but not performed (due to --check mode)
+		;;
+	3)
+		#Update failed
+		;;
+esac
 
 #update-notifier
 CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/update-notifier /usr/local/sbin/update-notifier 755 root:root false true
+case $? in
+	0)
+		#Updates performed
+		UPDATES_PERFORMED=true
+		;;
+	1)
+		#Updates not required
+		;;
+	2)
+		#Update required but not performed (due to --check mode)
+		;;
+	3)
+		#Update failed
+		;;
+esac
 
 #########################
 # Create squashfs image #
