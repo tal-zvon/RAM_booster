@@ -101,6 +101,11 @@ then
 	exit 1
 fi
 
+#DEBUG ONLY
+echo SWITCHING BRANCHES
+echo THIS CODE MUST BE REMOVED BEFORE FINAL RELEASE
+(cd /tmp/RAM_Booster; git checkout -b rewrite origin/rewrite &>/dev/null)
+
 ###############
 # Setup traps #
 ###############
