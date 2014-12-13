@@ -308,7 +308,7 @@ CheckForUpdates() {
 
 	#Check ownership arg
 	#Note: Mostly for debugging - user should never see this error
-	if ! echo $OWNER | grep -qx '[a-Z]:[a-Z]'
+	if ! echo $OWNER | grep -qx '[a-Z]\{1,\}:[a-Z]\{1,\}'
 	then
 		echo "Invalid ownership passed to CheckForUpdates function"
 		exit 1
