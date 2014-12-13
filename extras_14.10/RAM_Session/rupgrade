@@ -407,6 +407,7 @@ CheckForUpdates() {
 	if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
 	then
 		if $CHECK_ONLY
+		then
 			echo "$INSTALLED_SCRIPT (Currently Running System): update available"
 			RETURN_CODE=2
 		else
