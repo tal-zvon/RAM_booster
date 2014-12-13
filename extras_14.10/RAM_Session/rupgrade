@@ -48,28 +48,46 @@ fi
 # Check arguments #
 ###################
 
+#If true, shows all messages
+#If false, skips messages that say when a script is up to date
+VERBOSE=false
+
 #If true, user chose to only check for updates - not apply them
 #false otherwise
 CHECK_ONLY=false
 
-if [[ $# != 0 ]] && [[ $# != 1 ]]
+if [[ $# -gt 2 ]]
 then
 	echo "Invalid number of arguments"
 	exit 1
 fi
 
-case $1 in
-	"")
-		#No arguments is fine
-		;;
-	--check)
-		CHECK_ONLY=true
-		;;
-	*)
-		echo "Error: \"$1\" is an invalid argument"
-		exit 1
-		;;
-esac
+while test -n "$1"
+do
+	case $1 in
+		-c|--check)
+			CHECK_ONLY=true
+			shift
+			;;
+		-h|--help)
+			echo "Usage: $0 [-h|--help]"
+			echo "       $0 [-c|--check] [-v|--verbose]"
+			echo
+			echo "	-h|--help	this help message"
+			echo "	-c|--check	only check for updates - don't download any"
+			echo "	-v|--verbose	show all output (even when a script needs no updates)"
+			exit 0
+			;;
+		-v|--verbose)
+			VERBOSE=true
+			shift
+			;;
+		*)
+			echo "Error: \"$1\" is an invalid argument"
+			exit 1
+			;;
+	esac
+done
 
 #############################
 # Check if git is installed #
@@ -160,6 +178,11 @@ DEST="${DEST#/}"
 ROOT_UUID=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep ROOT_UUID= | sed 's/ROOT_UUID=//g')
 #True if MOUNT_ROOT FAILED
 FAILED_TO_MOUNT_ORIG_OS=false
+#True if any updates were required
+#False otherwise
+#Note: Only applies in --check mode, where updates
+#can be required but not performed
+UPDATES_REQUIRED=false
 #True if any updates were applied
 #False otherwise
 UPDATES_PERFORMED=false
@@ -426,7 +449,7 @@ CheckForUpdates() {
 			RETURN_CODE=0
 		fi
 	else
-		echo "$INSTALLED_SCRIPT (Currently Running System): up to date"
+		$VERBOSE && echo "$INSTALLED_SCRIPT (Currently Running System): up to date"
 		RETURN_CODE=1
 	fi
 
@@ -537,7 +560,7 @@ CheckForUpdates() {
 				RETURN_CODE=0
 			fi
 		else
-			echo "$INSTALLED_SCRIPT (Original OS): up to date"
+			$VERBOSE && echo "$INSTALLED_SCRIPT (Original OS): up to date"
 
 			#The only things RETURN_CODE can be at this point are 0, 1 or 2
 			#Either way, it should remain whatever RETURN_CODE was already set to
@@ -642,7 +665,7 @@ CheckForUpdates() {
 				return $RETURN_CODE
 			fi
 		else
-			echo "$INSTALLED_SCRIPT (RAM Session): up to date"
+			$VERBOSE && echo "$INSTALLED_SCRIPT (RAM Session): up to date"
 
 			#The only things RETURN_CODE can be at this point are 0, 1 or 2
 			#Either way, it should return whatever RETURN_CODE was already set to
@@ -719,6 +742,7 @@ case $? in
 		;;
 	2)
 		#Update required but not performed (due to --check mode)
+		UPDATES_REQUIRED=true
 		;;
 	3)
 		#Update failed
@@ -764,6 +788,7 @@ case $? in
 		;;
 	2)
 		#Update required but not performed (due to --check mode)
+		UPDATES_REQUIRED=true
 		;;
 	3)
 		#Update failed
@@ -786,6 +811,7 @@ case $? in
 		;;
 	2)
 		#Update required but not performed (due to --check mode)
+		UPDATES_REQUIRED=true
 		;;
 	3)
 		#Update failed
@@ -804,6 +830,7 @@ case $? in
 		;;
 	2)
 		#Update required but not performed (due to --check mode)
+		UPDATES_REQUIRED=true
 		;;
 	3)
 		#Update failed
@@ -822,6 +849,7 @@ case $? in
 		;;
 	2)
 		#Update required but not performed (due to --check mode)
+		UPDATES_REQUIRED=true
 		;;
 	3)
 		#Update failed
@@ -840,6 +868,7 @@ case $? in
 		;;
 	2)
 		#Update required but not performed (due to --check mode)
+		UPDATES_REQUIRED=true
 		;;
 	3)
 		#Update failed
@@ -858,6 +887,7 @@ case $? in
 		;;
 	2)
 		#Update required but not performed (due to --check mode)
+		UPDATES_REQUIRED=true
 		;;
 	3)
 		#Update failed
@@ -876,6 +906,7 @@ case $? in
 		;;
 	2)
 		#Update required but not performed (due to --check mode)
+		UPDATES_REQUIRED=true
 		;;
 	3)
 		#Update failed
@@ -894,6 +925,7 @@ case $? in
 		;;
 	2)
 		#Update required but not performed (due to --check mode)
+		UPDATES_REQUIRED=true
 		;;
 	3)
 		#Update failed
@@ -912,6 +944,7 @@ case $? in
 		;;
 	2)
 		#Update required but not performed (due to --check mode)
+		UPDATES_REQUIRED=true
 		;;
 	3)
 		#Update failed
@@ -942,6 +975,15 @@ then
 			echo "If you change your mind, run 'sudo redit -s'"
 			;;
 	esac
+else
+	if $UPDATES_REQUIRED
+	then
+		echo
+		echo "Updates available"
+	else
+		echo
+		echo "No updates available"
+	fi
 fi
 
 ############################################################################
