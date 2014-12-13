@@ -156,10 +156,15 @@ then
 elif [[ -d /tmp/RAM_Booster/old/extras_$UBUNTU_VERSION ]]
 then
 	SCRIPT_DIR=old/extras_$UBUNTU_VERSION
-	echo "The script for your version of Ubuntu ($OS_NAME) appears to be old"
-	echo "You may want to check if the RAM Booster script exists for a newer"
-	echo "version of Ubuntu, and if so, update your system and use the new script"
-	echo
+
+	#If the env variable is set, we've already displayed the message, so skip it
+	if [[ -z $RUPGRADE_PERFORMED ]]
+	then
+		echo "The script for your version of Ubuntu ($OS_NAME) appears to be old"
+		echo "You may want to check if the RAM Booster script exists for a newer"
+		echo "version of Ubuntu, and if so, update your system and use the new script"
+		echo
+	fi
 else
 	echo "A script for $OS_NAME could not be found in the github RAM Booster repo"
 	exit 1
