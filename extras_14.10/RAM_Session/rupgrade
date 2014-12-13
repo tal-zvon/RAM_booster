@@ -587,9 +587,8 @@ CheckForUpdates() {
 				echo "$INSTALLED_SCRIPT (RAM Session): not installed"
 
 				#The only things RETURN_CODE can be at this point are 1 or 2
-				#Either way, it should return 2 here
+				#Either way, it should be set to 2 here
 				RETURN_CODE=2
-				return $RETURN_CODE
 			else
 				echo "$INSTALLED_SCRIPT (RAM Session): installing..."
 				sudo cp $GIT_SCRIPT ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
@@ -597,9 +596,8 @@ CheckForUpdates() {
 				sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
 
 				#The only things RETURN_CODE can be at this point are 0 or 1
-				#Either way, it should return 0 here
+				#Either way, it should be set to 0 here
 				RETURN_CODE=0
-				return $RETURN_CODE
 			fi
 		fi
 
@@ -613,9 +611,8 @@ CheckForUpdates() {
 				echo "$INSTALLED_SCRIPT (RAM Session): update available"
 
 				#The only things RETURN_CODE can be at this point are 1 or 2
-				#Either way, it should return 2 here
+				#Either way, it should be set to 2 here
 				RETURN_CODE=2
-				return $RETURN_CODE
 			else
 				echo "$INSTALLED_SCRIPT (RAM Session): updating..."
 
@@ -625,16 +622,14 @@ CheckForUpdates() {
 				sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
 
 				#The only things RETURN_CODE can be at this point are 0 or 1
-				#Either way, it should return 0 here
+				#Either way, it should be set to 0 here
 				RETURN_CODE=0
-				return $RETURN_CODE
 			fi
 		else
 			$VERBOSE && echo "$INSTALLED_SCRIPT (RAM Session): up to date"
 
 			#The only things RETURN_CODE can be at this point are 0, 1 or 2
-			#Either way, it should return whatever RETURN_CODE was already set to
-			return $RETURN_CODE
+			#Either way, it should remain whatever RETURN_CODE was already set to
 		fi
 
 		#Check permissions
@@ -677,6 +672,9 @@ CheckForUpdates() {
 				RETURN_CODE=0
 			fi
 		fi
+
+		#Finally, return the return code
+		return $RETURN_CODE
 	else
 			#If script doesn't need to be installed to the RAM
 			#Session at all, just return with the last return code
