@@ -586,6 +586,27 @@ case $? in
 		;;
 esac
 
+#########################################################################
+# Run update scripts                                                    #
+# Note: The update scripts are ALWAYS run and MUST make sure that they  #
+# check if the changes they make have already been applied              #
+# Note 2: They run after rupgrade updates itself (in case it no longer  #
+# needs to use them), but before any other scripts are updated (in case #
+# it's important to apply them first)                                   #
+#########################################################################
+
+for FILE in $(find /tmp/RAM_Booster/$SCRIPT_DIR/Update_Scripts -type f -iname "*.sh")
+do
+        echo "Running $(basename $FILE)"
+        sudo chmod a+x $FILE
+        $FILE
+
+        if [[ $? != 0 ]]
+        then
+                echo "$(basename $FILE) exited with an error"
+        fi
+done
+
 #RLIB
 CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/rlib /usr/sbin/rupgrade 644 root:root false true
 case $? in
