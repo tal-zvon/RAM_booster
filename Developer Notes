@@ -1,3 +1,33 @@
+Update Strategy:
+
+	Permissions change on an existing file
+		make the change in the git repo and commit
+		rupgrade will detect the change automatically and fix it
+	Ownership change on an existing file
+		make the change in the git repo and commit
+		rupgrade will detect the change automatically and fix it
+	Code change in an existing file
+		make the change in the git repo and commit
+		rupgrade will detect the change automatically and fix it
+	New script added
+		add code to install the script to rupgrade (as it does with all existing scripts)
+		commit the change to rupgrade
+		rupgrade will detect an update to itself, do the update, then rerun the new rupgrade
+		the updated rupgrade will install the new script
+	Script deleted
+		remove code for installing the script from rupgrade
+		add a short script to Update_Scripts that deletes the old script, but ONLY IF IT EXISTS
+	Script renamed
+		make the name change to rupgrade and commit
+		rupgrade will treat the new name as a non-existant script and install it
+		have an Update_Scripts script delete the script with the old name, but ONLY IF IT EXISTS
+	Changes to OS files with sed
+		make a small Update_Script that does the change, but ONLY IF IT HASN'T BEEN DONE YET
+			check if the change has already been performed - Update_Scripts run every time
+	Changes to the way /boot/Orig, /boot/RAM_Sess, /var/lib/ram_booster/conf, or any other dynamically generated files are created
+		make a small Update_Script that regenerates the file
+			check if the change has already been performed - Update_Scripts run every time
+
 working on rupdate and redit:
 
 	If you want to work on rupdate and redit from within the RAM
