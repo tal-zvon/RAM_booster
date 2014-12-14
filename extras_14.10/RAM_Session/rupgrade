@@ -208,6 +208,11 @@ UPDATES_REQUIRED=false
 #True if any updates were applied
 #False otherwise
 UPDATES_PERFORMED=false
+#True if we should ask user to create squashfs image
+#False otherwise
+#If updates are performed only on the Currently running system or only
+#on the Original OS, we don't need to bother with creating the squashfs
+CREATE_SQUASHFS=false
 
 ##############################################################################
 ####                             FUNCTIONS                                ####
@@ -623,6 +628,9 @@ CheckForUpdates() {
 				#Either way, it should be set to 2 here
 				RETURN_CODE=2
 			else
+				#Set marker that we need to ask to recreate the squashfs image
+				CREATE_SQUASHFS=true
+
 				echo "$INSTALLED_SCRIPT (RAM Session): installing..."
 				sudo cp $GIT_SCRIPT ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
 				sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
@@ -646,6 +654,9 @@ CheckForUpdates() {
 					#Either way, it should be set to 2 here
 					RETURN_CODE=2
 				else
+					#Set marker that we need to ask to recreate the squashfs image
+					CREATE_SQUASHFS=true
+
 					echo "$INSTALLED_SCRIPT (RAM Session): updating..."
 
 					sudo rm -f ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
@@ -675,6 +686,9 @@ CheckForUpdates() {
 					#Either way, it should be set to 2 here
 					RETURN_CODE=2
 				else
+					#Set marker that we need to ask to recreate the squashfs image
+					CREATE_SQUASHFS=true
+
 					sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
 					echo "$INSTALLED_SCRIPT (RAM Session): permissions fixed"
 
@@ -696,6 +710,9 @@ CheckForUpdates() {
 					#Either way, it should be set to 2 here
 					RETURN_CODE=2
 				else
+					#Set marker that we need to ask to recreate the squashfs image
+					CREATE_SQUASHFS=true
+
 					sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
 					echo "$INSTALLED_SCRIPT (RAM Session): ownership fixed"
 
@@ -988,11 +1005,11 @@ esac
 # Create squashfs image #
 #########################
 
-if $UPDATES_PERFORMED
+if $CREATE_SQUASHFS
 then
 	#Ask user if they want to create the squashfs image
 	echo
-	echo "Some scripts were updated"
+	echo "Some scripts were updated in the RAM Session"
 	read -p "Would you like to recreate the squashfs image? [y\N]: " answer
 
         #Convert answer to lowercase
@@ -1009,13 +1026,20 @@ then
 			;;
 	esac
 else
-	if $UPDATES_REQUIRED
+	if $UPDATES_PERFORMED
 	then
 		echo
-		echo "Updates available"
+		echo "Some updates were done, but none that affect the squashfs image"
+		echo "Skipping creation of the squashfs image"
 	else
-		echo
-		echo "No updates available"
+		if $UPDATES_REQUIRED
+		then
+			echo
+			echo "Updates available"
+		else
+			echo
+			echo "No updates available"
+		fi
 	fi
 fi
 
