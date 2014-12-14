@@ -283,10 +283,25 @@ UMOUNT_ROOT() {
         then
                 #Remove the temp folder
                 sudo rmdir $Orig_OS
+		return
+	fi
+
+	#If there was no problem, we already returned
+	#If there was a problem, give it a second and try again
+	sleep 5
+
+        #Unmount $Orig_OS
+        sudo umount $Orig_OS 2>/dev/null
+
+        #Check how it went
+        if [[ "$?" == 0 ]]
+        then
+                #Remove the temp folder
+                sudo rmdir $Orig_OS
 	else
 		echo "Failed to unmount $Orig_OS"
 		return 1
-        fi
+	fi
 }
 
 #Create squashfs image
