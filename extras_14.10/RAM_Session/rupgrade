@@ -363,10 +363,6 @@ CheckForUpdates() {
 		exit 1
 	fi
 
-	################################
-	# Check file on running system #
-	################################
-
 	#Check if the script exists in the git repo we just downloaded
 	if [[ ! -e $GIT_SCRIPT ]]
 	then
@@ -375,6 +371,13 @@ CheckForUpdates() {
 		RETURN_CODE=3
 		return $RETURN_CODE
 	fi
+
+	#Get md5 of repo file
+	MD5_OF_REPO_FILE=$(md5sum $GIT_SCRIPT | cut -d ' ' -f 1)
+
+	################################
+	# Check file on running system #
+	################################
 
 	#Check if script is installed in the running system
 	if [[ ! -e $INSTALLED_SCRIPT ]]
@@ -392,7 +395,6 @@ CheckForUpdates() {
 		fi
 	else
 		#Check the md5s
-		MD5_OF_REPO_FILE=$(md5sum $GIT_SCRIPT | cut -d ' ' -f 1)
 		MD5_OF_INSTALLED_FILE=$(md5sum $INSTALLED_SCRIPT | cut -d ' ' -f 1)
 
 		if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
