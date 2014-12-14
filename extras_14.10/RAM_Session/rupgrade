@@ -128,8 +128,7 @@ BRANCH='rewrite'
 if [[ -n $BRANCH ]]
 then
 	echo "If you are reading this, I forgot to remove some debug code from"
-	echo "the script"
-	echo "Please inform me on my RAM Booster thread at Ubuntu Forums"
+	echo "the script. Please inform me on my RAM Booster thread at Ubuntu Forums"
 
 	if ( cd Documents/RAM_Booster/; git branch | grep -q $BRANCH )
 	then
