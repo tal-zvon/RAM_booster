@@ -390,74 +390,73 @@ CheckForUpdates() {
 			sudo chown $OWNER $INSTALLED_SCRIPT
 			RETURN_CODE=0
 		fi
-	fi
-
-	#Check the md5s
-	MD5_OF_REPO_FILE=$(md5sum $GIT_SCRIPT | cut -d ' ' -f 1)
-	MD5_OF_INSTALLED_FILE=$(md5sum $INSTALLED_SCRIPT | cut -d ' ' -f 1)
-
-	if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
-	then
-		if $CHECK_ONLY
-		then
-			echo "$INSTALLED_SCRIPT (Currently Running System): update available"
-			RETURN_CODE=2
-		else
-			echo "$INSTALLED_SCRIPT (Currently Running System): updating..."
-
-			sudo rm -f $INSTALLED_SCRIPT
-			sudo cp $GIT_SCRIPT $INSTALLED_SCRIPT
-			sudo chmod $PERMS $INSTALLED_SCRIPT
-			sudo chown $OWNER $INSTALLED_SCRIPT
-
-			RETURN_CODE=0
-		fi
 	else
-		$VERBOSE && echo "$INSTALLED_SCRIPT (Currently Running System): up to date"
-		RETURN_CODE=1
-	fi
+		#Check the md5s
+		MD5_OF_REPO_FILE=$(md5sum $GIT_SCRIPT | cut -d ' ' -f 1)
+		MD5_OF_INSTALLED_FILE=$(md5sum $INSTALLED_SCRIPT | cut -d ' ' -f 1)
 
-	#Check permissions
-	if ! stat $INSTALLED_SCRIPT | grep Access | grep Uid | grep -q $PERMS
-	then
-		if $CHECK_ONLY
+		if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE ]]
 		then
-			echo "$INSTALLED_SCRIPT (Currently Running System): permissions need fixing"
+			if $CHECK_ONLY
+			then
+				echo "$INSTALLED_SCRIPT (Currently Running System): update available"
+				RETURN_CODE=2
+			else
+				echo "$INSTALLED_SCRIPT (Currently Running System): updating..."
 
-			#The only things RETURN_CODE can be at this point are 1 or 2
-			#Either way, it should be set to 2 here
-			RETURN_CODE=2
+				sudo rm -f $INSTALLED_SCRIPT
+				sudo cp $GIT_SCRIPT $INSTALLED_SCRIPT
+				sudo chmod $PERMS $INSTALLED_SCRIPT
+				sudo chown $OWNER $INSTALLED_SCRIPT
+
+				RETURN_CODE=0
+			fi
 		else
-			sudo chmod $PERMS $INSTALLED_SCRIPT
-			echo "$INSTALLED_SCRIPT (Currently Running System): permissions fixed"
+			$VERBOSE && echo "$INSTALLED_SCRIPT (Currently Running System): up to date"
+			RETURN_CODE=1
+		fi
 
-			#The only things RETURN_CODE can be at this point are 0 or 1
-			#Either way, it should be set to 0 here
-			RETURN_CODE=0
+		#Check permissions
+		if ! stat $INSTALLED_SCRIPT | grep Access | grep Uid | grep -q $PERMS
+		then
+			if $CHECK_ONLY
+			then
+				echo "$INSTALLED_SCRIPT (Currently Running System): permissions need fixing"
+
+				#The only things RETURN_CODE can be at this point are 1 or 2
+				#Either way, it should be set to 2 here
+				RETURN_CODE=2
+			else
+				sudo chmod $PERMS $INSTALLED_SCRIPT
+				echo "$INSTALLED_SCRIPT (Currently Running System): permissions fixed"
+
+				#The only things RETURN_CODE can be at this point are 0 or 1
+				#Either way, it should be set to 0 here
+				RETURN_CODE=0
+			fi
+		fi
+
+		#Check ownership
+		CURRENT_OWNER=$(ls -l $INSTALLED_SCRIPT | awk '{ print $3,$4 }' | tr ' ' ':')
+		if [[ $OWNER != $CURRENT_OWNER ]]
+		then
+			if $CHECK_ONLY
+			then
+				echo "$INSTALLED_SCRIPT (Currently Running System): ownership needs fixing"
+
+				#The only things RETURN_CODE can be at this point are 1 or 2
+				#Either way, it should be set to 2 here
+				RETURN_CODE=2
+			else
+				sudo chown $OWNER $INSTALLED_SCRIPT
+				echo "$INSTALLED_SCRIPT (Currently Running System): ownership fixed"
+
+				#The only things RETURN_CODE can be at this point are 0 or 1
+				#Either way, it should be set to 0 here
+				RETURN_CODE=0
+			fi
 		fi
 	fi
-
-	#Check ownership
-	CURRENT_OWNER=$(ls -l $INSTALLED_SCRIPT | awk '{ print $3,$4 }' | tr ' ' ':')
-	if [[ $OWNER != $CURRENT_OWNER ]]
-	then
-		if $CHECK_ONLY
-		then
-			echo "$INSTALLED_SCRIPT (Currently Running System): ownership needs fixing"
-
-			#The only things RETURN_CODE can be at this point are 1 or 2
-			#Either way, it should be set to 2 here
-			RETURN_CODE=2
-		else
-			sudo chown $OWNER $INSTALLED_SCRIPT
-			echo "$INSTALLED_SCRIPT (Currently Running System): ownership fixed"
-
-			#The only things RETURN_CODE can be at this point are 0 or 1
-			#Either way, it should be set to 0 here
-			RETURN_CODE=0
-		fi
-	fi
-
 
 	####################################################
 	# If we failed to mount the Original OS, stop here #
@@ -498,77 +497,77 @@ CheckForUpdates() {
 				#Either way, it should be set to 0 here
 				RETURN_CODE=0
 			fi
-		fi
-
-		#Check the md5 of ${Orig_OS}/$INSTALLED_SCRIPT
-		MD5_OF_INSTALLED_FILE_ON_ORIG_OS=$(md5sum ${Orig_OS}/$INSTALLED_SCRIPT | cut -d ' ' -f 1)
-
-		if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE_ON_ORIG_OS ]]
-		then
-			if $CHECK_ONLY
-			then
-				echo "$INSTALLED_SCRIPT (Original OS): update available"
-
-				#The only things RETURN_CODE can be at this point are 1 or 2
-				#Either way, it should be set to 2 here
-				RETURN_CODE=2
-			else
-				echo "$INSTALLED_SCRIPT (Original OS): updating..."
-
-				sudo rm -f ${Orig_OS}/$INSTALLED_SCRIPT
-				sudo cp $GIT_SCRIPT ${Orig_OS}/$INSTALLED_SCRIPT
-				sudo chmod $PERMS ${Orig_OS}/$INSTALLED_SCRIPT
-				sudo chown $OWNER ${Orig_OS}/$INSTALLED_SCRIPT
-
-				#The only things RETURN_CODE can be at this point are 0 or 1
-				#Either way, it should be set to 0 here
-				RETURN_CODE=0
-			fi
 		else
-			$VERBOSE && echo "$INSTALLED_SCRIPT (Original OS): up to date"
+			#Check the md5 of ${Orig_OS}/$INSTALLED_SCRIPT
+			MD5_OF_INSTALLED_FILE_ON_ORIG_OS=$(md5sum ${Orig_OS}/$INSTALLED_SCRIPT | cut -d ' ' -f 1)
 
-			#The only things RETURN_CODE can be at this point are 0, 1 or 2
-			#Either way, it should remain whatever RETURN_CODE was already set to
-		fi
-
-		#Check permissions
-		if ! stat ${Orig_OS}/$INSTALLED_SCRIPT | grep Access | grep Uid | grep -q $PERMS
-		then
-			if $CHECK_ONLY
+			if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE_ON_ORIG_OS ]]
 			then
-				echo "$INSTALLED_SCRIPT (Original OS): permissions need fixing"
+				if $CHECK_ONLY
+				then
+					echo "$INSTALLED_SCRIPT (Original OS): update available"
 
-				#The only things RETURN_CODE can be at this point are 1 or 2
-				#Either way, it should be set to 2 here
-				RETURN_CODE=2
+					#The only things RETURN_CODE can be at this point are 1 or 2
+					#Either way, it should be set to 2 here
+					RETURN_CODE=2
+				else
+					echo "$INSTALLED_SCRIPT (Original OS): updating..."
+
+					sudo rm -f ${Orig_OS}/$INSTALLED_SCRIPT
+					sudo cp $GIT_SCRIPT ${Orig_OS}/$INSTALLED_SCRIPT
+					sudo chmod $PERMS ${Orig_OS}/$INSTALLED_SCRIPT
+					sudo chown $OWNER ${Orig_OS}/$INSTALLED_SCRIPT
+
+					#The only things RETURN_CODE can be at this point are 0 or 1
+					#Either way, it should be set to 0 here
+					RETURN_CODE=0
+				fi
 			else
-				sudo chmod $PERMS ${Orig_OS}/$INSTALLED_SCRIPT
-				echo "$INSTALLED_SCRIPT (Original OS): permissions fixed"
+				$VERBOSE && echo "$INSTALLED_SCRIPT (Original OS): up to date"
 
-				#The only things RETURN_CODE can be at this point are 0 or 1
-				#Either way, it should be set to 0 here
-				RETURN_CODE=0
+				#The only things RETURN_CODE can be at this point are 0, 1 or 2
+				#Either way, it should remain whatever RETURN_CODE was already set to
 			fi
-		fi
 
-		#Check ownership
-		CURRENT_OWNER=$(ls -l ${Orig_OS}/$INSTALLED_SCRIPT | awk '{ print $3,$4 }' | tr ' ' ':')
-		if [[ $OWNER != $CURRENT_OWNER ]]
-		then
-			if $CHECK_ONLY
+			#Check permissions
+			if ! stat ${Orig_OS}/$INSTALLED_SCRIPT | grep Access | grep Uid | grep -q $PERMS
 			then
-				echo "$INSTALLED_SCRIPT (Original OS): ownership needs fixing"
+				if $CHECK_ONLY
+				then
+					echo "$INSTALLED_SCRIPT (Original OS): permissions need fixing"
 
-				#The only things RETURN_CODE can be at this point are 1 or 2
-				#Either way, it should be set to 2 here
-				RETURN_CODE=2
-			else
-				sudo chown $OWNER ${Orig_OS}/$INSTALLED_SCRIPT
-				echo "$INSTALLED_SCRIPT (Original OS): ownership fixed"
+					#The only things RETURN_CODE can be at this point are 1 or 2
+					#Either way, it should be set to 2 here
+					RETURN_CODE=2
+				else
+					sudo chmod $PERMS ${Orig_OS}/$INSTALLED_SCRIPT
+					echo "$INSTALLED_SCRIPT (Original OS): permissions fixed"
 
-				#The only things RETURN_CODE can be at this point are 0 or 1
-				#Either way, it should be set to 0 here
-				RETURN_CODE=0
+					#The only things RETURN_CODE can be at this point are 0 or 1
+					#Either way, it should be set to 0 here
+					RETURN_CODE=0
+				fi
+			fi
+
+			#Check ownership
+			CURRENT_OWNER=$(ls -l ${Orig_OS}/$INSTALLED_SCRIPT | awk '{ print $3,$4 }' | tr ' ' ':')
+			if [[ $OWNER != $CURRENT_OWNER ]]
+			then
+				if $CHECK_ONLY
+				then
+					echo "$INSTALLED_SCRIPT (Original OS): ownership needs fixing"
+
+					#The only things RETURN_CODE can be at this point are 1 or 2
+					#Either way, it should be set to 2 here
+					RETURN_CODE=2
+				else
+					sudo chown $OWNER ${Orig_OS}/$INSTALLED_SCRIPT
+					echo "$INSTALLED_SCRIPT (Original OS): ownership fixed"
+
+					#The only things RETURN_CODE can be at this point are 0 or 1
+					#Either way, it should be set to 0 here
+					RETURN_CODE=0
+				fi
 			fi
 		fi
 	fi
@@ -599,87 +598,83 @@ CheckForUpdates() {
 				#Either way, it should be set to 0 here
 				RETURN_CODE=0
 			fi
-		fi
-
-		#Check the md5 of ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-		MD5_OF_INSTALLED_FILE_ON_RS=$(md5sum ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT | cut -d ' ' -f 1)
-
-		if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE_ON_RS ]]
-		then
-			if $CHECK_ONLY
-			then
-				echo "$INSTALLED_SCRIPT (RAM Session): update available"
-
-				#The only things RETURN_CODE can be at this point are 1 or 2
-				#Either way, it should be set to 2 here
-				RETURN_CODE=2
-			else
-				echo "$INSTALLED_SCRIPT (RAM Session): updating..."
-
-				sudo rm -f ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-				sudo cp $GIT_SCRIPT ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-				sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-				sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-
-				#The only things RETURN_CODE can be at this point are 0 or 1
-				#Either way, it should be set to 0 here
-				RETURN_CODE=0
-			fi
 		else
-			$VERBOSE && echo "$INSTALLED_SCRIPT (RAM Session): up to date"
+			#Check the md5 of ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+			MD5_OF_INSTALLED_FILE_ON_RS=$(md5sum ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT | cut -d ' ' -f 1)
 
-			#The only things RETURN_CODE can be at this point are 0, 1 or 2
-			#Either way, it should remain whatever RETURN_CODE was already set to
-		fi
-
-		#Check permissions
-		if ! stat ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT | grep Access | grep Uid | grep -q $PERMS
-		then
-			if $CHECK_ONLY
+			if [[ $MD5_OF_REPO_FILE != $MD5_OF_INSTALLED_FILE_ON_RS ]]
 			then
-				echo "$INSTALLED_SCRIPT (RAM Session): permissions need fixing"
+				if $CHECK_ONLY
+				then
+					echo "$INSTALLED_SCRIPT (RAM Session): update available"
 
-				#The only things RETURN_CODE can be at this point are 1 or 2
-				#Either way, it should be set to 2 here
-				RETURN_CODE=2
+					#The only things RETURN_CODE can be at this point are 1 or 2
+					#Either way, it should be set to 2 here
+					RETURN_CODE=2
+				else
+					echo "$INSTALLED_SCRIPT (RAM Session): updating..."
+
+					sudo rm -f ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+					sudo cp $GIT_SCRIPT ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+					sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+					sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+
+					#The only things RETURN_CODE can be at this point are 0 or 1
+					#Either way, it should be set to 0 here
+					RETURN_CODE=0
+				fi
 			else
-				sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-				echo "$INSTALLED_SCRIPT (RAM Session): permissions fixed"
+				$VERBOSE && echo "$INSTALLED_SCRIPT (RAM Session): up to date"
 
-				#The only things RETURN_CODE can be at this point are 0 or 1
-				#Either way, it should be set to 0 here
-				RETURN_CODE=0
+				#The only things RETURN_CODE can be at this point are 0, 1 or 2
+				#Either way, it should remain whatever RETURN_CODE was already set to
+			fi
+
+			#Check permissions
+			if ! stat ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT | grep Access | grep Uid | grep -q $PERMS
+			then
+				if $CHECK_ONLY
+				then
+					echo "$INSTALLED_SCRIPT (RAM Session): permissions need fixing"
+
+					#The only things RETURN_CODE can be at this point are 1 or 2
+					#Either way, it should be set to 2 here
+					RETURN_CODE=2
+				else
+					sudo chmod $PERMS ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+					echo "$INSTALLED_SCRIPT (RAM Session): permissions fixed"
+
+					#The only things RETURN_CODE can be at this point are 0 or 1
+					#Either way, it should be set to 0 here
+					RETURN_CODE=0
+				fi
+			fi
+
+			#Check ownership
+			CURRENT_OWNER=$(ls -l ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT | awk '{ print $3,$4 }' | tr ' ' ':')
+			if [[ $OWNER != $CURRENT_OWNER ]]
+			then
+				if $CHECK_ONLY
+				then
+					echo "$INSTALLED_SCRIPT (RAM Session): ownership needs fixing"
+
+					#The only things RETURN_CODE can be at this point are 1 or 2
+					#Either way, it should be set to 2 here
+					RETURN_CODE=2
+				else
+					sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
+					echo "$INSTALLED_SCRIPT (RAM Session): ownership fixed"
+
+					#The only things RETURN_CODE can be at this point are 0 or 1
+					#Either way, it should be set to 0 here
+					RETURN_CODE=0
+				fi
 			fi
 		fi
-
-		#Check ownership
-		CURRENT_OWNER=$(ls -l ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT | awk '{ print $3,$4 }' | tr ' ' ':')
-		if [[ $OWNER != $CURRENT_OWNER ]]
-		then
-			if $CHECK_ONLY
-			then
-				echo "$INSTALLED_SCRIPT (RAM Session): ownership needs fixing"
-
-				#The only things RETURN_CODE can be at this point are 1 or 2
-				#Either way, it should be set to 2 here
-				RETURN_CODE=2
-			else
-				sudo chown $OWNER ${Orig_OS}/${DEST}/$INSTALLED_SCRIPT
-				echo "$INSTALLED_SCRIPT (RAM Session): ownership fixed"
-
-				#The only things RETURN_CODE can be at this point are 0 or 1
-				#Either way, it should be set to 0 here
-				RETURN_CODE=0
-			fi
-		fi
-
-		#Finally, return the return code
-		return $RETURN_CODE
-	else
-			#If script doesn't need to be installed to the RAM
-			#Session at all, just return with the last return code
-			return $RETURN_CODE
 	fi
+
+	#Finally, return the return code
+	return $RETURN_CODE
 }
 
 ##############################################################################
