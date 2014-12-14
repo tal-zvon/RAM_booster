@@ -53,6 +53,7 @@ working on rupdate and redit:
 	to the remote repo
 
 Speed up rsync filesystem copy to /var/squashfs during testing:
+
 	If you are testing this script in a VM over and over again, you can decrease the time
 	it takes for the rsync command to copy the entire OS to /var/squashfs. In testing, the time
 	needed to copy the FS decreased from about 7m to about 3m.
