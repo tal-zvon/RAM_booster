@@ -130,7 +130,7 @@ then
 	echo "If you are reading this, I forgot to remove some debug code from"
 	echo "the script. Please inform me on my RAM Booster thread at Ubuntu Forums"
 
-	if ( cd Documents/RAM_Booster/; git branch | grep -q $BRANCH )
+	if ( cd /tmp/RAM_Booster; git branch | grep -q $BRANCH )
 	then
 		(cd /tmp/RAM_Booster; git checkout -b $BRANCH origin/$BRANCH)
 	fi
