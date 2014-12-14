@@ -52,19 +52,6 @@ working on rupdate and redit:
 	Note 2: This core.fileMode setting is NOT uploaded during pushes
 	to the remote repo
 
-rsync stdout can be hidden at boot by doing the following:
-
-	Edit script
-	After live boot installs (Just before 'echo -e "Packages installed successfully\n"' line), add:
-		echo "Press Enter"
-		read key
-	Save and run script
-	When script pauses, open different terminal and cd to /lib/live/boot
-	Edit 9990-toram-todisk.sh 
-	Comment out the 'echo " * Copying $MODULETORAMFILE to RAM" 1>/dev/console' line
-	Change both 'rsync -a' lines to 'rsync -aq'
-	Save file and continue script
-
 Speed up rsync filesystem copy to /var/squashfs during testing:
 	If you are testing this script in a VM over and over again, you can decrease the time
 	it takes for the rsync command to copy the entire OS to /var/squashfs. In testing, the time
@@ -108,20 +95,11 @@ Rewrite Notes:
 
 		Test my new script on Ubuntu 14.04
 
-		Test everything with efi, XFS, and BTRFS (at least warn people if it doesn't work)
-			Especially test if other filesystems (is reiserfs still around?) can run redit within redit because of the way I test for chroot
-
 		Read all the messages I wrote to the user on screen - maybe I should reword some
-
-		Check that time is accurate
-
-		Check that internet is available
 
 		Is there anything else that needs to be logged?
 			Check again when I'm done everything
 			chroot and rupdate probably need a log too
-
-		Write down the purpose of all my scripts and files so it's easier to understand
 
 		What happens when /etc/fstab and the current FS is inconsistent?
 			Ex:
@@ -131,16 +109,7 @@ Rewrite Notes:
 
 	RAM_booster script itself:
 
-		Split up long sed lines
-			I can replace a line in the script file with itself plus my first line, and then
-			have a second sed statement that replaces the line I just placed with itself and the
-			next line
-
 		When LVM is used, make sure the LOGGER gets info about how the volume groups and logical volumes are organized, so I can duplicate it
-
-		I skipped the "Hardlink bug" fix - I couldn't remember what it fixes
-
-		Skipped time bug fix. I'll see if I need it when the RAM Session is bootable
 
 		Download counter
 			Either:
@@ -155,38 +124,15 @@ Rewrite Notes:
 				b)
 					See if github can already do the counting
 
-		Disable RAM Session updates?
-
 	rupdate script:
 
 	redit script:
 
-		I use the fact that / is inode 2 in normal root, and something else in a chroot environment
-		to make sure the user can't run redit from redit. The thing is - that only works on ext[234]
-		filesystems - apparently xfs uses inode 128. You can check with "ls -di /".
-			Source: http://unix.stackexchange.com/questions/14345/how-do-i-tell-im-running-in-a-chroot
-			Source: http://stackoverflow.com/questions/75182/detecting-a-chroot-jail-from-within
-		
-			Make sure my code works in xfs, lvm, and other filesystems. I may have to modify the if statment
-
-			Update: The code was modified to work in XFS. Try lvm and maybe btrfs/reiserfs
-
 	Other:
-		add a way to automatically download new rupdate and redit
-
-		The point of the rewrite is to make the code easier to read and debug
-			Make sure the code doesn't become overly complex
-
-		Maybe have a way to revert an update, which with git, should be
-			pretty easy
 
 	Do a video:
-		Show that GUI apps can be run from redit
-			Become a regular user, start up a GUI app, and change its settings to show you can do that
-				Test it first - I don't actually know if it will work
 
 	Thread on UF.org:
-		Probably create a new thread
 
 		Tell users to upload their log files if they have
 			technical problems
