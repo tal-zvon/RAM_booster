@@ -137,8 +137,7 @@ then
 
 	if ( cd /tmp/RAM_Booster; git branch -a | grep -q "remotes/origin/$BRANCH" )
 	then
-		(cd /tmp/RAM_Booster; git checkout -b $BRANCH origin/$BRANCH)
-		echo
+		(cd /tmp/RAM_Booster; git checkout -b $BRANCH origin/$BRANCH &>/dev/null)
 	fi
 fi
 
