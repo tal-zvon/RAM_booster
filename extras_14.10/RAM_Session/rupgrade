@@ -120,9 +120,22 @@ then
 fi
 
 #DEBUG ONLY
-echo SWITCHING BRANCHES
-echo THIS CODE MUST BE REMOVED BEFORE FINAL RELEASE
-(cd /tmp/RAM_Booster; git checkout -b rewrite origin/rewrite &>/dev/null)
+#This code is purely for debug purposes
+#It makes it easier to do testing by using a branch other than master
+#Set BRANCH to '' to use master branch
+#Set BRANCH to name of branch to switch to that branch for testing
+BRANCH='rewrite'
+if [[ -n $BRANCH ]]
+then
+	echo "If you are reading this, I forgot to remove some debug code from"
+	echo "the script"
+	echo "Please inform me on my RAM Booster thread at Ubuntu Forums"
+
+	if ( cd Documents/RAM_Booster/; git branch | grep -q $BRANCH )
+	then
+		(cd /tmp/RAM_Booster; git checkout -b $BRANCH origin/$BRANCH)
+	fi
+fi
 
 ###############
 # Setup traps #
