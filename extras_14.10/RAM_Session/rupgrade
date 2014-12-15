@@ -191,6 +191,13 @@ fi
 # Global Variables #
 ####################
 
+#Check if we are being run by cron
+#True if we are
+#False if we're not
+CRON=$(pstree -s $$ | grep -q cron && echo true || echo false)
+#If we are running through cron, force check only mode
+$CRON && CHECK_ONLY=true
+#Set path where we mount the Original OS
 Orig_OS='/mnt/Original_OS/'
 #Figure out $DEST
 DEST=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep DEST= | sed 's/DEST=//g')
@@ -344,6 +351,20 @@ MakeSquashfsImage() {
         #Inform user we are done
         echo "squashfs image created successfully"
         echo "reboot to use it"
+}
+
+#Outputs any text given to it on EVERY logged in user's screen using
+#zenity. This gets around the problems of running zenity through cron
+#by running it as users who should already be allowed to access X11
+#displays through xhost
+ZENITY() {
+	IFS=$'\n'
+	for LINE in $(who | tr -s ' ' | cut -d ' ' -f 1,2 | grep '^[^ ]\{1,\} :[0-9]$' | sort -u)
+	do
+		USR=$(echo $LINE | cut -d ' ' -f 1)
+		DISPLAY=$(echo $LINE | cut -d ' ' -f 2)
+		sudo -u $USR bash -c 'zenity --display='$DISPLAY' --info --text="'$(echo $@)'"' &>/dev/null &
+	done
 }
 
 #Take exactly 6 args:
@@ -1050,8 +1071,15 @@ else
 	else
 		if $UPDATES_REQUIRED
 		then
-			echo
-			echo "Updates available"
+			#If we ran as cron, use zenity
+			#Otherwise, write to terminal
+			if $CRON
+			then
+				ZENITY "Updates to RAM Booster available. Please run 'sudo rupgrade' to download and apply them"
+			else
+				echo
+				echo "Updates available"
+			fi
 		else
 			echo
 			echo "No updates available"
