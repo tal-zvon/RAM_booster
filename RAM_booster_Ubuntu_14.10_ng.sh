@@ -77,6 +77,9 @@ RUPDATE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/rupdate"
 #Path to the rupgrade script
 RUPGRADE_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/rupgrade"
 
+#Path to the cron file for rupgrade
+RUPGRADE_CRON_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/cron/rupgrade"
+
 #Path to the redit script
 REDIT_FILE="$SCRIPT_DIR/extras_$UBUNTU_VERSION/RAM_Session/redit"
 
@@ -935,6 +938,16 @@ sudo find ${DEST%/}/var/log -type f -iname '*.gz' -exec rm -v {} \;
 echo
 echo "Cleaning recent log files:"
 sudo find ${DEST%/}/var/log -type f | while read file; do echo "emptied '$file'"; echo -n '' | sudo tee $file; done 
+
+#############################################
+# Add cron file for rupgrade to RAM Session #
+#############################################
+
+SCRIPT_FILE_NAME=$(basename $RUPGRADE_CRON_FILE)
+
+sudo cp $RUPGRADE_CRON_FILE ${DEST}/etc/cron.daily/
+sudo chown root:root ${DEST}/etc/cron.daily/$SCRIPT_FILE_NAME 
+sudo chmod 755 ${DEST}/etc/cron.daily/$SCRIPT_FILE_NAME 
 
 ###########################
 # Add rlib to RAM Session #

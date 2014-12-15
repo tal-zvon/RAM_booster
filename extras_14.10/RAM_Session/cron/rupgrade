@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description: 
+#	This script checks if updates to RAM Booster are available
+
+#Technically, the -c is optional since rupgrade forces it when it detects
+#that it is being run by cron
+/usr/sbin/rupgrade -c

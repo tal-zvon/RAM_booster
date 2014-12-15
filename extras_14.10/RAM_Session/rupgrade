@@ -1038,6 +1038,25 @@ case $? in
 		;;
 esac
 
+#rupgrade cron file
+CheckForUpdates /tmp/RAM_Booster/$SCRIPT_DIR/RAM_Session/cron/rupgrade /etc/cron.daily/rupgrade 755 root:root false true
+case $? in
+	0)
+		#Updates performed
+		UPDATES_PERFORMED=true
+		;;
+	1)
+		#Updates not required
+		;;
+	2)
+		#Update required but not performed (due to --check mode)
+		UPDATES_REQUIRED=true
+		;;
+	3)
+		#Update failed
+		;;
+esac
+
 #########################
 # Create squashfs image #
 #########################
