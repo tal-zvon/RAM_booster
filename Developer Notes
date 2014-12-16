@@ -28,6 +28,9 @@ Update Strategy:
 		make a small Update_Script that regenerates the file
 			check if the change has already been performed - Update_Scripts run every time
 
+	Note: Run "git difftool 8e733ccb6 3c376490" to see what it looks
+		like when you add a new script
+
 working on rupdate and redit:
 
 	If you want to work on rupdate and redit from within the RAM
