@@ -405,8 +405,91 @@ LOGGER "$(echo "Git:"; echo -en "\tCurrent Branch:\n\t\t"; (cd $SCRIPT_DIR; git 
 #fdisk
 LOGGER "$(echo "fdisk -l:"; sudo fdisk -l)"
 
+#gdisk
+#Note: Only runs if gdisk exists
+#Note 2: Since 'gdisk -l' isn't a thing, this figures out
+#	which drives use gdisk first
+#Note 3: This section would be a lot less elaborate if I didn't already
+#	have the code for it from a different project
+sudo which gdisk &>/dev/null &&
+for DEVICE in $(cat /proc/partitions  | tail -n+3 | tr -s ' ' | cut -d ' ' -f 5)
+do
+                #If /dev/$DEVICE is a block device, add /dev prefix to it
+                #If it doesn't exist, skip it
+                [[ -b /dev/$DEVICE ]] && DEVICE=/dev/$DEVICE || continue
+
+                #Ignore partitions
+                if echo $DEVICE | grep -q '^/dev/sd[a-z][0-9][0-9]*'
+                then
+                        continue
+                fi  
+
+                #Ignore CDs/DVDs
+                if echo $DEVICE | grep -q '^/dev/sr'
+                then
+                        continue
+                fi  
+
+                #Ignore floppy disks
+                if echo $DEVICE | grep -q '^/dev/fd'
+                then
+                        continue
+                fi  
+
+                #Do what fdisk does - ignore loop devices directly under /dev
+                if echo $DEVICE | grep -q '^/dev/loop'
+                then
+                        continue
+                fi  
+
+                #If $DEVICE has a mapping under /dev/mapper (as determined by 'dmsetup'),
+                #use that instead of the regular /dev/ device
+                #Note: We don't explicitly check for existence of 'dmsetup' on the system
+                #       because if it doesn't, the command below will quietly fail anyway,
+                #       and we only care if it succeeds
+                if dmsetup info $DEVICE &>/dev/null
+                then
+			DEV_MAPPER_DEVICE="/dev/mapper/$(dmsetup info $DEVICE | grep Name | tr -s ' ' | cut -d ' ' -f 2)"
+
+			if [[ -b $DEV_MAPPER_DEVICE ]]
+			then
+	                        DEVICE=$DEV_MAPPER_DEVICE
+			fi
+                fi
+
+                #If $DEVICE is a logical volume, ignore it. It's basically like running
+                #fdisk on a partition
+                #Note: We don't explicitly check for existence of 'lvdisplay' on the system
+                #       because if it doesn't, the command below will quietly fail anyway,
+                #       and we only care if it succeeds
+                if lvdisplay "$DEVICE" &>/dev/null
+                then
+                        continue
+                fi
+
+                #If $DEVICE ends in #p#, it's a partition, so ignore it.
+                if echo $DEVICE | grep -q '[0-9]p[0-9][0-9]*$'
+                then
+                        continue
+                fi
+
+		#Only run gdisk on device if fdisk says it's using GPT
+		if sudo fdisk -l $DEVICE 2>/dev/null | grep -q GPT
+		then
+			LOGGER $(echo -e "gdisk -l ${DEVICE}:\n"; sudo gdisk -l $DEVICE 2>/dev/null | grep -A 100 'Disk /')
+		fi
+done
+
 #blkid which shows the UUIDs that fstab uses
 LOGGER "$(echo -e "blkid:\n"; sudo blkid)"
+
+#LVM
+if which lvdisplay &>/dev/null
+then
+	LOGGER "$(echo -e "pvdisplay:\n"; sudo pvdisplay)"
+	LOGGER "$(echo -e "vgdisplay:\n"; sudo vgdisplay)"
+	LOGGER "$(echo -e "lvdisplay:\n"; sudo lvdisplay)"
+fi
 
 ######################################
 # Create /var/lib/ram_booster folder #
