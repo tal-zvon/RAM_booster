@@ -128,12 +128,12 @@ BRANCH='rewrite'
 if [[ -n $BRANCH ]]
 then
 	#Only show message the first time rupgrade runs, in cases where rupgrade is updated
-	if [[ -z $RUPGRADE_PERFORMED ]]
-	then
-		echo "If you are reading this, I forgot to remove some debug code from"
-		echo "the script. Please inform me on my RAM Booster thread at Ubuntu Forums"
-		echo
-	fi
+#	if [[ -z $RUPGRADE_PERFORMED ]]
+#	then
+#		echo "If you are reading this, I forgot to remove some debug code from"
+#		echo "the script. Please inform me on my RAM Booster thread at Ubuntu Forums"
+#		echo
+#	fi
 
 	if ( cd /tmp/RAM_Booster; git branch -a | grep -q "remotes/origin/$BRANCH" )
 	then
