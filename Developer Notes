@@ -1,17 +1,62 @@
-rsync stdout can be hidden at boot by doing the following:
+Update Strategy:
 
-	Edit script
-	After live boot installs (Just before 'echo -e "Packages installed successfully\n"' line), add:
-		echo "Press Enter"
-		read key
-	Save and run script
-	When script pauses, open different terminal and cd to /lib/live/boot
-	Edit 9990-toram-todisk.sh 
-	Comment out the 'echo " * Copying $MODULETORAMFILE to RAM" 1>/dev/console' line
-	Change both 'rsync -a' lines to 'rsync -aq'
-	Save file and continue script
+	Permissions change on an existing file
+		make the change in the git repo and commit
+		rupgrade will detect the change automatically and fix it
+	Ownership change on an existing file
+		make the change in the git repo and commit
+		rupgrade will detect the change automatically and fix it
+	Code change in an existing file
+		make the change in the git repo and commit
+		rupgrade will detect the change automatically and fix it
+	New script added
+		add code to install the script to rupgrade (as it does with all existing scripts)
+		commit the change to rupgrade
+		rupgrade will detect an update to itself, do the update, then rerun the new rupgrade
+		the updated rupgrade will install the new script
+	Script deleted
+		remove code for installing the script from rupgrade
+		add a short script to Update_Scripts that deletes the old script, but ONLY IF IT EXISTS
+	Script renamed
+		make the name change to rupgrade and commit
+		rupgrade will treat the new name as a non-existant script and install it
+		have an Update_Scripts script delete the script with the old name, but ONLY IF IT EXISTS
+	Changes to OS files with sed
+		make a small Update_Script that does the change, but ONLY IF IT HASN'T BEEN DONE YET
+			check if the change has already been performed - Update_Scripts run every time
+	Changes to the way /boot/Orig, /boot/RAM_Sess, /var/lib/ram_booster/conf, or any other dynamically generated files are created
+		make a small Update_Script that regenerates the file
+			check if the change has already been performed - Update_Scripts run every time
+
+	Note: Run "git difftool 8e733ccb6 3c376490" to see what it looks
+		like when you add a new script
+
+working on rupdate and redit:
+
+	If you want to work on rupdate and redit from within the RAM
+	Session, it is best not to spend your time copying the scripts
+	between the repo and /usr/sbin/. The best way to do this is to:
+
+	$ sudo rm -v /usr/sbin/redit /usr/sbin/rupdate
+	$ sudo ln -s RAM_Booster/extras_14.10/rupdate /usr/sbin/rupdate
+	$ sudo ln -s RAM_Booster/extras_14.10/redit /usr/sbin/redit
+	$ cd RAM_Booster
+	$ git config core.fileMode false
+	$ chmod a+x extra_14.10/rupdate
+	$ chmod a+x extra_14.10/redit
+
+	In case it's not obvious, this creates symlinks to the files
+	directly in the git repo, and tells git to not care about the
+	execute bit of the scripts.
+
+	Note: "Not care" means keep whatever the script files had set for
+	execute bits the last time git cared, which in this case was unset
+
+	Note 2: This core.fileMode setting is NOT uploaded during pushes
+	to the remote repo
 
 Speed up rsync filesystem copy to /var/squashfs during testing:
+
 	If you are testing this script in a VM over and over again, you can decrease the time
 	it takes for the rsync command to copy the entire OS to /var/squashfs. In testing, the time
 	needed to copy the FS decreased from about 7m to about 3m.
@@ -26,3 +71,73 @@ Speed up rsync filesystem copy to /var/squashfs during testing:
 	The first time, it will obivously take just as long to copy the FS. Every other time, rsync will see
 	the similar files already on the NFS share and skip them. rsync runs with --delete, so it will take care of
 	anything that should no longer be on the share.
+
+===============================================================
+
+BTRFS:
+
+Does NOT work
+
+live-boot is definately the problem (unless it's just the start)
+
+as a start, change:
+	set grub_boot=$grub_boot/boot
+   to
+	set set grub_boot=$grub_boot/@/boot
+   either in 06_RAMSESS, or edit the grub menu during boot
+
+if you add "debug=1" to the kernel line, as stated in the live-boot man
+page, you'll see it looping through what looks like 9990-misc-helpers.sh
+(about line 196), and then show the panic message from line 86 of
+9990-main.sh
+
+===============================================================
+
+Rewrite Notes:
+
+	Generic:
+
+		Test my new script on Ubuntu 14.04
+
+		Read all the messages I wrote to the user on screen - maybe I should reword some
+
+		Is there anything else that needs to be logged?
+			Check again when I'm done everything
+			chroot and rupdate probably need a log too
+
+		What happens when /etc/fstab and the current FS is inconsistent?
+			Ex:
+				The RAM_Booster script just ran, and created a new entry for /home in /etc/fstab
+				Immediately after, you uninstall, and run again
+				At this point, you still haven't reboot, so the running system isn't using /dev/sdb1 as /home, but /etc/fstab is
+
+	RAM_booster script itself:
+
+		When LVM is used, make sure the LOGGER gets info about how the volume groups and logical volumes are organized, so I can duplicate it
+
+		Download counter
+			Either:
+				a)
+					Do an md5 hash of the MAC Address
+					or external IP of someone, and
+					send it to some server I can check
+
+					Warn users I'm doing this, and
+					that I can't actually tell what
+					their IP or MAC Address is
+				b)
+					See if github can already do the counting
+
+	rupdate script:
+
+	redit script:
+
+	Other:
+
+	Do a video:
+
+	Thread on UF.org:
+
+		Tell users to upload their log files if they have
+			technical problems
+

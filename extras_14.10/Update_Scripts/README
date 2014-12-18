@@ -1,0 +1,29 @@
+This folder contains scripts that need to run during upgrades (running of rupgrade)
+
+This includes changes that are more complex than just a change to an
+existing file in an existing directory. Ex:
+
+	A script file name change
+	A change to the main RAM_Booster script that changes anything significant
+
+Any scripts here will:
+
+	1. Be run EVERY TIME rupgrade runs
+	2. Be automatically made executable using chmod
+	3. Only run if they have a .sh extension
+	4. Be considered to have errored out by rupgrade if they exit
+		with any non-zero exit code
+
+This means that ALL scripts in this folder MUST check to see if the
+changes they are going to be making have already been made, and if so,
+do nothing (exit with exit code 0)
+
+Any scripts here can also print output to stdout or stderr, but it's preferrable to:
+
+	1. Only write one line of output, indicating success, failure,
+		or the fact that changes were previously applied so
+		there was no need to apply them again
+	2. Indent the line with one tab
+
+See "Developer Notes" file for the update strategy, which describes
+	when these scripts are to be used

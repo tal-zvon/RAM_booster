@@ -1,0 +1,62 @@
+#!/bin/bash
+
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	This script makes sure that any kernels that the Original OS can't
+#	run will not be picked up by /etc/grub.d/10_linux by moving them
+#	to /boot/RS_KERNELS/
+#	This script also deletes any kernels in /boot/RS_KERNELS/ that
+#	the Original OS also supports, since that means a recent update
+#	to the Original OS just installed the same kernel files to
+#	/boot. After this happens, 06_RAMSESS will find the kernel in
+#	/boot/ and fix the grub menu automatically
+
+#If /boot/Orig doesn't exist, there's nothing for us to do
+if [[ ! -e /boot/Orig ]]
+then
+	echo "/boot/Orig not found. Exiting zc_sort_kernels"
+	exit 0
+fi
+
+#If /boot/RAM_Sess doesn't exist, there's nothing for us to do
+if [[ ! -e /boot/RAM_Sess ]]
+then
+	echo "/boot/RAM_Sess not found. Exiting zc_sort_kernels"
+	exit 0
+fi
+
+#Create folder if it doesn't exist
+if [[ ! -d /boot/RS_KERNELS ]]
+then
+	sudo mkdir /boot/RS_KERNELS/
+fi
+
+#If there are any kernels in /boot/ that the Original OS doesn't support,
+#move them to /boot/RS_KERNELS/
+for KERNEL_FILE in $(ls -1 /boot/vmlinuz-* /vmlinuz-* 2>/dev/null)
+do
+	KERNEL_VERSION=$(basename $KERNEL_FILE | sed 's/vmlinuz-//g')
+
+	if ! grep -qx $KERNEL_VERSION /boot/Orig
+	then
+		echo "Moving $KERNEL_VERSION to /boot/RS_KERNELS/"
+		mv -v /boot/vmlinuz-$KERNEL_VERSION* /boot/RS_KERNELS/
+		mv -v /boot/initrd*-$KERNEL_VERSION* /boot/RS_KERNELS/
+	fi
+done
+
+#If there are any kernels in /boot/RS_KERNELS/ that the Original OS also
+#supports, than we now have duplicate files in /boot and
+#/boot/RS_KERNELS/, so delete the ones from /boot/RS_KERNELS/
+for KERNEL_FILE in $(ls -1 /boot/RS_KERNELS/vmlinuz-* 2>/dev/null)
+do
+	KERNEL_VERSION=$(basename $KERNEL_FILE | sed 's/vmlinuz-//g')
+
+	if grep -qx $KERNEL_VERSION /boot/Orig
+	then
+		echo "Deleting $KERNEL_VERSION from /boot/RS_KERNELS/"
+		rm -v /boot/RS_KERNELS/*$KERNEL_VERSION*
+	fi
+done
