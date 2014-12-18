@@ -476,7 +476,7 @@ do
 		#Only run gdisk on device if fdisk says it's using GPT
 		if sudo fdisk -l $DEVICE 2>/dev/null | grep -q -i gpt
 		then
-			LOGGER $(echo -e "gdisk -l ${DEVICE}:\n"; sudo gdisk -l $DEVICE 2>/dev/null | grep -A 100 'Disk /')
+			LOGGER "$(echo -e "gdisk -l ${DEVICE}:\n"; sudo gdisk -l $DEVICE 2>/dev/null | grep -A 100 'Disk /')"
 		fi
 done
 
