@@ -146,6 +146,18 @@ Uninstall_RAM_Booster() {
                 exit 0
         fi
 
+	#If the install was with the old version of this script, refuse to uninstall
+	if [[ -e /etc/grub.d/06_RAMSESS ]]
+	then
+		if ! (grep -q 'Dec 2014' /etc/grub.d/06_RAMSESS || grep -q '/boot/RAM_Sess' /etc/grub.d/06_RAMSESS)
+		then
+			echo "It appears that you used the old RAM Booster script when you did the install"
+			echo "You will need to use that old script to do the uninstall as well"
+			echo "If you don't have it anymore, try looking in the 'old/' directory"
+			exit 1
+		fi
+	fi
+
 	$QUIET || clear
         $QUIET || echo "Uninstalling..."
 
