@@ -124,7 +124,7 @@ fi
 #It makes it easier to do testing by using a branch other than master
 #Set BRANCH to '' to use master branch
 #Set BRANCH to name of branch to switch to that branch for testing
-BRANCH='rewrite'
+BRANCH=''
 if [[ -n $BRANCH ]]
 then
 	#Only show message the first time rupgrade runs, in cases where rupgrade is updated
