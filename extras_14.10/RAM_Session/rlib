@@ -243,6 +243,13 @@ UMOUNT_RS()
 		exit 1
 	}
 
+	#If $Orig_OS is not mounted (like if that was the step that failed to mount),
+	#just return
+	if ! mountpoint -q $Orig_OS
+	then
+		return 0
+	fi
+
 	#Only do these tests if we did NOT do a root_only mount
 	if df -a | grep -q "${CHROOT%/}/dev"
 	then
