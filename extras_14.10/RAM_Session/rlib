@@ -247,6 +247,7 @@ UMOUNT_RS()
 	#just return
 	if ! mountpoint -q $Orig_OS
 	then
+		sudo rmdir $Orig_OS
 		return 0
 	fi
 
