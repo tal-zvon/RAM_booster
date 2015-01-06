@@ -74,7 +74,7 @@ MOUNT_RS()
 	sudo mkdir -p "$Orig_OS"
 
 	#Try to mount $ROOT_UUID to $Orig_OS
-	sudo mount --uuid $ROOT_UUID "$Orig_OS" &>/dev/null ||
+	sudo mount -U $ROOT_UUID "$Orig_OS" &>/dev/null ||
 	{
 		echo "Failed to mount $ROOT_UUID to $Orig_OS"
 		UMOUNT_RS
@@ -146,7 +146,7 @@ MOUNT_RS()
 	#Mount /boot, if it's not on the same partition as /
 	if [[ "$BOOT_UUID" != "$ROOT_UUID" ]]
 	then
-		sudo mount --uuid $BOOT_UUID "$Orig_OS/$DEST/boot" ||
+		sudo mount -U $BOOT_UUID "$Orig_OS/$DEST/boot" ||
 		{
 			echo "Failed to mount $BOOT_UUID to ${Orig_OS%/}/${DEST%/}/boot"
 			UMOUNT_RS
@@ -164,7 +164,7 @@ MOUNT_RS()
 	#Mount /boot/efi, if we are running an efi system
 	if [[ -d /sys/firmware/efi ]] && [[ "$EFI_UUID" != "None" ]]
 	then
-		sudo mount --uuid $EFI_UUID "$Orig_OS/$DEST/boot/efi" ||
+		sudo mount -U $EFI_UUID "$Orig_OS/$DEST/boot/efi" ||
 		{
 			echo "Failed to mount $EFI_UUID to ${Orig_OS%/}/${DEST%/}/boot/efi"
 			UMOUNT_RS
@@ -175,7 +175,7 @@ MOUNT_RS()
 	#Mount /home, if it's not on the same partition as /
 	if [[ "$HOME_UUID" != "$ROOT_UUID" ]]
 	then
-		sudo mount --uuid $HOME_UUID "$Orig_OS/$DEST/home" ||
+		sudo mount -U $HOME_UUID "$Orig_OS/$DEST/home" ||
 		{
 			echo "Failed to mount $HOME_UUID to ${Orig_OS%/}/${DEST%/}/home"
 			UMOUNT_RS

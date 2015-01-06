@@ -273,7 +273,7 @@ MOUNT_ROOT() {
         sudo mkdir -p "$Orig_OS"
 
         #Try to mount $ROOT_UUID to $Orig_OS
-        sudo mount --uuid $ROOT_UUID "$Orig_OS" &>/dev/null ||
+        sudo mount -U $ROOT_UUID "$Orig_OS" &>/dev/null ||
         {
                 echo "Failed to mount $ROOT_UUID to $Orig_OS"
 		#Note: We don't exit right away here incase the problem
