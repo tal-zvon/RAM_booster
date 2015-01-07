@@ -220,9 +220,40 @@ MOUNT_RS()
 	}
 }
 
+#Recursive umount function
+#Ubuntu 14.04 does not have 'umount -R' option
+#This function simulates that functionality
+#Args:
+#	$1 - Dir to recursively unmount
+#Returns:
+#	0 if everything unmounted successfully
+#	1 if something failed to unmount
+RUMOUNT()
+{
+	#Figure out dirs to unmount
+	#Note: The 'sort -r' is VERY IMPORTANT - it sorts the mountpoints
+	#	in a way that's deepest first
+	DIRS_TO_UNMOUNT=$(df | grep ${1%/} | tr -s " " | cut -d " " -f 6- | sort -r)
+
+	for UDIR in $DIRS_TO_UNMOUNT
+	do
+		if mountpoint -q $UDIR
+		then
+			umount $UDIR 2>/dev/null
+			if [[ $? != 0 ]]
+			then
+				return 1
+			fi
+		fi
+	done
+}
+
 #Unmount $DEST (RAM Session)
 UMOUNT_RS()
 {
+	#Ubuntu 14.04 is missing a few options that 14.10 has, so is treated differently
+	OS_VERSION=$(cat /etc/os-release | grep VERSION_ID | grep -o "\"[^\"]*\"" | tr -d '"')
+
 	#The location of the chroot, nicely formatted (without double
 	#'/'s) for printing to stdout
 	CHROOT=${Orig_OS%/}/${DEST#/}
@@ -301,7 +332,12 @@ UMOUNT_RS()
 	fi
 
 	#Unmount all filesystems under $Orig_OS recursively
-	sudo umount -R $Orig_OS 2>/dev/null
+	if [[ $OS_VERSION == '14.04' ]]
+	then
+		RUMOUNT $Orig_OS
+	else
+		sudo umount -R $Orig_OS 2>/dev/null
+	fi
 
 	#Check how it went
 	if [[ "$?" == 0 ]]
@@ -359,7 +395,12 @@ UMOUNT_RS()
 			#Try unmounting again:
 
 			#Unmount all filesystems under $Orig_OS recursively
-			sudo umount -R $Orig_OS 2>/dev/null
+			if [[ $OS_VERSION == '14.04' ]]
+			then
+				RUMOUNT $Orig_OS
+			else
+				sudo umount -R $Orig_OS 2>/dev/null
+			fi
 
 			if [[ "$?" == "0" ]]
 			then
