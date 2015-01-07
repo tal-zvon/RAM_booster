@@ -233,7 +233,7 @@ RUMOUNT()
 	#Figure out dirs to unmount
 	#Note: The 'sort -r' is VERY IMPORTANT - it sorts the mountpoints
 	#	in a way that's deepest first
-	DIRS_TO_UNMOUNT=$(df | grep ${1%/} | tr -s " " | cut -d " " -f 6- | sort -r)
+	DIRS_TO_UNMOUNT=$(df -a | grep ${1%/} | tr -s " " | cut -d " " -f 6- | sort -r)
 
 	for UDIR in $DIRS_TO_UNMOUNT
 	do
