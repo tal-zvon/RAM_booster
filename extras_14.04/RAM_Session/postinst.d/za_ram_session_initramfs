@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	Normally, when a system is running live, the regular postinst
+#	script that creates the initrd image skips its creation,
+#	presumably because it takes some time, and it is almost always
+#	unnecessary. It's necessary in our case, so we create the image
+#	here instead
+
+version="$1"
+
+if [[ -e /RAM_Session ]]
+then
+	#Only generate the initrd image if one doesn't already exist
+	if [[ ! -e /boot/initrd.img-$1 ]] && [[ ! -e /boot/RS_KERNELS/initrd.img-$1 ]]
+	then
+		echo "ram_session_initramfs: Generating initramfs image"
+		#Generate an initramfs image 
+		mkinitramfs -o /boot/initrd.img-$version $version
+	fi
+fi

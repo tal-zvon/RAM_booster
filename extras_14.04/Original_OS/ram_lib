@@ -669,21 +669,26 @@ CopyHome() {
 	sudo rsync -aAXSH -hv --delete --progress /mnt/root/home/ $DESTINATION --exclude=.local/share/Trash/files/*
 	EXIT_CODE="$?"
 
-	############
-	# Clean up #
-	############
+	###################################################################
+	# Clean up stuff that needs to be clean whether the rsync command #
+	# succeeded or not                                                #
+	###################################################################
 
-	#Unmount and remove /mnt/tmp, which we have to do
-	#whether the rsync command succedded or not
+	#Unmount and remove /mnt/tmp
 	if ! $COPY_HOME
 	then
 		sudo umount /mnt/tmp
 		sudo rmdir /mnt/tmp
 	fi
 
-	#Unmount and remove /mnt/root/home and /mnt/root, which
-	#we have to do whether the rsync command succedded or not
-	sudo umount -R /mnt/root 
+	#Unmount /mnt/root/home if mounted
+	if mountpoint -q /mnt/root/home
+	then
+		sudo umount /mnt/root/home
+	fi
+
+	#Unmount and remove /mnt/root
+	sudo umount /mnt/root 
 	sudo rmdir /mnt/root 
 
 	#Check how it went

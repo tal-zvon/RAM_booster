@@ -220,6 +220,31 @@ MOUNT_RS()
 	}
 }
 
+#Recursive umount function
+#Ubuntu 14.04 does not have 'umount -R' option
+#This function simulates that functionality
+#Args:
+#	$1 - Dir to recursively unmount
+#Returns:
+#	0 if everything unmounted successfully
+#	1 if something failed to unmount
+RUMOUNT()
+{
+	#Figure out dirs to unmount
+	#Note: The 'sort -r' is VERY IMPORTANT - it sorts the mountpoints
+	#	in a way that's deepest first
+	DIRS_TO_UNMOUNT=$(df -a | grep ${1%/} | tr -s " " | cut -d " " -f 6- | sort -r)
+
+	for UDIR in $DIRS_TO_UNMOUNT
+	do
+		umount $UDIR 2>/dev/null
+		if [[ $? != 0 ]]
+		then
+			return 1
+		fi
+	done
+}
+
 #Unmount $DEST (RAM Session)
 UMOUNT_RS()
 {
@@ -286,7 +311,7 @@ UMOUNT_RS()
 			echo $FS | grep -qx "/home" && continue
 			echo $FS | grep -qx "/run/user" && continue
 			umount "$FS" &>/dev/null
-		done < <(df | tail -n+2 | tr -s " " | cut -d " " -f 6- | sort -r)'
+		done < <(df 2>/dev/null | tail -n+2 | tr -s " " | cut -d " " -f 6- | sort -r)'
 
 		#Find processes who's root folder is actually the chroot
 		for ROOT in $(find /proc/*/root)
@@ -301,7 +326,7 @@ UMOUNT_RS()
 	fi
 
 	#Unmount all filesystems under $Orig_OS recursively
-	sudo umount -R $Orig_OS 2>/dev/null
+	RUMOUNT $Orig_OS
 
 	#Check how it went
 	if [[ "$?" == 0 ]]
@@ -359,7 +384,7 @@ UMOUNT_RS()
 			#Try unmounting again:
 
 			#Unmount all filesystems under $Orig_OS recursively
-			sudo umount -R $Orig_OS 2>/dev/null
+			RUMOUNT $Orig_OS
 
 			if [[ "$?" == "0" ]]
 			then

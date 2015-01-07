@@ -1,0 +1,40 @@
+#!/bin/bash
+
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	Since updates to the RAM Session without using rupdate/redit
+#	are almost useless (are gone after a reboot), we replace the
+#	normaly update popup window in Ubuntu with a simple reminder to
+#	use rupdate when updates are available
+#	Note: We use apt-check from the update-notifier-common package
+#	to figure out if updates are available
+
+#true if there are updates. false otherwise
+UPDATES=false
+
+#Check if apt-check exists
+[[ -e /usr/lib/update-notifier/apt-check ]] || exit 0
+
+#Check for updates
+apt-get update
+
+#apt-check returns 2 semi-colon separated values to STDERR - one for
+#regular updates and one for security updates
+#See: "/usr/lib/update-notifier/apt-check --human-readable"
+
+IFS=';'
+for i in $(/usr/lib/update-notifier/apt-check 2>&1)
+do
+	if [[ $i != 0 ]]
+	then
+		UPDATES=true
+		break
+	fi
+done
+
+if $UPDATES
+then
+	zenity --info --text='Updates available. Please use rupdate to install them.'
+fi

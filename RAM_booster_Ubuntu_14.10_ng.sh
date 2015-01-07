@@ -66,19 +66,7 @@ SCRIPT_DIR=$(readlink -f $(dirname $0))
 LOG='/var/log/ram_booster.log'
 
 #Ubuntu Version this script will work on
-#IMPORTANT NOTE: This use to be a simple string variable being set, but
-#	since the 14.04_ng script is now just a symlink to the 14.10_ng
-#	script, I need to check $0 to see what it was run as
-if echo $0 | grep -q '14\.10'
-then
-        UBUNTU_VERSION='14.10'
-elif echo $0 | grep -q '14\.04'
-then
-        UBUNTU_VERSION='14.04'
-else
-        echo "Unknown version of Ubuntu"
-        exit 1
-fi
+UBUNTU_VERSION='14.10'
 
 #Path to the file that contains all the functions for this script
 RAM_LIB="$SCRIPT_DIR/extras_$UBUNTU_VERSION/Original_OS/ram_lib"
