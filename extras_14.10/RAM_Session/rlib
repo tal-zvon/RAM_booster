@@ -237,13 +237,10 @@ RUMOUNT()
 
 	for UDIR in $DIRS_TO_UNMOUNT
 	do
-		if mountpoint -q $UDIR
+		umount $UDIR 2>/dev/null
+		if [[ $? != 0 ]]
 		then
-			umount $UDIR 2>/dev/null
-			if [[ $? != 0 ]]
-			then
-				return 1
-			fi
+			return 1
 		fi
 	done
 }
