@@ -1,0 +1,716 @@
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	Any code that is either reusable, or long enough that it would
+#	make the main RAM Booster install script hard to read has been
+#	made into a function and moved here.
+#	Note: The main RAM Booster install script is the only script
+#	that uses this file
+
+#Convert input to lowercase
+toLower() 
+{
+	echo $@ | tr "[:upper:]" "[:lower:]" 
+}
+
+#Writes all args directly to log file
+LOGGER() {
+	#If LOG file is empty, add top border
+	if ! grep -q '================================================================================' $LOG
+	then
+		echo '================================================================================' >> $LOG
+	fi
+
+	while IFS= read -r LINE
+	do
+		echo "${LINE}" >> $LOG
+	done < <(echo "$@")
+
+	#Draw line
+	echo '================================================================================' >> $LOG
+}
+
+#Runs commands, and redirects the output to a log file
+#Returns the exit code of the command so that it can easily be checked
+#if the command succeeded or failed:
+#	$ echo /etc/passwd | COMMAND grep 'some_user' && echo "User 'some_user' found' || echo "User 'some_user' not found"
+COMMAND() {
+	#Legend:
+	#	STDIN - contains the FULL output being piped to the command that this function is to run
+	#	$@ - contains the command itself that this function is supposed to run
+	#	OUTPUT - the final output the command passed to this function produces
+
+	#If LOG file is empty, add top border
+	if ! grep -q '================================================================================' $LOG
+	then
+		echo '================================================================================' >> $LOG
+	fi
+
+	#See if anything is being piped to our function
+	#Eg:
+	#	echo 'stuff and junk' | COMMAND sudo sed 's/stuff/thing/g'
+	if [[ -t 0 ]]
+	then
+		#Nothing is being piped. Output is just the result of running the command
+		OUTPUT=$("$@" 2>&1)
+		EXIT_CODE=$?
+	else
+		#Something is being piped. Output is the result of piping
+		#STDIN to $@
+		STDIN=$(cat -)
+
+		echo "STDIN:" >> $LOG
+
+		#Indent STDIN lines for the log file
+		while IFS= read -r LINE
+		do
+			echo -e "\t${LINE}" >> $LOG
+		done < <(echo "$STDIN")
+
+		#Pipe stdin to $@
+		OUTPUT=$(echo "$STDIN" | "$@" 2>&1)
+		EXIT_CODE=$?
+	fi
+
+	echo "COMMAND:" >> $LOG
+
+	#Write the command to the log file
+	#Some commands (especially sed commands) span multiple lines
+	#This indents every line
+	while IFS= read -r LINE
+	do
+		echo -e "\t${LINE}" >> $LOG
+	done < <(echo "$@")
+
+	echo "OUTPUT:" >> $LOG
+
+	#Write the stdout AND stderr to the log file
+	#Most output spans multiple lines
+	#This indents every line
+	while IFS= read -r LINE
+	do
+		echo -e "\t${LINE}" >> $LOG
+	done < <(echo "$OUTPUT")
+
+	#Draw line
+	echo '================================================================================' >> $LOG
+
+	return $EXIT_CODE
+}
+#Ask user if he really wants to uninstall
+#Note: Does NOT actually uninstall - that would be the
+#	Uninstall_RAM_Booster function
+Uninstall_Prompt() {
+	echo "This will delete your RAM Session completely!"
+	read -p "Would you like to proceed with the uninstall? [y/N]: " answer
+
+	#Convert answer to lowercase
+	answer=$(toLower $answer)
+
+	case $answer in
+		y|yes)
+			Uninstall_RAM_Booster
+			exit 0
+			;;  
+		*) 
+			echo "Uninstall Cancelled"
+			exit 0
+			;;  
+	esac
+}
+
+#Actually uninstalls the RAM Session
+#Outputs nothing to the screen if the first arg passed to function is 'quiet'
+#	Note: Still outputs error messages
+Uninstall_RAM_Booster() {
+	#Note: At this point, some global variables like $DEST are already set
+	#	(the ones that didn't require asking the user questions)
+
+	#Check if user chose to let the script modify the Original OS's /etc/fstab by mounting a new /home
+	#$SHARE_HOME is used below to warn the user that this will NOT be undone
+	#if $SHARE_HOME is true, user did choose to use a new partition as their /home on the Original OS
+	#if $SHARE_HOME is false, the user did not
+	SHARE_HOME=$([[ -e /var/lib/ram_booster/conf ]] && { cat /var/lib/ram_booster/conf | grep -v '^#' | grep -q 'SHARE_HOME=.*true.*' && echo true; } || echo false)
+	HOME_ALREADY_MOUNTED=$([[ -e /var/lib/ram_booster/conf ]] && { cat /var/lib/ram_booster/conf | grep -v '^#' | grep -q 'HOME_ALREADY_MOUNTED=.*true.*' && echo true; } || echo false)
+
+	#This function can uninstall quietly if asked
+	QUIET=''
+	arg1_lcase=$(toLower $1)
+	[[ $arg1_lcase == "quiet" ]] && QUIET=true || QUIET=false
+
+	#Check if the script is running from within the RAM Session
+        if [[ -e /RAM_Session ]]
+        then
+                ECHO "You can only uninstall the RAM Session from within the Original OS."
+                exit 0
+        fi
+
+	#If the install was with the old version of this script, refuse to uninstall
+	if [[ -e /etc/grub.d/06_RAMSESS ]]
+	then
+		if ! (grep -q 'Dec 2014' /etc/grub.d/06_RAMSESS || grep -q '/boot/RAM_Sess' /etc/grub.d/06_RAMSESS)
+		then
+			clear
+			echo "It appears that you used the old RAM Booster script when you did the install"
+			echo "You will need to use that old script to do the uninstall as well"
+			echo "If you don't have it anymore, try looking in the 'old/' directory"
+			exit 1
+		fi
+	fi
+
+	$QUIET || clear
+        $QUIET || echo "Uninstalling..."
+
+        #Delete /mnt/tmp
+        if [[ -d /mnt/tmp ]]
+	then 
+		#Check if directory is a mountpoint
+		if $(mountpoint -q /mnt/tmp)
+		then
+			$QUIET || echo
+			$QUIET || echo "Unmounting /mnt/tmp..."
+			sudo umount /mnt/tmp &>/dev/null
+
+			#Check how unmount operation went
+			if [[ "$?" != "0" ]]
+			then
+				echo "/mnt/tmp failed to unmount. Is it in use?"
+			else
+				$QUIET || echo "Removing /mnt/tmp..."
+				sudo rmdir /mnt/tmp
+			fi
+		else
+			$QUIET || echo
+			$QUIET || echo "Removing /mnt/tmp..."
+			sudo rmdir /mnt/tmp
+		fi
+        fi
+
+        #Delete /mnt/root
+        if [[ -d /mnt/root ]]
+	then 
+		#Check if directory is a mountpoint
+		if $(mountpoint -q /mnt/root)
+		then
+			$QUIET || echo
+			$QUIET || echo "Unmounting /mnt/root..."
+			sudo umount /mnt/root &>/dev/null
+
+			#Check how unmount operation went
+			if [[ "$?" != "0" ]]
+			then
+				echo "/mnt/root failed to unmount. Is it in use?"
+			else
+				$QUIET || echo "Removing /mnt/root..."
+				sudo rmdir /mnt/root
+			fi
+		else
+			$QUIET || echo
+			$QUIET || echo "Removing /mnt/root..."
+			sudo rmdir /mnt/root
+		fi
+        fi
+
+        #Delete $DEST
+        if [[ -d "$DEST" ]]; then 
+		$QUIET || echo
+                $QUIET || echo "Removing ${DEST}..."
+                sudo rm -rf "${DEST}" &>/dev/null
+
+		#Check how delete operation went
+		if [[ "$?" != "0" ]]
+		then
+			echo "Failed to remove ${DEST}"
+		fi
+        fi
+
+	#Delete /var/lib/ram_booster/
+	if [[ -d /var/lib/ram_booster ]]
+	then
+		$QUIET || echo
+		$QUIET || echo "Removing /var/lib/ram_booster..."
+		sudo rm -rf /var/lib/ram_booster
+	fi
+
+	#Delete /live
+        if [[ -d /live ]]; then 
+		$QUIET || echo
+                $QUIET || echo "Removing /live..."
+                sudo rm -rf /live &>/dev/null
+
+		#Check how delete operation went
+		if [[ "$?" != "0" ]]
+		then
+			echo "Failed to remove /live"
+		fi
+        fi
+
+	#Delete /etc/grub.d/06_RAMSESS
+	if [[ -e /etc/grub.d/06_RAMSESS ]]
+	then
+		$QUIET || echo
+		$QUIET || echo "Removing /etc/grub/06_RAMSESS..."
+		sudo rm -f /etc/grub.d/06_RAMSESS
+	fi
+
+	#Delete /Original_OS
+	if [[ -e /Original_OS ]]
+	then
+		$QUIET || echo
+		$QUIET || echo "Removing /Original_OS..."
+		sudo rm -f /Original_OS
+	fi
+
+	#Delete zb_version_check file
+	if [[ -e /etc/kernel/postinst.d/zb_version_check ]]
+	then
+		$QUIET || echo
+		$QUIET || echo "Removing /etc/kernel/postinst.d/zb_version_check..."
+		sudo rm -f /etc/kernel/postinst.d/zb_version_check
+	fi
+
+	#Delete /etc/kernel/postinst.d/zc_sort_kernels
+	if [[ -e /etc/kernel/postinst.d/zc_sort_kernels ]]
+	then
+		$QUIET || echo
+		$QUIET || echo "Removing /etc/kernel/postinst.d/zc_sort_kernels..."
+		sudo rm -f /etc/kernel/postinst.d/zc_sort_kernels
+	fi
+
+	#Delete /boot/Orig
+	if [[ -e /boot/Orig ]]
+	then
+		$QUIET || echo
+		$QUIET || echo "Removing /boot/Orig..."
+		sudo rm -f /boot/Orig
+	fi
+
+	#Delete /boot/RAM_Sess
+	if [[ -e /boot/RAM_Sess ]]
+	then
+		$QUIET || echo
+		$QUIET || echo "Removing /boot/RAM_Sess..."
+		sudo rm -f /boot/RAM_Sess
+	fi
+
+	#Delete /boot/RS_KERNELS/
+	if [[ -d /boot/RS_KERNELS ]]
+	then
+		$QUIET || echo
+		$QUIET || echo "Removing /boot/RS_KERNELS/..."
+		sudo rm -rf /boot/RS_KERNELS
+	fi
+
+	#Fix grub menu
+	if grep -q '#GRUB_HIDDEN_TIMEOUT=0' /etc/default/grub
+	then
+		$QUIET || echo
+		$QUIET || echo "Restoring grub menu..."
+		sudo sed -i 's/#\(GRUB_HIDDEN_TIMEOUT=0\)/\1/g' /etc/default/grub
+
+		#Update grub
+		$QUIET || echo
+		$QUIET || echo "Updating grub..."
+		$QUIET || sudo update-grub &>/dev/null
+	fi
+
+	#Purge live-boot
+	if sudo dpkg -l live-boot &>/dev/null
+	then
+		$QUIET || echo
+		$QUIET || echo "Purging live-boot..."
+		sudo apt-get -y purge live-boot &>/dev/null
+
+		if [[ "$?" != "0" ]]
+		then
+			echo "Failed to purge live-boot"
+		fi
+	fi
+
+	#Purge live-tools
+	if sudo dpkg -l live-tools &>/dev/null
+	then
+		$QUIET || echo
+		$QUIET || echo "Purging live-tools..."
+		sudo apt-get -y purge live-tools &>/dev/null
+
+		if [[ "$?" != "0" ]]
+		then
+			echo "Failed to purge live-tools"
+		fi
+	fi
+
+	#Tell user if /home was not restored in /etc/fstab
+	if $SHARE_HOME && ! $HOME_ALREADY_MOUNTED
+	then
+		$QUIET || echo
+		$QUIET || ECHO "You chose to have your Original OS's /home use a separate partition during install. This will NOT be undone. /etc/fstab will still mount that partition as /home. If you want this undone, you can do so manually by modifying /etc/fstab."
+	fi
+
+	#Done
+	$QUIET || echo
+	$QUIET || echo "Uninstall Complete!"
+	exit 0
+}
+
+#Allows usage of "ECHO" instead of "echo"
+#for long sentences that need to be wrapped
+ECHO() {
+	echo "$@" | fmt -w `tput cols`
+}
+
+#Ask user what device he wants to use for /home
+Ask_User_About_Home() {
+	#Ask user which partition to use for /home
+	clear
+	ECHO "Which partition do you want to use as /home?"
+	read -p "Your choice: " -e HOME_DEV
+
+	#Check if device exists
+	if [[ ! -b "$HOME_DEV" ]]
+	then
+		echo
+		ECHO "\"$HOME_DEV\" is not a valid device. Please rerun the script and specify the device name of a partition or logical volume."
+		echo "Exiting..."
+		Uninstall_RAM_Booster quiet
+		exit 1
+	fi
+
+	#Make sure the device is a partition (not an entire physical drive) or a logical volume
+	#We also check if the device is the real device that a logical volume symbolic link points to
+	#	Ex:
+	#		If /dev/mapper/test_vol-home is a symlink to /dev/dm-0, we test for /dev/dm-0
+	if ! (echo $HOME_DEV | grep -q '/dev/sd[a-z][0-9]') && ! (sudo lvdisplay $HOME_DEV &>/dev/null) && ! (readlink -f `sudo lvdisplay 2>/dev/null | grep 'LV Path' | tr -s ' ' | sed 's/ LV Path //g'` 2>/dev/null | grep -q $HOME_DEV)
+	then
+		echo
+		ECHO "\"$HOME_DEV\" is neither a partition, nor a logical volume. Please rerun the script and specify the device name of a partition or logical volume."
+		echo "Exiting..."
+		Uninstall_RAM_Booster quiet
+		exit 1
+	fi
+
+	#Make sure nothing is currently using /mnt as a mount point
+	if mountpoint -q /mnt
+	then
+		echo
+		echo "Unable to mount $HOME_DEV to /mnt/tmp"
+		echo "Is something already using /mnt as a mountpoint?"
+		echo "Exiting..."
+		Uninstall_RAM_Booster quiet
+		exit 1
+	fi
+
+	#Make sure the device is really empty
+	echo
+	echo "Running file check on your device..."
+	sleep 4
+
+	#Make sure an /mnt/tmp doesn't exist from an earlier exit of
+	#our script
+	if [[ -d /mnt/tmp ]]
+	then
+		COMMAND sudo umount /mnt/tmp
+	else
+		COMMAND sudo mkdir -p /mnt/tmp
+	fi
+
+	COMMAND sudo mount $HOME_DEV /mnt/tmp
+
+	#Check if there were problems mounting the device
+	if [[ "$?" != 0 ]]
+	then
+		echo
+		ECHO "There was a problem with the device you gave. It would not mount. If this is a brand new drive and the partition has never been formatted, please format it as ext4 before running this script. Otherwise, please fix the problem before rerunning the script."
+		echo
+		echo "Exiting..."
+		sudo rmdir /mnt/tmp
+		Uninstall_RAM_Booster quiet
+		exit 1
+	fi
+
+	#Count how many files are on the newly mounted device
+	FILE_COUNT=`sudo ls -lR /mnt/tmp | grep ^- | wc -l`
+	if [[ "$FILE_COUNT" -gt 0 ]]
+	then
+		echo
+		ECHO "The device you chose is NOT empty! Are you sure you want to delete all data on it? Type \"I am sure\" to proceed, or \"ls\" to see what's on the device you chose."
+		echo
+		read -p "Your choice: " answer
+
+		#Convert answer to lowercase
+		answer=$(toLower $answer)
+
+		echo
+
+		if [[ "$answer" == "ls" ]]
+		then
+			#Without running in the background, nautilus doesn't release the terminal
+			nautilus /mnt/tmp 2>/dev/null >/dev/null &
+			clear
+			echo "Do you still wish to format the device and erase all this data? Type \"I do\" to proceed or anything else to exit." | fmt -w `tput cols`
+			echo
+			read -p "Your choice: " answer
+
+			#Convert answer to lowercase
+			answer=$(toLower $answer)
+
+			if [[ "$answer" == "i do" ]]
+			then
+				echo -e "Formatting $HOME_DEV\n"
+			else
+				echo "Exiting..."
+				sudo umount /mnt/tmp && sudo rmdir /mnt/tmp
+				Uninstall_RAM_Booster quiet
+				exit 1
+			fi
+		elif [[ "$answer" == "i am sure" ]]
+		then
+			echo -e "Formatting $HOME_DEV\n"
+		else
+			echo "$answer is an invalid choice"
+			echo "Exiting..."
+			sudo umount /mnt/tmp && sudo rmdir /mnt/tmp
+			Uninstall_RAM_Booster quiet
+			exit 1
+		fi
+	else
+		echo
+		echo "Everything checks out."
+		echo -e "Formatting $HOME_DEV\n"
+	fi
+
+	#Unmount the device
+	sudo umount /mnt/tmp
+	sudo rmdir /mnt/tmp
+
+	#Format the device
+	sudo mkfs.ext4 -L home $HOME_DEV
+
+	#Check if there was a problem formatting the device
+	if [[ "$?" != 0 ]]
+	then
+		echo
+		echo "Formatting $HOME_DEV failed."
+		echo "Exiting..."
+		Uninstall_RAM_Booster quiet
+		exit 1
+	else
+		echo "$HOME_DEV formatted successfully"
+		sleep 4
+	fi
+}
+
+CtrlC()
+{
+	echo
+	ECHO "You interupted the script while it was running. Would you like to revert all the changes it made so you can start fresh next time you run the script?"
+	ECHO "WARNING: This will delete any existing RAM Session!"
+	echo
+	read -p "Your choice [Y/n]: " answer
+
+	#Convert answer to lowercase
+	answer=$(toLower $answer)
+
+	case "$answer" in
+	n|no)
+		echo
+		ECHO "If you say so. You may want to run \"$0 --uninstall\" however before running the script again, just to make sure nothing is left to get in its way."
+		exit 0
+		;;
+	*)
+		echo
+		#Note: Normally, we would use the Uninstall_Prompt function, but since we already confirmed
+		#that the user wants to do this, and since it's relatively safe, since the RAM Session is
+		#presumably empty (we were just installing it), we run the Uninstall_RAM_Booster function instead
+		Uninstall_RAM_Booster
+		exit 0
+		;;
+	esac
+}
+
+#Copy the OS to $DEST
+CopyFileSystem() {
+	echo
+	echo "Ready to copy your filesystem to ${DEST}..."
+	echo "Press enter to begin"
+	#Set timeout incase the user left so the script continues to run
+	read -t 60 key
+
+	#Copy the filesystem to $DEST
+	#Note: Always skips /home
+	sudo rsync -aAXSH -hv --delete --progress / ${DEST} --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/home/*","/etc/mtab","/live","/Original_OS","/RAM_Session","/var/cache/apt/archives/*.deb","${DEST}","${LOG}",/lost+found}
+
+	#Check how the operation went
+	#Exit code 24 indicates some source files vanished, which is pretty
+	#normal considering we are copying a filesystem that is currently in use
+	case "$?" in
+		0|24)
+			echo
+			echo "Filesystem copied successfully."
+			sleep 4
+			;;
+		*)
+			echo
+			echo "Copying filesystem failed."
+			echo
+			echo "Exiting..."
+			Uninstall_RAM_Booster quiet
+			exit 1
+			;;
+	esac
+
+	#Remove entry for / in RAM Session's fstab
+	sudo sed -i '/^UUID=[^ \t]\{1,\}[ \t]\{1,\}\/[ \t]/d' $DEST/etc/fstab
+	sudo sed -i '/^\/dev\/[^ \t]\{1,\}[ \t]\{1,\}\/[ \t]/d' $DEST/etc/fstab
+}
+
+#Copies /home to either $DEST/home or to a new partition
+#Also modifies /etc/fstab and $DEST/etc/fstab where appropriate
+CopyHome() {
+	####################
+	# Global Variables #
+	####################
+
+	if $COPY_HOME
+	then
+		DESTINATION=$DEST/home/
+	else
+		DESTINATION=/mnt/tmp/
+	fi
+
+	#######################################
+	# Skip copying /home if not necessary #
+	#######################################
+
+	#If user chose to use the same partition for /home that the
+	#Original OS is already using, than there's no need to copy
+	#anything - if any users are using home directory encryption,
+	#the /home partition should already be setup to properly use it
+	if ! $COPY_HOME && $HOME_ALREADY_MOUNTED
+	then
+		return 0
+	fi
+
+	#######################################
+	# Modify fstab where/when appropriate #
+	#######################################
+
+	#/home was being mounted, but user chose to copy it instead
+	#Remove entry of current partition being used for /home from
+	#${DEST}/etc/fstab
+	if $COPY_HOME && $HOME_ALREADY_MOUNTED
+	then
+		sudo sed -i '/^UUID=[^ \t]\{1,\}[ \t]\{1,\}\/home[/]*[ \t]/d' ${DEST}/etc/fstab
+		sudo sed -i '/^\/dev\/[^ \t]\{1,\}[ \t]\{1,\}\/home[/]*[ \t]/d' ${DEST}/etc/fstab
+	fi
+
+	#If /home is being copied to a separate empty partition
+	if ! $COPY_HOME && ! $HOME_ALREADY_MOUNTED
+	then
+		#Tell RAM Session to use that partition as /home
+		sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> '${DEST}'/etc/fstab'
+
+		#If user chose to do so, also tell the Original OS to
+		#use that partition as /home
+		if $SHARE_HOME
+		then
+			sudo bash -c 'echo -e "UUID='${HOME_UUID}'\t/home\text4\terrors=remount-ro\t0\t1" >> /etc/fstab'
+		fi
+	fi
+
+	#################################################################
+	# Prepare /mnt/root/home (Source)                               #
+	# Note: We do this in all cases to make sure that we never copy #
+	# decrypted home user directories in case a user is using       #
+	# encryption                                                    #
+	#################################################################
+
+	sudo mkdir /mnt/root
+	sudo mount -o bind / /mnt/root
+
+	#If /home is using a separate partition, we mount that, while
+	#ignoring any mounted user home directories (/home/USERNAME)
+	if $HOME_ALREADY_MOUNTED
+	then
+		sudo mount -o bind /home /mnt/root/home
+	fi
+
+	#######################
+	# Prepare destination #
+	#######################
+
+	if ! $COPY_HOME
+	then
+		#Mount $HOME_DEV
+		sudo mkdir /mnt/tmp
+		sudo mount $HOME_DEV /mnt/tmp
+	fi
+	
+	##############################
+	# Tell user what we're doing #
+	##############################
+	echo
+
+	if $COPY_HOME
+	then
+		echo "Copying /home to ${DEST%/}/home/:"
+	else
+		echo "Copying /home to ${HOME_DEV}:"
+	fi
+
+	sleep 4
+	echo
+
+	##############################
+	# Copy /home to $DESTINATION #
+	##############################
+
+	sudo rsync -aAXSH -hv --delete --progress /mnt/root/home/ $DESTINATION --exclude=.local/share/Trash/files/*
+	EXIT_CODE="$?"
+
+	############
+	# Clean up #
+	############
+
+	#Unmount and remove /mnt/tmp, which we have to do
+	#whether the rsync command succedded or not
+	if ! $COPY_HOME
+	then
+		sudo umount /mnt/tmp
+		sudo rmdir /mnt/tmp
+	fi
+
+	#Unmount and remove /mnt/root/home and /mnt/root, which
+	#we have to do whether the rsync command succedded or not
+	sudo umount -R /mnt/root 
+	sudo rmdir /mnt/root 
+
+	#Check how it went
+	case "$EXIT_CODE" in
+		0|24)
+			echo
+			if $COPY_HOME
+			then
+				echo "/home copied to ${DEST%/}/home/ successfully"
+			else
+				echo "/home copied to ${HOME_DEV} successfully"
+			fi
+			sleep 4
+			;;
+		*)
+			echo
+			if $COPY_HOME
+			then
+				echo "Failed to copy /home to ${DEST%/}/home/"
+			else
+				echo "Failed to copy /home to ${HOME_DEV}"
+			fi
+			echo
+			echo "Exiting..."
+			Uninstall_RAM_Booster quiet
+			exit 1
+			;;
+	esac
+	
+}

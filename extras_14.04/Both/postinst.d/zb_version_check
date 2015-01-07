@@ -1,0 +1,42 @@
+#!/bin/bash
+
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	This script checks /lib/modules for the currently running system
+#	(whether it be the Original OS or the RAM Session) and writes
+#	down all the kernels that the current system supports. This is
+#	required because the Original OS and the RAM Session will not
+#	always be equally up to date, so grub can no longer assume that
+#	the latest kernel found in /boot is supported by the running OS,
+#	as it normally does
+
+OUTPUT=''
+
+if [[ -e /Original_OS ]]
+then
+	OUTPUT=/boot/Orig
+fi
+
+if [[ -e /RAM_Session ]]
+then
+	OUTPUT=/boot/RAM_Sess
+fi
+
+[[ -z $OUTPUT ]] && { echo "We are not in the Original OS or RAM Session"; exit 1; }
+
+#Clear the $OUTPUT file
+echo -n '' | sudo tee $OUTPUT
+
+#Add a note to the top of the file
+echo '#This file was created by the RAM Booster script and is essential. Do' | sudo tee -a $OUTPUT >/dev/null
+echo '#NOT delete this file manually - it will be removed if you uninstall' | sudo tee -a $OUTPUT >/dev/null
+echo '#the RAM Session' | sudo tee -a $OUTPUT >/dev/null
+echo '' | sudo tee -a $OUTPUT >/dev/null
+
+#For ever folder under /lib/modules, write it down to $OUTPUT
+for DIR in $(find /lib/modules -maxdepth 1 -mindepth 1 -type d)
+do
+	basename $DIR | sudo tee -a $OUTPUT >/dev/null
+done

@@ -1,0 +1,483 @@
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description: 
+#	Any reusable code used by redit, rupdate, and any other scripts
+#	that run in the RAM Session go here
+#	Many of it's variables come from /var/lib/ram_booster/conf,
+#	which gets written at install time
+
+####################
+# Global Variables #
+####################
+
+#/boot and / of the Original OS
+ROOT_UUID=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep ROOT_UUID= | sed 's/ROOT_UUID=//g')
+BOOT_UUID=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep BOOT_UUID= | sed 's/BOOT_UUID=//g')
+HOME_UUID=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep HOME_UUID= | sed 's/HOME_UUID=//g')
+EFI_UUID=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep EFI_UUID= | sed 's/EFI_UUID=//g')
+
+#Mount $DEST (RAM Session)
+#If function is passed "root_only" as arg, only mount $ROOT_UUID to
+#$Orig_OS and nothing else
+MOUNT_RS()
+{
+	#Mostly for debugging purposes
+	#Makes sure Orig_OS was set before we got here
+	[[ -z "$Orig_OS" ]] &&
+	{
+		echo "\$Orig_OS must be set by whatever script is sourcing rlib"
+		exit 1
+	}
+
+	#On the off chance whatever script runs UMOUNT_RS hasn't set
+	#$DEST, error out instead of killing whatever half-matches
+	[[ -z $DEST ]] &&
+	{
+		echo "\$DEST must be set by whatever script is sourcing rlib"
+		exit 1
+	}
+
+	#If the $Orig_OS folder exists, check if
+	#anything is using it as a mount point
+	if [[ -d "$Orig_OS" ]]
+	then
+		#If something is mounted, exit with an error
+		if mountpoint -q "$Orig_OS"
+		then
+			echo "Failed to mount RAM Session. Is it already mounted?"
+			exit 1
+		fi
+
+		#Try to remove the $Orig_OS
+		sudo rmdir "$Orig_OS" &>/dev/null
+
+		#If removing the $Orig_OS folder fails, like if it's
+		#not empty, exit with an error
+		if [[ "$?" != "0" ]]
+		then
+			echo "Failed to remove old $Orig_OS folder."
+			echo "Does it have files in it?"
+			exit 1
+		fi
+	fi
+
+	#If we are using the default /mnt/Original_OS/ as the mount point,
+	#check if anything is using /mnt as a mountpoint
+	if echo $Orig_OS | grep -q '^/mnt' && mountpoint -q /mnt
+	then
+		echo "Failed to mount RAM Session. Is something already mounted at /mnt?"
+		exit 1
+	fi
+
+	#Make Orig_OS folder
+	sudo mkdir -p "$Orig_OS"
+
+	#Try to mount $ROOT_UUID to $Orig_OS
+	sudo mount -U $ROOT_UUID "$Orig_OS" &>/dev/null ||
+	{
+		echo "Failed to mount $ROOT_UUID to $Orig_OS"
+		UMOUNT_RS
+		exit 1
+	}
+
+	#If this function was passed the arg "root_only", return here
+	if [[ "$1" == "root_only" ]]
+	then
+		return 0
+	fi
+	
+	#Bind /proc
+	sudo mount -o bind /proc "$Orig_OS/$DEST/proc" ||
+	{
+		echo "Failed to bind /proc to ${Orig_OS%/}/${DEST%/}/proc"
+		UMOUNT_RS
+		exit 1
+	}
+
+	#Bind /dev
+	sudo mount -o bind /dev "$Orig_OS/$DEST/dev" ||
+	{
+		echo "Failed to bind /dev to ${Orig_OS%/}/${DEST%/}/dev"
+		UMOUNT_RS
+		exit 1
+	}
+
+	#Bind /dev/pts
+	sudo mount -o bind /dev/pts "$Orig_OS/$DEST/dev/pts" ||
+	{
+		echo "Failed to bind /dev/pts to ${Orig_OS%/}/${DEST%/}/dev/pts"
+		UMOUNT_RS
+		exit 1
+	}
+
+	#Bind /sys
+	sudo mount -o bind /sys "$Orig_OS/$DEST/sys" ||
+	{
+		echo "Failed to bind /sys to ${Orig_OS%/}/${DEST%/}/sys"
+		UMOUNT_RS
+		exit 1
+	}
+
+	#Bind /run
+	sudo mount -o bind /run "$Orig_OS/$DEST/run" ||
+	{
+		echo "Failed to bind /run to ${Orig_OS%/}/${DEST%/}/run"
+		UMOUNT_RS
+		exit 1
+	}
+
+	#Mount tmpfs to /dev/shm
+	sudo mount -t tmpfs tmpfs "$Orig_OS/$DEST/dev/shm" ||
+	{
+		echo "Failed to mount tmpfs to ${Orig_OS%/}/${DEST%/}/dev/shm"
+		UMOUNT_RS
+		exit 1
+	}
+
+	#Mount tmpfs to /run/user
+	sudo mount -t tmpfs none "$Orig_OS/$DEST/run/user" ||
+	{
+		echo "Failed to mount tmpfs to ${Orig_OS%/}/${DEST%/}/run/user"
+		UMOUNT_RS
+		exit 1
+	}
+
+	#Mount /boot, if it's not on the same partition as /
+	if [[ "$BOOT_UUID" != "$ROOT_UUID" ]]
+	then
+		sudo mount -U $BOOT_UUID "$Orig_OS/$DEST/boot" ||
+		{
+			echo "Failed to mount $BOOT_UUID to ${Orig_OS%/}/${DEST%/}/boot"
+			UMOUNT_RS
+			exit 1
+		}
+	else
+		sudo mount -o bind "$Orig_OS/boot" "$Orig_OS/$DEST/boot" ||
+		{
+			echo "Failed to bind ${Orig_OS%/}/boot to ${Orig_OS%/}/${DEST%/}/boot"
+			UMOUNT_RS
+			exit 1
+		}
+	fi
+
+	#Mount /boot/efi, if we are running an efi system
+	if [[ -d /sys/firmware/efi ]] && [[ "$EFI_UUID" != "None" ]]
+	then
+		sudo mount -U $EFI_UUID "$Orig_OS/$DEST/boot/efi" ||
+		{
+			echo "Failed to mount $EFI_UUID to ${Orig_OS%/}/${DEST%/}/boot/efi"
+			UMOUNT_RS
+			exit 1
+		}
+	fi
+	
+	#Mount /home, if it's not on the same partition as /
+	if [[ "$HOME_UUID" != "$ROOT_UUID" ]]
+	then
+		sudo mount -U $HOME_UUID "$Orig_OS/$DEST/home" ||
+		{
+			echo "Failed to mount $HOME_UUID to ${Orig_OS%/}/${DEST%/}/home"
+			UMOUNT_RS
+			exit 1
+		}
+	fi
+
+	#When the /home being used by the running system (RAM Session)
+	#is using EXACTLY the same files as the one inside of redit,
+	#ecryptfs-mount-private fails to mount the /home directory of
+	#any user that is already logged into the RAM Session. This
+	#only applies to users that are using ecryption on their /home
+	#directory. To fix this, we bind the decrypted home directory
+	#of any logged-in user from the running system to the chroot
+	#environment
+	if [[ "$HOME_UUID" != "$ROOT_UUID" ]]
+	then
+		for DIR in /home/*
+		do
+			if [[ -e $DIR/.ecryptfs ]]
+			then
+				if mountpoint -q $DIR
+				then
+					sudo mount -o bind $DIR "$Orig_OS/$DEST/$DIR"
+				fi
+			fi
+		done
+	fi
+
+	#Setup mtab. Some programs (like df) use it to read partition table data
+	sudo chroot "$Orig_OS/$DEST/" /bin/bash -c "grep -v rootfs /proc/mounts > /etc/mtab"
+
+	#Enable X (GUI programs)
+	xhost +local: >/dev/null
+
+	#Change permissions on /dev/shm
+	sudo chroot $Orig_OS/$DEST/ /bin/bash -c "chmod 1777 /dev/shm" ||
+	{
+		echo "Failed to set permissions on ${Orig_OS%/}/${DEST%/}/dev/shm to 1777"
+		UMOUNT_RS
+		exit 1
+	}
+}
+
+#Unmount $DEST (RAM Session)
+UMOUNT_RS()
+{
+	#The location of the chroot, nicely formatted (without double
+	#'/'s) for printing to stdout
+	CHROOT=${Orig_OS%/}/${DEST#/}
+
+	#Mostly for debugging purposes
+	#Makes sure Orig_OS was set before we got here
+	[[ -z "$Orig_OS" ]] &&
+	{
+		echo "\$Orig_OS must be set by whatever script is sourcing rlib"
+		exit 1
+	}
+
+	#On the off chance whatever script runs UMOUNT_RS hasn't set
+	#$DEST, error out instead of killing whatever half-matches
+	[[ -z $DEST ]] &&
+	{
+		echo "\$DEST must be set by whatever script is sourcing rlib"
+		exit 1
+	}
+
+	#If $Orig_OS is not mounted (like if that was the step that failed to mount),
+	#just return
+	if ! mountpoint -q $Orig_OS
+	then
+		sudo rmdir $Orig_OS
+		return 0
+	fi
+
+	#Only do these tests if we did NOT do a root_only mount
+	if df -a | grep -q "${CHROOT%/}/dev"
+	then
+		#Quietly tell any upstart services that may have been started (manually,
+		#or by postinst scripts during installation) to stop. We later detect
+		#and kill all remaining processes - this is just a nice initial step
+		sudo chroot $CHROOT /bin/bash -c '
+		while IFS= read -r SRV
+		do
+			stop $SRV &>/dev/null
+		done < <(initctl list | grep -v stop | cut -d " " -f 1)'
+
+		#Quietly unmount any filesystems that may have been moounted
+		#inside of the chroot
+		#Ex: When the dbus package updates, it uses invoke-rc.d to launch
+		#	the dbus service, which, as a prerequisite, also runs
+		#	cgmanager. cgmanager mounts virtual filesystems when
+		#	it starts, but does NOT unmount them when it stops,
+		#	which prevents the chroot from unmounting. This finds
+		#	and unmounts anything like that
+		sudo chroot $CHROOT /bin/bash -c '
+		while IFS= read -r FS
+		do
+			#Things that were mounted outside of the chroot
+			#are better left alone for now so they can be
+			#unmounted outside of the chroot later
+			echo $FS | grep -qx "/" && continue
+			echo $FS | grep -qx "/dev" && continue
+			echo $FS | grep -qx "/run" && continue
+			echo $FS | grep -qx "/boot" && continue
+			#Encrypted home directories
+			echo $FS | grep -qx "/home/[^/]*" && continue
+			echo $FS | grep -qx "/home" && continue
+			echo $FS | grep -qx "/run/user" && continue
+			umount "$FS" &>/dev/null
+		done < <(df | tail -n+2 | tr -s " " | cut -d " " -f 6- | sort -r)'
+
+		#Find processes who's root folder is actually the chroot
+		for ROOT in $(find /proc/*/root)
+		do
+			LINK=$(readlink -f $ROOT)
+			if echo $LINK | grep -q ${CHROOT%/}
+			then
+				PID=$(basename $(dirname "$ROOT"))
+				KILL_PID $PID
+			fi
+		done
+	fi
+
+	#Unmount all filesystems under $Orig_OS recursively
+	sudo umount -R $Orig_OS 2>/dev/null
+
+	#Check how it went
+	if [[ "$?" == 0 ]]
+	then
+		#Remove the temp folder
+		sudo rmdir $Orig_OS
+		return $?
+	fi
+
+	#Failed to unmount - use lsof to figure out what's holding it up:
+
+	echo "Failed to unmount chroot"
+	echo "Scanning for processes holding it up..."
+
+	#Get a list of PIDs that are using $Orig_OS for anything
+	PID_LIST=$(sudo lsof +D $Orig_OS 2>/dev/null | tail -n+2 | tr -s ' ' | cut -d ' ' -f 2 | sort -nu)
+
+	#If there are none, give message and exit
+	if [[ -z "$PID_LIST" ]]
+	then
+		echo
+		echo "None found"
+		sleep 4
+		echo
+		return 1
+	fi
+
+	echo
+	echo "These are the processes preventing $Orig_OS from unmounting:"
+	echo
+
+	for PID in $PID_LIST
+	do
+		PROCESS_NAME=$(ps -p $PID -o comm=)
+		echo $PROCESS_NAME
+	done
+
+	echo
+	read -p "Would you like to kill them and try unmounting again? [Y\n]: " answer
+
+	#Convert answer to lowercase
+	answer=$(toLower $answer)
+
+	case $answer in
+		n|no)  
+			return 1
+			;;
+		*)
+			#Kill all PIDs holding up unmounting $Orig_OS
+			for PID in $PID_LIST
+			do
+				KILL_PID $PID
+			done
+
+			#Try unmounting again:
+
+			#Unmount all filesystems under $Orig_OS recursively
+			sudo umount -R $Orig_OS 2>/dev/null
+
+			if [[ "$?" == "0" ]]
+			then
+				#Give user message
+				echo "Processes terminated, and $Orig_OS unmounted successfully"
+				echo
+				sleep 4
+
+				#Remove the folder
+				sudo rmdir $Orig_OS 2>/dev/null ||
+				{
+					echo "Failed to remove $Orig_OS - are there files in it?"
+					echo
+					sleep 4
+				}
+
+				return 0
+			else
+				#Still failed
+				return 1
+			fi
+			;;
+	esac
+}
+
+#Convert input to lowercase
+toLower() 
+{
+	echo $@ | tr "[:upper:]" "[:lower:]" 
+}
+
+#Kills any PID passed to it
+#At first it tries nicely with SIGTERM
+#After a timeout, it uses SIGKILL
+KILL_PID()
+{
+	PROC_TO_KILL=$1
+
+	#Make sure we never have no args
+	if [[ "$PROC_TO_KILL" == "" ]]
+	then
+		echo "KILL_PID: \$1 cannot be empty"
+		exit 1
+	fi
+
+	#Try to kill it nicely
+	kill -0 $PROC_TO_KILL &>/dev/null && kill -15 $PROC_TO_KILL
+
+	#Check every second for 5 seconds to see if $PROC_TO_KILL is dead
+	WAIT_TIME=5
+
+	#Do a quick check to see if it's still running
+	#It usually takes a second, so this often doesn't help
+	kill -0 $PROC_TO_KILL &>/dev/null &&
+	for SEC in $(seq 1 $WAIT_TIME)
+	do
+		sleep 1
+
+		if [[ "$SEC" != $WAIT_TIME ]]
+		then
+			#If it's dead, exit
+			kill -0 $PROC_TO_KILL &>/dev/null || break
+		else
+			#If time's up, kill it
+			kill -0 $PROC_TO_KILL &>/dev/null && kill -9 $PROC_TO_KILL
+		fi  
+	done
+}
+
+#Create squashfs image
+CreateSquashfs()
+{
+	#Mostly for debugging purposes
+	#Makes sure Orig_OS was set before we got here
+	[[ -z "$Orig_OS" ]] &&
+	{
+		echo "\$Orig_OS must be set by whatever script is sourcing rlib"
+		exit 1
+	}
+
+	#On the off chance whatever script runs UMOUNT_RS hasn't set
+	#$DEST, error out instead of killing whatever half-matches
+	[[ -z $DEST ]] &&
+	{
+		echo "\$DEST must be set by whatever script is sourcing rlib"
+		exit 1
+	}
+
+	echo "Creating squashfs image"
+	echo
+
+	#Mount only the root filesystem of the Original OS
+	MOUNT_RS root_only
+
+	#Create squashfs image
+	#Note: We do NOT write the file directly to the one we boot
+	#from so that if the process gets interrupted and we reboot,
+	#we can still boot into the old image
+	sudo mksquashfs ${Orig_OS%/}/${DEST#/} ${Orig_OS%/}/live/filesystem.squashfs.new -noappend -always-use-fragments
+
+	#If there was an error, exit 1
+	if [[ "$?" != "0" ]]
+	then
+		echo
+		echo "Failed to create ${Orig_OS%/}/live/filesystem.squashfs"
+		UMOUNT_RS
+		exit 1
+	fi
+
+	clear
+
+	#Move the newly created squashfs image to the location we boot from
+	sudo mv ${Orig_OS%/}/live/filesystem.squashfs.new ${Orig_OS%/}/live/filesystem.squashfs
+
+	#Inform user we are done
+	echo "squashfs image created successfully"
+	echo "reboot to use it"
+
+	#Unmount the root filesystem
+	UMOUNT_RS
+}

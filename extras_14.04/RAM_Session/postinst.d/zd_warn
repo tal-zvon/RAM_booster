@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	If a kernel update occurs through redit or rupdate, RAM
+#	Session's grub entry will immediately be modified to use the
+#	new kernel. If a squashfs image with the updated modules is not
+#	created immediately (at least before a reboot), the RAM Session
+#	will be forced to use a kernel it has no modules for. This
+#	creates a file called /WARN in the RAM Session that redit and
+#	rupdate can detect, and warn people to recreate the squashfs image
+
+if [[ -e /RAM_Session ]]
+then
+	sudo touch /WARN
+fi

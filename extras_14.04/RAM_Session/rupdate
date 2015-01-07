@@ -1,0 +1,203 @@
+#!/bin/bash
+
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	This script allows the user to update the RAM Session with one
+#	command. The same thing can be done by using redit, and running
+#	"apt-get update; apt-get dist-upgrade". This script only exists
+#	for convenience
+
+############################
+# Only run if user is root #
+############################
+
+uid=$(/usr/bin/id -u) && [ "$uid" = "0" ] || 
+{
+	clear
+	echo "You must be root to run $0."
+	echo "Try again with the command 'sudo $0'"
+	exit 1
+} 
+
+##################################################################################
+# Check if the user is trying to run this script from outside of the RAM Session #
+##################################################################################
+
+if [ ! -e /RAM_Session ]
+then
+	clear
+	echo "This script cannot be run from outside of the RAM Session."
+	exit 0
+fi
+
+##########################################################################
+# Check if the user is trying to run this script from inside of a chroot #
+##########################################################################
+
+if [[ "$(ls -di / | cut -d ' ' -f 1)" != 2 ]] && [[ "$(ls -di / | cut -d ' ' -f 1)" != 128 ]]
+then
+	echo "This script cannot be run from inside of a chroot"
+	exit 0
+fi
+
+####################
+# Global Variables #
+####################
+
+#Path to the file that contains all the functions for this script
+RLIB=/var/lib/ram_booster/rlib
+#Figure out $DEST
+DEST=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep DEST= | sed 's/DEST=//g')
+#Remove leading slash from $DEST
+DEST="${DEST#/}"
+#The mountpoint of the Original OS device
+#Note: If you change it here, be sure to change it in the redit script as well
+Orig_OS='/mnt/Original_OS/'
+
+##########################################################
+# Source the file with all the functions for this script #
+##########################################################
+
+if [[ -e $RLIB ]]
+then
+        . $RLIB
+
+	#Check if there was a problem
+	if [[ "$?" != "0" ]]
+	then
+		echo
+		echo "The library that comes with RAM Booster ($RLIB) failed to be sourced"
+		echo "Is it broken?"
+		exit 1
+	fi
+else
+        clear
+        echo "The library that comes with RAM Booster ($RLIB) was not found!"
+        exit 1
+fi
+
+#################
+# Create a trap #
+#################
+
+trap 'UMOUNT_RS; echo; exit 1' SIGINT
+
+############
+# Mount FS #
+############
+
+#Mount the RAM Session, and bind all the pseudo filesystems to it
+MOUNT_RS
+
+#################
+# Do the update #
+#################
+
+#First, we resync the package index
+sudo chroot $Orig_OS/$DEST/ /bin/bash -c "apt-get update"
+
+#If there was a problem, exit
+if [[ "$?" != "0" ]]
+then
+	clear
+	echo "ERROR:"
+	echo "  There was a problem running \"apt-get update\". Scroll up to see what it was"
+	echo "  You may want to fix it using redit before running rupdate again"
+
+	#Unmount everything
+	UMOUNT_RS
+
+	exit 1
+fi
+
+#Now, we do the actual updates
+sudo chroot $Orig_OS/$DEST/ /bin/bash -c "apt-get -y dist-upgrade"
+
+#If there was a problem, exit
+if [[ "$?" != "0" ]]
+then
+	clear
+	echo "ERROR:"
+	echo "  There was a problem with the update. Scroll up to see what it was"
+	echo "  You may want to fix it using redit before recreating the squashfs image"
+	echo "  If you want to create the squash image anyway, run \"sudo redit -s\""
+
+	#Unmount everything
+	UMOUNT_RS
+
+	exit 1
+fi
+
+#Remove any packages no longer required
+sudo chroot $Orig_OS/$DEST/ /bin/bash -c "apt-get -y autoremove"
+
+#Clean apt cache
+sudo chroot $Orig_OS/$DEST/ /bin/bash -c "apt-get -y clean"
+
+#Update fake /boot, just in case any packages being installed in the
+#RAM Session want /boot to be consistent with the running system
+sudo mount -o bind $Orig_OS/$DEST/ $Orig_OS/$DEST/mnt/ &>/dev/null &&
+sudo rsync --delete -a $Orig_OS/$DEST/boot/ $Orig_OS/$DEST/mnt/boot/ --exclude=/IMPORTANT_README &>/dev/null &&
+sudo umount $Orig_OS/$DEST/mnt/ &>/dev/null
+
+clear
+
+##########################################################################
+# Check if /etc/kernel/postinst.d/zd_warn has set a flag that shows that #
+# a kernel update occurred. If it has, the user should get a warning     #
+##########################################################################
+
+if [[ -e $Orig_OS/$DEST/WARN ]]
+then
+        echo "WARNING: A KERNEL UPDATE JUST OCCURRED, AND THE RAM SESSION GRUB ENTRY"
+        echo "HAS BEEN MODIFIED TO USE THE NEW KERNEL. YOU MUST RECREATE THE SQUASHFS"
+        echo "IMAGE BEFORE YOU REBOOT OR YOUR RAM SESSION WILL NOT HAVE THE MODULES"
+        echo "TO USE THE NEW KERNEL, AND MAY FAIL TO BOOT!"
+        rm $Orig_OS/$DEST/WARN
+        echo
+fi
+
+#Unmount everything
+UMOUNT_RS
+
+#If there was a problem unmounting stuff, tell user to reboot
+if [[ "$?" != "0" ]]
+then
+	echo "There was an error unmounting ${Orig_OS}"
+	echo "A reboot should fix that"
+	echo "After the reboot, you will need to save your changes by recreating"
+	echo "the squashfs image if there was an update. Just run \"sudo redit -s\""
+	exit 1
+fi
+
+#################################
+# Recreating the SquashFS Image #
+#################################
+
+#Ask user if he wants to recreate filesystem.squashfs
+echo "Would you like to save your changes by recreating the squashfs image?"
+echo "If there was an update done, you will NOT be able to use it until you do this"
+echo "This may take some time to complete"
+echo "You may use the computer normally during this process - you will NOT disrupt it"
+echo
+read -p "Your choice [y/N]: " answer
+
+#Convert answer to lowercase
+answer=$(toLower $answer)
+
+case $answer in
+	y|yes)  
+		#Create squashfs image
+		clear
+		CreateSquashfs
+		;;
+	*)
+		echo
+		echo "You chose to NOT recreate the squashfs image"
+		echo "If you change your mind, run 'sudo redit -s'"
+		exit 0
+		;;
+esac
+

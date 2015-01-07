@@ -1,0 +1,129 @@
+#!/bin/bash -e
+
+#Written On: Dec 2014
+#Written By: Tal
+#Written For: Ubuntu Forums Community
+#Description:
+#	This script uses /boot/RAM_Sess to figure out the latest kernel
+#	that the RAM Session supports, finds that kernel (checking /boot/
+#	and /boot/RS_KERNELS/), and creates a grub menu entry pointing
+#	to it
+
+#########################################################
+# Figure out the latest kernel the RAM Session Supports #
+#########################################################
+
+#List of kernels currently installed some of which may not be supported
+#by the RAM Session
+INSTALLED_KERNELS=''
+
+#The latest kernel supported by the RAM Session
+LATEST_SUPPORTED_KERNEL=''
+
+#Path to LATEST_SUPPORTED_KERNEL
+#The path is only the dirname, relative to /boot/
+PATH_TO_KERNEL=''
+
+#Root UUID
+ROOT_UUID=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep ROOT_UUID= | sed 's/ROOT_UUID=//g')
+#Remove leading/trailing double/single quotes
+ROOT_UUID=$(echo $ROOT_UUID | tr -d '"' | tr -d "'")
+
+#Boot UUID
+BOOT_UUID=$(cat /var/lib/ram_booster/conf | grep -v '^#' | grep BOOT_UUID= | sed 's/BOOT_UUID=//g')
+#Remove leading/trailing double/single quotes
+BOOT_UUID=$(echo $BOOT_UUID | tr -d '"' | tr -d "'")
+
+#Create a list of installed kernels (vmlinuz-* files found on the system) 
+#Note: The list only contains filenames - not paths
+for KERNEL_FILE in $(ls -1 /boot/vmlinuz-* /boot/RS_KERNELS/vmlinuz-* 2>/dev/null)
+do
+	INSTALLED_KERNELS="$INSTALLED_KERNELS $(basename $KERNEL_FILE)"
+done
+
+#Strip vmlinuz- part
+INSTALLED_KERNELS=$(echo $INSTALLED_KERNELS | sed 's/vmlinuz-//g')
+
+#Convert spaces to newlines
+INSTALLED_KERNELS=$(echo $INSTALLED_KERNELS | tr ' ' '\n'; echo)
+
+#Sort the kernels
+INSTALLED_KERNELS=$(echo "$INSTALLED_KERNELS" | sort -rV)
+
+#Find out the latest one that is supported
+for KERNEL_FILE in $INSTALLED_KERNELS
+do
+	if grep -qx $KERNEL_FILE /boot/RAM_Sess
+	then
+		LATEST_SUPPORTED_KERNEL=$KERNEL_FILE
+		break
+	fi
+done
+
+#Figure out the path for the kernel we found
+if [ -e /boot/vmlinuz-$LATEST_SUPPORTED_KERNEL ]
+then
+	#File is in /boot/vmlinuz-$LATEST_SUPPORTED_KERNEL
+	#The path is only the dirname, relative to /boot/
+	PATH_TO_KERNEL=''
+elif [ -e /boot/RS_KERNELS/vmlinuz-$LATEST_SUPPORTED_KERNEL ]
+then
+	#File is in /boot/RS_KERNELS/vmlinuz-$LATEST_SUPPORTED_KERNEL
+	#The path is only the dirname, relative to /boot/
+	PATH_TO_KERNEL='RS_KERNELS/'
+else
+	echo "06_RAMSESS: Error - cannot figure out latest kernel RAM Session supports" >&2
+	exit 1
+fi
+
+echo "Found ram session image: /boot/${PATH_TO_KERNEL}vmlinuz-$LATEST_SUPPORTED_KERNEL" >&2
+
+#########################################
+# Remove "splash" option from boot args #
+#########################################
+
+GRUB_OPTIONS=''
+
+for word in $GRUB_CMDLINE_LINUX_DEFAULT
+do
+	if [[ $word != "splash" ]]
+	then
+		if [[ -n $GRUB_OPTIONS ]]
+		then
+			GRUB_OPTIONS="$GRUB_OPTIONS $word"
+		else
+			GRUB_OPTIONS=$word
+		fi
+	fi
+done
+
+#########################
+# Create the menu entry #
+#########################
+
+#NOTE: The --chroot-sessions option is very important. Without it,
+#upstart will NOT differentiate between services started on the host,
+#and services started in the chroot. This causes problems when you try to
+#run services in the chroot which don't exist on the host, which is done
+#automatically when you install any kind of service (like ssh) through
+#apt by postinst scripts. --chroot-sessions makes upstart treat chroot
+#services separately, which fixes all those problems
+
+cat << EOF
+
+menuentry "Ubuntu to RAM" {
+  set uuid_grub_boot=$BOOT_UUID
+  set uuid_os_root=$ROOT_UUID
+
+  search --no-floppy --fs-uuid \$uuid_grub_boot --set=grub_boot
+
+  set grub_boot=(\$grub_boot)
+
+  if [ \$uuid_grub_boot == \$uuid_os_root ] ; then                 
+     set grub_boot=\$grub_boot/boot
+  fi
+
+  linux \$grub_boot/${PATH_TO_KERNEL}vmlinuz-$LATEST_SUPPORTED_KERNEL bootfrom=/dev/disk/by-uuid/\$uuid_os_root boot=live toram=filesystem.squashfs apparmor=0 security="" root=/dev/disk/by-uuid/\$uuid_os_root ro --chroot-sessions ip=frommedia $GRUB_OPTIONS
+  initrd \$grub_boot/${PATH_TO_KERNEL}initrd.img-$LATEST_SUPPORTED_KERNEL
+}
+EOF
