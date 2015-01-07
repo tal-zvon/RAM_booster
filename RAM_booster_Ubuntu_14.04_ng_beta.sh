@@ -1,1 +1,0 @@
-RAM_booster_Ubuntu_14.10_ng.sh
