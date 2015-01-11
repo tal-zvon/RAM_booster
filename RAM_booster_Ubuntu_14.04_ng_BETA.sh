@@ -1123,6 +1123,9 @@ if [[ "$?" != 0 ]]
 then
         echo "Squashfs image creation failed."
 	echo
+	echo "You may want to run \"$0 --uninstall\" to remove"
+	echo "the partially-installed stuff"
+	echo
         echo "Exiting..."
         exit 1
 else
