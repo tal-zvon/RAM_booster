@@ -237,10 +237,16 @@ RUMOUNT()
 
 	for UDIR in $DIRS_TO_UNMOUNT
 	do
-		umount $UDIR 2>/dev/null
+		STDERR=$(umount $UDIR 2>&1)
+
 		if [[ $? != 0 ]]
 		then
-			return 1
+			#Even if 'umount' exits with an error, if that
+			#error is 'not mounted', keep going
+			if ! echo $STDERR | grep -q 'not mounted'
+			then
+				return 1
+			fi
 		fi
 	done
 }
