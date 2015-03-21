@@ -1017,7 +1017,11 @@ sudo sed -i '/^\/dev\/[^ \t]\{1,\}[ \t]\{1,\}\/boot\/efi[/]*[ \t]/d' $DEST/etc/f
 #might be writing to it, we don't want to delete it
 echo
 echo "Cleaning unnecessary files:"
-sudo find ${DEST}/var/run ${DEST}/var/crash ${DEST}/var/mail ${DEST}/var/spool ${DEST}/var/lock ${DEST}/var/backups ${DEST}/var/tmp -type f -not -name "root" -exec rm {} \;
+sudo find ${DEST}/var/run ${DEST}/var/mail ${DEST}/var/spool ${DEST}/var/lock ${DEST}/var/backups ${DEST}/var/tmp -type f -not -name "root" -exec rm {} \;
+
+#${DEST}/var/crash might not exist, but should be cleaned if it does
+[[ -d ${DEST}/var/crash ]] &&
+sudo find ${DEST}/var/crash -type f -exec rm {} \;
 
 #Delete only OLD log files
 echo
