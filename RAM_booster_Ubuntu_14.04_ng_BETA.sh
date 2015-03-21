@@ -178,6 +178,13 @@ fi
 OS_NAME=$(cat /etc/os-release | grep PRETTY_NAME | grep -o "\"[^\"]*\"" | tr -d '"')
 OS_VERSION=$(cat /etc/os-release | grep VERSION_ID | grep -o "\"[^\"]*\"" | tr -d '"')
 
+#Mint's /etc/os-release can say it is Ubuntu, so here we do a specific check for Mint
+if grep -q 'Mint' /etc/issue
+then
+	OS_NAME=$(cat /etc/issue | grep -io 'mint [0-9.]*')
+	OS_VERSION=$(cat /etc/issue | grep -o '[0-9.]*')
+fi
+
 if [[ "$OS_VERSION" != "$UBUNTU_VERSION" ]]
 then
 	clear
@@ -842,6 +849,7 @@ sudo sed -i 's|^\(\t\t\)\(echo.*/root/etc/fstab.d/live$\)|\1[ -d /root/etc/fstab
 #not. All we do here is tell it to check first, which has the desired
 #effect of it not messing with the initramfs image apt-get installs
 #in /boot
+[[ -e /bin/live-update-initramfs ]] &&
 sudo sed -i 's|\(/proc/mounts\)$|\1 \&\& [ -d /lib/live/mount/medium/live/ ]|g' /bin/live-update-initramfs
 
 #########################################
