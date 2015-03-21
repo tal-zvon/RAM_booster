@@ -486,9 +486,9 @@ LOGGER "$(echo -e "blkid:\n"; sudo blkid)"
 #LVM
 if which lvdisplay &>/dev/null
 then
-	LOGGER "$(echo -e "pvdisplay:\n"; sudo pvdisplay)"
-	LOGGER "$(echo -e "vgdisplay:\n"; sudo vgdisplay)"
-	LOGGER "$(echo -e "lvdisplay:\n"; sudo lvdisplay)"
+	LOGGER "$(echo -e "pvdisplay:\n"; sudo pvdisplay 2>&1)"
+	LOGGER "$(echo -e "vgdisplay:\n"; sudo vgdisplay 2>&1)"
+	LOGGER "$(echo -e "lvdisplay:\n"; sudo lvdisplay 2>&1)"
 fi
 
 ######################################
