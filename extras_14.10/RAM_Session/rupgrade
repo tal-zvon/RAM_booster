@@ -38,7 +38,8 @@ fi
 # Check if the user is trying to run this script from inside of a chroot #
 ##########################################################################
 
-if [[ "$(ls -di / | cut -d ' ' -f 1)" != 2 ]] && [[ "$(ls -di / | cut -d ' ' -f 1)" != 128 ]]
+ischroot
+if [ $? -eq 0 ]
 then
         echo "This script cannot be run from inside of a chroot"
         exit 0
